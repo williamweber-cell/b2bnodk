@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoicery Business — Löne- & personaladministration i Norden</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#2b5f8e; --dark:#1c3d5a; --darker:#163348;
+  --orange:#f0a020; --orange-d:#d98d15;
+  --white:#fff; --bg:#f0f4f8; --card:#fff;
+  --border:#cfdce8; --text:#1c2e3e; --mid:#4a6478; --muted:#8a9baa;
+  --green:#16a34a; --gbg:#dcfce7; --gtxt:#14532d;
+  --red:#dc2626; --rbg:#fee2e2; --rtxt:#7f1d1d;
+  --amber:#d97706; --abg:#fef3c7; --atxt:#78350f;
+  --bluebg:#dbeafe; --bluetxt:#1e3a8a;
+  --sh:0 2px 12px rgba(0,0,0,.07); --shlg:0 8px 40px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Open Sans',sans-serif;color:var(--text);line-height:1.5;min-height:100vh}
+.hidden{display:none!important}
+
+/* ══ LANDING ══ */
+#landing{background:#fff}
+.l-nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:68px;padding:0 5vw;display:flex;align-items:center;justify-content:space-between;background:var(--navy);transition:box-shadow .3s}
+.l-nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,.25)}
+.l-logo{display:flex;align-items:center;gap:.55rem;text-decoration:none;cursor:pointer}
+.l-logo-mark{width:32px;height:32px;background:var(--orange);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#fff;letter-spacing:-.03em;flex-shrink:0}
+.l-logo-txt{font-size:1rem;font-weight:800;color:#fff;letter-spacing:-.02em}
+.l-logo-sub{font-size:.62rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.05em;text-transform:uppercase;margin-left:.1rem;margin-top:1px}
+.l-nav-links{display:flex;gap:1.5rem;list-style:none}
+.l-nav-links a{font-size:.85rem;font-weight:600;color:rgba(255,255,255,.7);text-decoration:none;transition:color .2s}
+.l-nav-links a:hover{color:#fff}
+.l-nav-right{display:flex;align-items:center;gap:.9rem}
+.l-btn-login{font-size:.88rem;font-weight:600;color:#fff;background:none;border:none;cursor:pointer;font-family:inherit;transition:color .2s}
+.l-btn-login:hover{color:var(--orange)}
+.l-btn-kom{background:var(--orange);color:#fff;padding:.55rem 1.3rem;border-radius:4px;font-size:.88rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:background .2s}
+.l-btn-kom:hover{background:var(--orange-d)}
+/* HERO */
+.l-hero{min-height:100vh;padding:68px 8vw 0;background:linear-gradient(155deg,var(--navy) 0%,var(--dark) 45%,var(--darker) 100%);display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;position:relative;overflow:hidden}
+.l-hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.032) 1px,transparent 1px);background-size:28px 28px;pointer-events:none}
+.l-hero-content{position:relative;z-index:1;padding:5rem 0}
+.l-badge{display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.9);padding:.28rem .85rem;border-radius:4px;font-size:.75rem;font-weight:600;margin-bottom:1.4rem}
+.l-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);flex-shrink:0}
+.l-hero h1{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;line-height:1.08;color:#fff;margin-bottom:1.2rem}
+.l-hero h1 span{color:var(--orange)}
+.l-hero-sub{font-size:1rem;color:rgba(255,255,255,.7);line-height:1.75;max-width:470px;margin-bottom:1.9rem}
+.l-checks{list-style:none;display:flex;flex-direction:column;gap:.48rem;margin-bottom:2.2rem}
+.l-checks li{font-size:.93rem;color:rgba(255,255,255,.72);font-weight:600;display:flex;align-items:center;gap:.55rem}
+.l-checks li::before{content:'✓';color:var(--orange);font-weight:700;flex-shrink:0}
+.l-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:3.2rem}
+.l-btn-hero{background:var(--orange);color:#fff;padding:.88rem 2.1rem;border-radius:4px;font-size:.98rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;box-shadow:0 4px 18px rgba(240,160,32,.32);transition:background .2s,transform .2s}
+.l-btn-hero:hover{background:var(--orange-d);transform:translateY(-2px)}
+.l-btn-ghost{color:rgba(255,255,255,.7);font-size:.92rem;font-weight:600;text-decoration:none;transition:color .2s;cursor:pointer;background:none;border:none;font-family:inherit}
+.l-btn-ghost:hover{color:#fff}
+.l-stats{display:flex;gap:2.5rem}
+.l-stat-n{font-size:1.7rem;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1}
+.l-stat-l{font-size:.72rem;color:rgba(255,255,255,.48);margin-top:.18rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+/* HERO VISUAL */
+.l-hero-visual{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;padding:5rem 0}
+.l-mockup{background:#fff;border-radius:14px;box-shadow:0 28px 64px rgba(0,0,0,.38);width:340px;overflow:hidden;border:1px solid var(--border)}
+.l-mock-hd{background:var(--navy);padding:.75rem 1.1rem;display:flex;align-items:center;gap:.5rem}
+.l-mock-logo{font-size:.72rem;font-weight:800;color:#fff}
+.l-mock-badge{background:var(--orange);color:#fff;font-size:.58rem;font-weight:700;padding:.12rem .5rem;border-radius:3px;margin-left:auto}
+.l-mock-body{padding:1rem}
+.l-mock-ttl{font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:.7rem}
+.l-mock-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem .7rem;border-radius:5px;margin-bottom:.35rem;font-size:.65rem}
+.l-mock-row-new{background:var(--abg);border:1px solid #fde68a}
+.l-mock-row-ok{background:var(--gbg);border:1px solid #bbf7d0}
+.l-mock-row-pend{background:var(--bluebg);border:1px solid #bfdbfe}
+.l-mock-lbl{font-weight:600;color:var(--text)}
+.l-mock-amt{font-weight:800;color:var(--navy)}
+.l-mock-stat{font-size:.58rem;padding:.1rem .4rem;border-radius:3px;font-weight:700}
+.l-mock-stat-ok{background:var(--gbg);color:var(--gtxt)}
+.l-mock-stat-pend{background:var(--abg);color:var(--atxt)}
+.l-mock-stat-blue{background:var(--bluebg);color:var(--bluetxt)}
+.l-mock-total{margin-top:.65rem;padding:.65rem .7rem;background:var(--bg);border-radius:6px;display:flex;justify-content:space-between;align-items:center}
+.l-mock-total-lbl{font-size:.62rem;color:var(--mid);font-weight:600}
+.l-mock-total-amt{font-size:1rem;font-weight:800;color:var(--navy)}
+.l-pill{position:absolute;background:#fff;border-radius:50px;padding:.38rem .85rem;font-size:.73rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:.38rem;box-shadow:0 4px 14px rgba(0,0,0,.1);white-space:nowrap;animation:lf 3.8s ease-in-out infinite}
+.l-pill-1{top:80px;right:-20px;animation-delay:0s}
+.l-pill-2{bottom:80px;left:-25px;animation-delay:1.9s}
+.l-pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.l-pdot-g{background:#16a34a} .l-pdot-o{background:var(--orange)}
+@keyframes lf{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+/* TRUST BAR */
+.l-trust{background:var(--darker);border-top:1px solid rgba(255,255,255,.06);padding:1rem 5vw;display:flex;gap:2.5rem;flex-wrap:wrap;justify-content:center}
+.l-ti{display:flex;align-items:center;gap:.5rem;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.62)}
+.l-tichk{color:var(--orange)}
+/* SECTIONS */
+.l-sec{padding:5.5rem 8vw}
+.l-sec-gray{background:#f4f7fa}
+.l-sec-blue{background:var(--dark);padding:5.5rem 8vw}
+.l-tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--orange);margin-bottom:.65rem}
+.l-title{font-size:clamp(1.7rem,3.5vw,2.5rem);font-weight:800;color:var(--text);letter-spacing:-.025em;line-height:1.1;margin-bottom:.85rem}
+.l-title-w{color:#fff}
+.l-sub{font-size:.97rem;color:var(--mid);max-width:560px;line-height:1.7}
+.l-sub-w{color:rgba(255,255,255,.55)}
+/* SERVICES */
+.l-services-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-top:2.75rem}
+.l-svc{background:#fff;border-radius:10px;padding:2rem;border:1px solid var(--border);transition:transform .25s,box-shadow .25s;position:relative;overflow:hidden}
+.l-svc:hover{transform:translateY(-4px);box-shadow:var(--shlg)}
+.l-svc-icon{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1.1rem}
+.l-svc-icon-or{background:#fff7ed;color:var(--orange)}
+.l-svc-icon-bl{background:var(--bluebg);color:var(--navy)}
+.l-svc-icon-gn{background:var(--gbg);color:var(--green)}
+.l-svc-icon-pu{background:#f3f0ff;color:#7c3aed}
+.l-svc h3{font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:.55rem}
+.l-svc p{font-size:.87rem;color:var(--mid);line-height:1.65}
+.l-svc-tag{position:absolute;top:1.25rem;right:1.25rem;background:var(--orange);color:#fff;font-size:.62rem;font-weight:700;padding:.15rem .55rem;border-radius:3px;text-transform:uppercase;letter-spacing:.05em}
+/* STEPS */
+.l-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.75rem}
+.l-step{background:#fff;border-radius:8px;padding:1.75rem;border:1px solid var(--border);transition:transform .25s,box-shadow .25s}
+.l-step:hover{transform:translateY(-4px);box-shadow:var(--shlg)}
+.l-step-n{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.92rem;font-weight:800;margin-bottom:1.1rem}
+.l-step h3{font-size:.98rem;font-weight:700;color:var(--text);margin-bottom:.45rem}
+.l-step p{font-size:.85rem;color:var(--mid);line-height:1.62}
+/* PRICING */
+.l-pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2.75rem}
+.l-pcard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:2.25rem}
+.l-pbig{font-size:5.5rem;font-weight:800;color:#fff;line-height:1;letter-spacing:-.05em;display:inline}
+.l-psym{font-size:2.5rem;font-weight:800;color:var(--orange);vertical-align:top;margin-top:1.2rem;display:inline}
+.l-punit{font-size:1.1rem;font-weight:600;color:rgba(255,255,255,.5);margin-left:.3rem}
+.l-pdesc{font-size:.85rem;color:rgba(255,255,255,.42);margin:.3rem 0 1.75rem}
+.l-pfeat{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem}
+.l-pfeat li{display:flex;gap:.65rem;align-items:flex-start;font-size:.88rem;color:rgba(255,255,255,.78)}
+.l-pfeat-chk{color:var(--orange);flex-shrink:0;margin-top:1px}
+.l-calc-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:2rem}
+.l-calc-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:1.1rem}
+.l-calc-lbl{font-size:.75rem;color:rgba(255,255,255,.5);font-weight:600;margin-bottom:.35rem}
+.l-calc-inp{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:.62rem .88rem;border-radius:4px;font-size:.93rem;font-weight:600;font-family:inherit;margin-bottom:.85rem}
+.l-calc-inp::placeholder{color:rgba(255,255,255,.32)}
+.l-bdown{margin:.6rem 0 .4rem;display:flex;flex-direction:column;gap:.28rem}
+.l-brow{display:flex;justify-content:space-between;font-size:.73rem;padding:.28rem 0;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.52)}
+.l-brow .lbv{font-weight:600;color:rgba(255,255,255,.75)}
+.l-brow .lbv.red{color:rgba(255,100,100,.82)}
+.l-brow .lbv.grn{color:rgba(80,210,150,.82)}
+.l-calc-res{background:rgba(255,255,255,.08);border-radius:6px;padding:.95rem 1.1rem;margin-top:.9rem}
+.l-cr-lbl{font-size:.75rem;color:rgba(255,255,255,.48);font-weight:600;margin-bottom:.18rem}
+.l-cr-amt{font-size:1.7rem;font-weight:800;color:var(--orange);letter-spacing:-.03em}
+/* CASES */
+.l-cases-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;margin-top:2.75rem}
+.l-case{background:#fff;border-radius:8px;padding:1.6rem;border:1px solid var(--border);transition:transform .22s,box-shadow .22s}
+.l-case:hover{transform:translateY(-3px);box-shadow:var(--shlg)}
+.l-stars{color:var(--orange);font-size:.82rem;letter-spacing:.06em;margin-bottom:.9rem}
+.l-ctext{font-size:.88rem;line-height:1.68;color:var(--mid);font-style:italic;margin-bottom:1.1rem}
+.l-cauthor{display:flex;align-items:center;gap:.65rem}
+.l-cav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex-shrink:0}
+.l-cname{font-size:.82rem;font-weight:700;color:var(--text)}
+.l-crole{font-size:.74rem;color:var(--mid)}
+/* FAQ */
+.l-faq{margin-top:2.75rem;display:flex;flex-direction:column;gap:.75rem}
+.l-faq-item{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.l-faq-q{width:100%;padding:1.1rem 1.3rem;text-align:left;font-size:.9rem;font-weight:700;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.l-faq-q:hover{background:var(--bg)}
+.l-faq-icon{font-size:1.2rem;color:var(--navy);font-weight:300;transition:transform .2s;flex-shrink:0}
+.l-faq-a{padding:0 1.3rem;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.l-faq-a.open{max-height:200px;padding:.3rem 1.3rem 1.1rem}
+.l-faq-a p{font-size:.87rem;color:var(--mid);line-height:1.68}
+/* CTA */
+.l-cta{background:linear-gradient(135deg,var(--navy) 0%,var(--dark) 100%);padding:5.5rem 5vw;text-align:center;position:relative;overflow:hidden}
+.l-cta::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+.l-cta h2{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;color:#fff;margin-bottom:.9rem;position:relative;z-index:1}
+.l-cta p{font-size:1rem;color:rgba(255,255,255,.72);margin:0 auto 2.3rem;max-width:450px;position:relative;z-index:1}
+.l-cta-actions{display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.l-cta-btn-w{background:#fff;color:var(--navy);padding:.88rem 2.1rem;border-radius:4px;font-size:.97rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;box-shadow:0 4px 18px rgba(0,0,0,.14);transition:transform .2s}
+.l-cta-btn-w:hover{transform:translateY(-2px)}
+.l-cta-btn-o{background:transparent;color:rgba(255,255,255,.88);border:2px solid rgba(255,255,255,.4);padding:.88rem 2rem;border-radius:4px;font-size:.97rem;font-weight:700;cursor:pointer;font-family:inherit;transition:border-color .2s}
+.l-cta-btn-o:hover{border-color:#fff}
+/* FOOTER */
+.l-footer{background:var(--darker);color:rgba(255,255,255,.48);padding:4rem 8vw 2.2rem;font-size:.85rem}
+.l-footer-grid{display:grid;grid-template-columns:2.1fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:2.5rem}
+.l-fcol h4{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.86);margin-bottom:.9rem}
+.l-fcol ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.l-fcol a{color:rgba(255,255,255,.48);text-decoration:none;transition:color .2s}
+.l-fcol a:hover{color:var(--orange)}
+.l-fdivider{border:none;border-top:1px solid rgba(255,255,255,.07);margin-bottom:1.3rem}
+.l-fbottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.9rem}
+/* LOGIN MODAL */
+.l-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1.25rem;backdrop-filter:blur(3px)}
+.l-modal-box{background:#fff;border-radius:14px;width:100%;max-width:430px;box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden}
+.l-modal-top{background:var(--navy);padding:1.6rem 2rem;display:flex;align-items:center;gap:.7rem}
+.l-modal-logo{display:flex;align-items:center;gap:.5rem}
+.l-modal-logo-mark{width:28px;height:28px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff}
+.l-modal-logo-name{font-size:.92rem;font-weight:800;color:#fff}
+.l-modal-body{padding:1.85rem}
+.l-modal-title{font-size:1.08rem;font-weight:800;color:var(--text);margin-bottom:.2rem}
+.l-modal-sub{font-size:.83rem;color:var(--mid);margin-bottom:1.4rem}
+.l-inp-lbl{display:block;font-size:.76rem;font-weight:700;color:var(--mid);margin-bottom:.3rem}
+.l-inp-g{margin-bottom:.9rem}
+.l-inp{width:100%;padding:.62rem .88rem;border:1.5px solid var(--border);border-radius:5px;font-size:.88rem;font-family:inherit;color:var(--text);background:#fff;transition:border-color .2s,box-shadow .2s}
+.l-inp:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(43,95,142,.11)}
+.l-inp::placeholder{color:var(--muted)}
+.l-login-btn{width:100%;background:var(--navy);color:#fff;padding:.78rem;border-radius:5px;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:background .2s;margin-top:.2rem}
+.l-login-btn:hover{background:var(--dark)}
+.l-login-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#b91c1c;padding:.58rem .82rem;border-radius:5px;font-size:.8rem;margin-bottom:.9rem;display:none}
+.l-demo-box{background:#f4f7fa;border-radius:7px;padding:.9rem;margin-top:1.2rem}
+.l-demo-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.55rem}
+.l-demo-btn{display:block;width:100%;text-align:left;padding:.48rem .72rem;border-radius:5px;background:#fff;border:1.5px solid var(--border);font-size:.79rem;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:.38rem;transition:border-color .2s;font-family:inherit}
+.l-demo-btn:last-child{margin-bottom:0}
+.l-demo-btn:hover{border-color:var(--navy)}
+.l-demo-btn em{font-style:normal;color:var(--muted);font-weight:400}
+/* ══ PLATFORM APP ══ */
+#platform{background:var(--bg);min-height:100vh}
+.app{display:flex;min-height:100vh}
+.sb{width:232px;flex-shrink:0;background:var(--dark);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;transition:transform .3s}
+.sb-logo{padding:1.1rem 1.15rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:.55rem;text-decoration:none;cursor:pointer}
+.sb-logo-mark{width:28px;height:28px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0}
+.sb-logo-text{display:flex;flex-direction:column;line-height:1.1}
+.sb-logo-name{font-size:.82rem;font-weight:800;color:#fff}
+.sb-logo-sub{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
+.sb-section{padding:.65rem .95rem .18rem;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:rgba(255,255,255,.26)}
+.sb-nav{list-style:none;padding:.32rem 0}
+.sb-nav li button{display:flex;align-items:center;gap:.58rem;width:100%;padding:.6rem 1.15rem;font-size:.83rem;font-weight:600;color:rgba(255,255,255,.58);background:transparent;border:none;cursor:pointer;font-family:inherit;transition:all .18s}
+.sb-nav li button:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sb-nav li button.active{color:#fff;background:rgba(43,95,142,.44);border-right:3px solid var(--orange)}
+.lci{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.lci svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.stat-ico .lci svg{width:20px;height:20px}
+.l-svc-icon .lci svg{width:26px;height:26px}
+.badge .lci svg{width:11px;height:11px}
+.empty-ico .lci svg{width:48px;height:48px;stroke-width:1.5}
+.sb-badge{margin-left:auto;background:var(--orange);color:#fff;border-radius:100px;font-size:.62rem;font-weight:800;padding:.08rem .42rem;min-width:17px;text-align:center}
+.sb-bot{margin-top:auto;padding:.95rem;border-top:1px solid rgba(255,255,255,.07)}
+.sb-user{display:flex;align-items:center;gap:.58rem;margin-bottom:.72rem}
+.sb-av{width:30px;height:30px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;color:#fff;flex-shrink:0}
+.sb-name{font-size:.8rem;font-weight:700;color:#fff;line-height:1.2}
+.sb-role{font-size:.66rem;color:rgba(255,255,255,.4)}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:49}
+.sb-overlay.show{display:block}
+.main{margin-left:232px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:.82rem 1.85rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--text);padding:.25rem}
+.tb-title{font-size:1.02rem;font-weight:800;color:var(--dark)}
+.tb-sub{font-size:.74rem;color:var(--muted);margin-top:.04rem}
+.pg{padding:1.65rem 1.85rem;flex:1}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1.05rem;border-radius:5px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;transition:all .18s;font-family:inherit;text-decoration:none;white-space:nowrap}
+.btn-or{background:var(--orange);color:#fff;box-shadow:0 2px 10px rgba(240,160,32,.22)}
+.btn-or:hover{background:var(--orange-d);transform:translateY(-1px)}
+.btn-nv{background:var(--navy);color:#fff}
+.btn-nv:hover{background:var(--darker)}
+.btn-gh{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-gh:hover{border-color:var(--navy);color:var(--navy)}
+.btn-ok{background:var(--green);color:#fff}
+.btn-ok:hover{background:#15803d}
+.btn-dn{background:var(--red);color:#fff}
+.btn-dn:hover{background:#b91c1c}
+.btn-am{background:var(--amber);color:#fff}
+.btn-sm{padding:.33rem .82rem;font-size:.75rem}
+.btn-lg{padding:.78rem 1.85rem;font-size:.92rem}
+.btn-fw{width:100%;justify-content:center}
+.sb-bot .btn-gh{color:rgba(255,255,255,.82)!important;border-color:rgba(255,255,255,.22)!important}
+.sb-bot .btn-gh:hover{color:#fff!important;border-color:rgba(255,255,255,.55)!important;background:rgba(255,255,255,.06)!important}
+/* INPUTS */
+.inp{width:100%;padding:.56rem .8rem;border:1.5px solid var(--border);border-radius:5px;font-size:.86rem;font-family:inherit;color:var(--text);background:#fff;transition:border-color .2s,box-shadow .2s}
+.inp:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(43,95,142,.1)}
+.inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;min-height:78px}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%234a6478' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .72rem center;padding-right:1.9rem}
+.lbl{display:block;font-size:.73rem;font-weight:700;color:var(--mid);margin-bottom:.28rem}
+.ig{margin-bottom:.85rem}
+/* CARDS */
+.card{background:var(--card);border-radius:10px;border:1px solid var(--border);box-shadow:var(--sh)}
+.card-hd{padding:1.05rem 1.35rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-bd{padding:1.32rem}
+.card-title{font-size:.9rem;font-weight:700;color:var(--text)}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:.22rem;padding:.16rem .58rem;border-radius:100px;font-size:.68rem;font-weight:700;white-space:nowrap}
+.b-am{background:var(--abg);color:var(--atxt)}
+.b-gn{background:var(--gbg);color:var(--gtxt)}
+.b-rd{background:var(--rbg);color:var(--rtxt)}
+.b-bl{background:var(--bluebg);color:var(--bluetxt)}
+.b-gr{background:#f1f5f9;color:var(--mid)}
+/* STATS */
+.stats-g{display:grid;grid-template-columns:repeat(4,1fr);gap:1.05rem;margin-bottom:1.65rem}
+.stat{background:#fff;border-radius:10px;border:1px solid var(--border);padding:1.1rem 1.3rem;box-shadow:var(--sh)}
+.stat-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;margin-bottom:.6rem}
+.ico-bl{background:rgba(43,95,142,.1);color:var(--navy)} .ico-or{background:#fff7ed;color:var(--orange)} .ico-gn{background:var(--gbg);color:var(--green)} .ico-rd{background:var(--rbg);color:var(--red)} .ico-am{background:var(--abg);color:var(--amber)}
+.stat-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.18rem}
+.stat-val{font-size:1.78rem;font-weight:800;color:var(--dark);letter-spacing:-.03em;line-height:1}
+.stat-d{font-size:.7rem;color:var(--muted);margin-top:.22rem}
+.stat-d.up{color:var(--green)}
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:.62rem .95rem;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border)}
+.tbl td{padding:.78rem .95rem;font-size:.83rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafcfe}
+/* FORM GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.fg-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.85rem}
+.fc{grid-column:1/-1}
+/* EMPTY STATE */
+.empty{text-align:center;padding:3.5rem 1rem;color:var(--muted)}
+.empty-ico{font-size:2.5rem;margin-bottom:.85rem}
+.empty h3{font-size:.95rem;font-weight:700;color:var(--mid);margin-bottom:.35rem}
+.empty p{font-size:.83rem}
+/* ALERT */
+.alert{padding:.75rem 1rem;border-radius:6px;font-size:.83rem;font-weight:600;margin-bottom:1rem}
+.alert-ok{background:var(--gbg);color:var(--gtxt);border:1px solid #bbf7d0}
+.alert-am{background:var(--abg);color:var(--atxt);border:1px solid #fde68a}
+.alert-rd{background:var(--rbg);color:var(--rtxt);border:1px solid #fecaca}
+/* STEP WIZARD */
+.wiz-steps{display:flex;gap:0;margin-bottom:2rem}
+.wiz-step{flex:1;padding:.65rem 1rem;font-size:.8rem;font-weight:700;color:var(--muted);border-bottom:3px solid var(--border);text-align:center}
+.wiz-step.done{color:var(--green);border-color:var(--green)}
+.wiz-step.active{color:var(--navy);border-color:var(--navy)}
+/* MOBILE */
+@media(max-width:900px){
+  .l-hero{grid-template-columns:1fr;padding-bottom:2rem}
+  .l-hero-visual{display:none}
+  .l-services-grid,.l-cases-grid,.l-pricing-grid{grid-template-columns:1fr}
+  .l-steps{grid-template-columns:1fr}
+  .l-footer-grid{grid-template-columns:1fr 1fr}
+  .l-nav-links{display:none}
+  .sb{transform:translateX(-100%)}
+  .sb.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:block}
+  .stats-g{grid-template-columns:1fr 1fr}
+  .fg{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LANDING
+══════════════════════════════════════ -->
+<div id="landing">
+  <nav class="l-nav" id="l-nav">
+    <a class="l-logo" href="#" onclick="return false">
+      <div class="l-logo-mark">IB</div>
+      <div>
+        <div class="l-logo-txt">Invoicery Business</div>
+      </div>
+    </a>
+    <ul class="l-nav-links">
+      <li><a href="#tjanster">Tjänster</a></li>
+      <li><a href="#sa-funkar">Så funkar det</a></li>
+      <li><a href="#priser">Priser</a></li>
+      <li><a href="#kundcase">Kundcase</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#kontakt">Kontakt</a></li>
+    </ul>
+    <div class="l-nav-right">
+      <button class="l-btn-login" onclick="openLogin()">Logga in</button>
+      <button class="l-btn-kom" onclick="openLogin()">Kom igång</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="l-hero">
+    <div class="l-hero-content">
+      <div class="l-badge"><span class="l-badge-dot"></span> Sveriges ledande lösning för flexibel arbetskraft</div>
+      <h1>Löne- & personal&shy;administration <span>i Norden</span></h1>
+      <p class="l-hero-sub">Vi hjälper företag att hantera flexibel arbetskraft med trygga, smidiga och kostnadseffektiva lösningar — allt med fullt arbetsgivaransvar.</p>
+      <ul class="l-checks">
+        <li>Fullt arbetsgivaransvar — vi sköter allt</li>
+        <li>Lönehantering, skatter & försäkringar inkluderat</li>
+        <li>Nordisk compliance i alla länder</li>
+        <li>Enkelt för konsulten, smidigt för företaget</li>
+      </ul>
+      <div class="l-actions">
+        <button class="l-btn-hero" onclick="openLogin()">Kom igång gratis</button>
+        <button class="l-btn-ghost" onclick="document.getElementById('sa-funkar').scrollIntoView({behavior:'smooth'})">Så funkar det →</button>
+      </div>
+      <div class="l-stats">
+        <div><div class="l-stat-n">6%</div><div class="l-stat-l">Fast avgift</div></div>
+        <div><div class="l-stat-n">+500</div><div class="l-stat-l">Företag</div></div>
+        <div><div class="l-stat-n">Norden</div><div class="l-stat-l">Täckning</div></div>
+      </div>
+    </div>
+    <div class="l-hero-visual">
+      <div class="l-mockup">
+        <div class="l-mock-hd">
+          <div class="l-mock-logo">Invoicery Business</div>
+          <div class="l-mock-badge">LIVE</div>
+        </div>
+        <div class="l-mock-body">
+          <div class="l-mock-ttl">Aktiva uppdrag — april 2026</div>
+          <div class="l-mock-row l-mock-row-ok">
+            <div><div class="l-mock-lbl">Lides Event AB</div><div style="font-size:.58rem;color:var(--mid)">SalaryInvoicing · 40h</div></div>
+            <div style="text-align:right"><div class="l-mock-amt">28 500 kr</div><span class="l-mock-stat l-mock-stat-ok">Godkänt</span></div>
+          </div>
+          <div class="l-mock-row l-mock-row-pend">
+            <div><div class="l-mock-lbl">Prisjakt Sverige AB</div><div style="font-size:.58rem;color:var(--mid)">SalaryInvoicing · 32h</div></div>
+            <div style="text-align:right"><div class="l-mock-amt">21 760 kr</div><span class="l-mock-stat l-mock-stat-pend">Väntar</span></div>
+          </div>
+          <div class="l-mock-row l-mock-row-new">
+            <div><div class="l-mock-lbl">Butterfly Effect</div><div style="font-size:.58rem;color:var(--mid)">Excel-import · 24h</div></div>
+            <div style="text-align:right"><div class="l-mock-amt">15 200 kr</div><span class="l-mock-stat l-mock-stat-blue">Ny</span></div>
+          </div>
+          <div class="l-mock-total">
+            <div class="l-mock-total-lbl">Totalt denna period</div>
+            <div class="l-mock-total-amt">65 460 kr</div>
+          </div>
+        </div>
+      </div>
+      <div class="l-pill l-pill-1"><span class="l-pdot l-pdot-g"></span> Uppdrag godkänt</div>
+      <div class="l-pill l-pill-2"><span class="l-pdot l-pdot-o"></span> Lön utbetald</div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR -->
+  <div class="l-trust">
+    <div class="l-ti"><span class="l-tichk">✓</span> Tryggt & hållbart</div>
+    <div class="l-ti"><span class="l-tichk">✓</span> Enkelt & smidigt</div>
+    <div class="l-ti"><span class="l-tichk">✓</span> Flexibelt & skalbart</div>
+    <div class="l-ti"><span class="l-tichk">✓</span> Inga dolda avgifter</div>
+    <div class="l-ti"><span class="l-tichk">✓</span> Nordisk compliance</div>
+    <div class="l-ti"><span class="l-tichk">✓</span> Fullt arbetsgivaransvar</div>
+  </div>
+
+  <!-- TJÄNSTER -->
+  <section class="l-sec l-sec-gray" id="tjanster">
+    <div class="l-tag">Tjänster</div>
+    <h2 class="l-title">Allt du behöver för <br>flexibel personalhantering</h2>
+    <p class="l-sub">Vi erbjuder anpassade lösningar för företag i alla storlekar — från enkel löneadministration till fullständig automatisering.</p>
+    <div class="l-services-grid">
+      <div class="l-svc">
+        <div class="l-svc-tag">Populärast</div>
+        <div class="l-svc-icon l-svc-icon-or"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span></div>
+        <h3>SalaryInvoicing</h3>
+        <p>Nordens ledande samarbetsportal för företag och konsulter. En komplett plattform för löne- och personaladministration där konsulten fakturerar via oss och vi hanterar hela arbetsgivaransvaret.</p>
+      </div>
+      <div class="l-svc">
+        <div class="l-svc-icon l-svc-icon-bl"><span class="lci"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span></div>
+        <h3>Excel-import</h3>
+        <p>Intuitiv och lättanvänd mallösning för löneunderlag. Ladda upp en Excel-fil med timlöner, arvoden och tillägg — vi hanterar resten. Anpassad för nordiska krav och utformad för enkelhet.</p>
+      </div>
+      <div class="l-svc">
+        <div class="l-svc-icon l-svc-icon-gn"><span class="lci"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span></div>
+        <h3>API-integration</h3>
+        <p>Automatiserad administrationslösning för företag som vill effektivisera sin personal- och lönehantering, oavsett vilket affärssystem ni använder. Sömlös integration mot ert befintliga system.</p>
+      </div>
+      <div class="l-svc">
+        <div class="l-svc-icon l-svc-icon-pu"><span class="lci"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span></div>
+        <h3>Workforce Management</h3>
+        <p>Vår heltäckande lösning där Invoicery Business tar fullt arbetsgivaransvar. Vi hanterar anställningar, försäkringar, skattedeklarationer och alla personalfrågor — ni fokuserar på kärnverksamheten.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SÅ FUNKAR DET -->
+  <section class="l-sec" id="sa-funkar">
+    <div class="l-tag">Så funkar det</div>
+    <h2 class="l-title">Tre enkla steg</h2>
+    <p class="l-sub">Kom igång på minuter. Inga komplicerade avtal eller långa processer — vi gör det enkelt för er.</p>
+    <div class="l-steps">
+      <div class="l-step">
+        <div class="l-step-n">1</div>
+        <h3>Registrera ert uppdrag</h3>
+        <p>Konsulten skapar ett uppdrag i portalen med uppgifter om arbetsgivaren, antal timmar, arvode och period. Det tar under fem minuter.</p>
+      </div>
+      <div class="l-step">
+        <div class="l-step-n">2</div>
+        <h3>Företaget godkänner</h3>
+        <p>Uppdragsgivaren loggar in och godkänner uppdraget med ett klick. Vi skickar fakturan direkt till företaget med alla juridiska krav uppfyllda.</p>
+      </div>
+      <div class="l-step">
+        <div class="l-step-n">3</div>
+        <h3>Lön utbetalas</h3>
+        <p>När företaget betalat fakturan beräknar och betalar vi ut lönen till konsulten med korrekt skatteavdrag, socialavgifter och lönespec.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRISER -->
+  <section class="l-sec-blue" id="priser">
+    <div class="l-tag">Priser</div>
+    <h2 class="l-title l-title-w">Enkel, transparent prissättning</h2>
+    <p class="l-sub l-sub-w">En fast avgift. Inga dolda kostnader. Inga setup-avgifter.</p>
+    <div class="l-pricing-grid">
+      <div class="l-pcard">
+        <div><span class="l-psym">%</span><span class="l-pbig">6</span><span class="l-punit">av fakturerat belopp</span></div>
+        <p class="l-pdesc">Allt-i-ett-lösning för lönehantering och personaladministration</p>
+        <ul class="l-pfeat">
+          <li><span class="l-pfeat-chk">✓</span> Fullt arbetsgivaransvar</li>
+          <li><span class="l-pfeat-chk">✓</span> Lönehantering & utbetalning</li>
+          <li><span class="l-pfeat-chk">✓</span> Skattedeklaration & socialavgifter</li>
+          <li><span class="l-pfeat-chk">✓</span> Försäkringar inkluderade</li>
+          <li><span class="l-pfeat-chk">✓</span> Nordisk compliance</li>
+          <li><span class="l-pfeat-chk">✓</span> Lönespecifikationer</li>
+          <li><span class="l-pfeat-chk">✓</span> Arbetsgivarintyg</li>
+          <li><span class="l-pfeat-chk">✓</span> Tillgång till SalaryInvoicing-portalen</li>
+        </ul>
+        <button class="btn btn-or btn-fw btn-lg" onclick="openLogin()">Kom igång</button>
+      </div>
+      <div class="l-calc-card">
+        <div class="l-calc-title" style="display:flex;align-items:center;gap:.5rem"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Räkna ut din lön</div>
+        <div class="l-calc-lbl">Fakturerat belopp (kr)</div>
+        <input class="l-calc-inp" type="number" id="calc-inv" placeholder="100 000" oninput="calcLon()">
+        <div class="l-calc-lbl">Din skattenivå (%)</div>
+        <input class="l-calc-inp" type="number" id="calc-tax" placeholder="32" oninput="calcLon()" value="32">
+        <div class="l-bdown" id="calc-bd"></div>
+        <div class="l-calc-res" id="calc-res" style="display:none">
+          <div class="l-cr-lbl">Din nettolön efter skatt</div>
+          <div class="l-cr-amt" id="calc-net">—</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KUNDCASE -->
+  <section class="l-sec l-sec-gray" id="kundcase">
+    <div class="l-tag">Kundcase</div>
+    <h2 class="l-title">Företag som litar på oss</h2>
+    <p class="l-sub">Från evenemangsbranschen till tech — vi hanterar flexibel arbetskraft för företag i hela Norden.</p>
+    <div class="l-cases-grid">
+      <div class="l-case">
+        <div class="l-stars">★★★★★</div>
+        <p class="l-ctext">"Invoicery Business har gjort det möjligt för oss att skala upp med extrapersonal utan byråkratiska hinder. Allt sköts smidigt och vi slipper oroa oss för arbetsgivaransvar."</p>
+        <div class="l-cauthor">
+          <div class="l-cav" style="background:#2b5f8e">LE</div>
+          <div><div class="l-cname">Lides Event AB</div><div class="l-crole">Evenemang & logistik</div></div>
+        </div>
+      </div>
+      <div class="l-case">
+        <div class="l-stars">★★★★★</div>
+        <p class="l-ctext">"Som kommunikationsbyrå har vi varierande behov av specialister. Invoicery Business gör det enkelt att ta in rätt kompetens när vi behöver det — utan krångel."</p>
+        <div class="l-cauthor">
+          <div class="l-cav" style="background:#f0a020">BE</div>
+          <div><div class="l-cname">Butterfly Effect</div><div class="l-crole">Kommunikation & PR</div></div>
+        </div>
+      </div>
+      <div class="l-case">
+        <div class="l-stars">★★★★★</div>
+        <p class="l-ctext">"Vi behöver snabbt kunna ta in personal för korta uppdrag. Med Invoicery Business löser vi det på minuter och konsulterna är nöjda med hur smidigt allt fungerar."</p>
+        <div class="l-cauthor">
+          <div class="l-cav" style="background:#16a34a">GU</div>
+          <div><div class="l-cname">Gubbe</div><div class="l-crole">Bemanning & rekrytering</div></div>
+        </div>
+      </div>
+      <div class="l-case">
+        <div class="l-stars">★★★★★</div>
+        <p class="l-ctext">"Prisjakt använder Invoicery Business för att hantera externa IT-konsulter. Plattformen är intuitiv och vi sparar massor av tid på administration varje månad."</p>
+        <div class="l-cauthor">
+          <div class="l-cav" style="background:#7c3aed">PS</div>
+          <div><div class="l-cname">Prisjakt</div><div class="l-crole">E-handel & tech</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="l-sec" id="faq">
+    <div class="l-tag">Vanliga frågor</div>
+    <h2 class="l-title">Frågor & svar</h2>
+    <div class="l-faq">
+      <div class="l-faq-item">
+        <button class="l-faq-q" onclick="toggleFaq(this)">Vad innebär fullt arbetsgivaransvar? <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p>Det innebär att Invoicery Business formellt är arbetsgivare för konsulten. Vi hanterar alla arbetsgivarskyldigheter: sociala avgifter, skattedeklarationer, försäkringar, semesterersättning och mer. Ert företag är uppdragsgivare och betalar fakturan — vi sköter allt administrativt.</p></div>
+      </div>
+      <div class="l-faq-item">
+        <button class="l-faq-q" onclick="toggleFaq(this)">Hur beräknas den 6-procentiga avgiften? <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p>Avgiften beräknas på det totala fakturerade beloppet inklusive moms. Det är en allt-i-ett-avgift som täcker löneadministration, arbetsgivaravgifter, försäkringar och vår plattform. Inga ytterligare kostnader tillkommer.</p></div>
+      </div>
+      <div class="l-faq-item">
+        <button class="l-faq-q" onclick="toggleFaq(this)">Vilka länder i Norden täcker ni? <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p>Vi täcker Sverige, Norge, Danmark och Finland. Vår plattform hanterar lokala skatteregler, arbetsrätt och löneadministration i respektive land, anpassat för varje marknad.</p></div>
+      </div>
+      <div class="l-faq-item">
+        <button class="l-faq-q" onclick="toggleFaq(this)">Hur snabbt kan en konsult komma igång? <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p>Registreringen tar under 5 minuter. Konsulten skapar ett konto, fyller i personuppgifter och bankuppgifter, och kan sedan direkt skapa sitt första uppdrag. Vi verifierar kontot inom en arbetsdag.</p></div>
+      </div>
+      <div class="l-faq-item">
+        <button class="l-faq-q" onclick="toggleFaq(this)">Vad händer om mitt företag redan har ett lönesystem? <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p>Inga problem. Via vår API-integration kopplar vi oss mot de flesta affärssystem. Vi erbjuder även Excel-import för en enklare start. Kontakta oss för att diskutera er specifika situation.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="l-cta" id="kontakt">
+    <h2>Redo att förenkla er personalhantering?</h2>
+    <p>Gå med hundratals nordiska företag som redan använder Invoicery Business. Kom igång idag — utan bindningstid.</p>
+    <div class="l-cta-actions">
+      <button class="l-cta-btn-w" onclick="openLogin()">Skapa konto gratis</button>
+      <button class="l-cta-btn-o" onclick="openLogin()">Logga in</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="l-footer">
+    <div class="l-footer-grid">
+      <div class="l-fcol">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem">
+          <div style="width:26px;height:26px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#fff">IB</div>
+          <span style="font-weight:800;color:#fff;font-size:.9rem">Invoicery Business</span>
+        </div>
+        <p style="font-size:.83rem;line-height:1.68;max-width:280px;margin-bottom:1rem">En del av Invoicery Group — Sveriges ledande organisation inom uppdragsbaserad personal och löneadministration i Norden.</p>
+        <p style="font-size:.78rem">© 2026 Invoicery Business AB</p>
+      </div>
+      <div class="l-fcol">
+        <h4>Tjänster</h4>
+        <ul>
+          <li><a href="#">SalaryInvoicing</a></li>
+          <li><a href="#">Excel-import</a></li>
+          <li><a href="#">API-integration</a></li>
+          <li><a href="#">Workforce Management</a></li>
+        </ul>
+      </div>
+      <div class="l-fcol">
+        <h4>Företaget</h4>
+        <ul>
+          <li><a href="#">Om oss</a></li>
+          <li><a href="#">Goda arbetsvillkor</a></li>
+          <li><a href="#">Plattformsbolag</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+      <div class="l-fcol">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Frågor & svar</a></li>
+          <li><a href="#">Kontakta oss</a></li>
+          <li><a href="#">Integritetspolicy</a></li>
+          <li><a href="#">Användarvillkor</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="l-fdivider">
+    <div class="l-fbottom">
+      <span>Invoicery Business AB · Org.nr 559XXX-XXXX · Stockholm, Sverige</span>
+    </div>
+  </footer>
+</div><!-- /landing -->
+
+<!-- LOGIN MODAL -->
+<div class="l-modal-ov hidden" id="login-modal" onclick="if(event.target===this)closeLogin()">
+  <div class="l-modal-box">
+    <div class="l-modal-top">
+      <div class="l-modal-logo">
+        <div class="l-modal-logo-mark">IB</div>
+        <div class="l-modal-logo-name">Invoicery Business</div>
+      </div>
+    </div>
+    <div class="l-modal-body">
+      <div class="l-modal-title">Välkommen tillbaka</div>
+      <div class="l-modal-sub">Logga in på ditt konto</div>
+      <div class="l-login-err" id="l-err">Felaktig e-postadress eller lösenord.</div>
+      <div class="l-inp-g">
+        <label class="l-inp-lbl">E-postadress</label>
+        <input class="l-inp" type="email" id="l-email" placeholder="din@email.se" autocomplete="email">
+      </div>
+      <div class="l-inp-g">
+        <label class="l-inp-lbl">Lösenord</label>
+        <input class="l-inp" type="password" id="l-pw" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="l-login-btn" onclick="doLogin()">Logga in</button>
+      <div class="l-demo-box">
+        <div class="l-demo-lbl">Demo-konton</div>
+        <button class="l-demo-btn" onclick="fillDemo('sara@konsult.se','klient123')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Konsult (skapa uppdrag) <em>sara@konsult.se</em></button>
+        <button class="l-demo-btn" onclick="fillDemo('info@foretag.se','kund123')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/></svg></span> Företag (godkänn uppdrag) <em>info@foretag.se</em></button>
+        <button class="l-demo-btn" onclick="fillDemo('admin@invoicerybusiness.se','admin123')"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></span> Superadmin <em>admin@invoicerybusiness.se</em></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PLATFORM APP
+══════════════════════════════════════ -->
+<div id="platform" class="hidden">
+<div class="app">
+<aside class="sb hidden">
+  <a class="sb-logo" href="#" onclick="backToLanding();return false">
+    <div class="sb-logo-mark">IB</div>
+    <div class="sb-logo-text">
+      <div class="sb-logo-name">Invoicery Business</div>
+      <div class="sb-logo-sub">Portal</div>
+    </div>
+  </a>
+  <!-- KONSULT nav -->
+  <div id="nav-konsult" class="hidden">
+    <div class="sb-section">Mitt konto</div>
+    <ul class="sb-nav">
+      <li><button onclick="go('k-dash')" data-v="k-dash"><span class="lci"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Översikt</button></li>
+      <li><button onclick="go('k-new')" data-v="k-new"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span> Skapa uppdrag</button></li>
+      <li><button onclick="go('k-uppdrag')" data-v="k-uppdrag"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Mina uppdrag <span class="sb-badge" id="badge-k">0</span></button></li>
+    </ul>
+    <div class="sb-section">Ekonomi</div>
+    <ul class="sb-nav">
+      <li><button onclick="go('k-lon')" data-v="k-lon"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Lönespec</button></li>
+      <li><button onclick="go('k-intyg')" data-v="k-intyg"><span class="lci"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span> Arbetsgivarintyg</button></li>
+    </ul>
+    <div class="sb-section">Konto</div>
+    <ul class="sb-nav">
+      <li><button onclick="go('k-profil')" data-v="k-profil"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Profil & inställningar</button></li>
+    </ul>
+  </div>
+  <!-- FÖRETAG nav -->
+  <div id="nav-foretag" class="hidden">
+    <div class="sb-section">Mitt konto</div>
+    <ul class="sb-nav">
+      <li><button onclick="go('f-dash')" data-v="f-dash"><span class="lci"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Översikt</button></li>
+      <li><button onclick="go('f-godkann')" data-v="f-godkann"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Godkänn uppdrag <span class="sb-badge" id="badge-f">0</span></button></li>
+      <li><button onclick="go('f-alla')" data-v="f-alla"><span class="lci"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Alla uppdrag</button></li>
+    </ul>
+    <div class="sb-section">Ekonomi</div>
+    <ul class="sb-nav">
+      <li><button onclick="go('f-fakturor')" data-v="f-fakturor"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Fakturor</button></li>
+    </ul>
+    <div class="sb-section">Konto</div>
+    <ul class="sb-nav">
+      <li><button onclick="go('f-profil')" data-v="f-profil"><span class="lci"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/></svg></span> Företagsprofil</button></li>
+    </ul>
+  </div>
+  <div class="sb-bot">
+    <div class="sb-user"><div class="sb-av" id="sb-av">?</div><div><div class="sb-name" id="sb-nm">—</div><div class="sb-role" id="sb-rl">—</div></div></div>
+    <button class="btn btn-gh btn-sm btn-fw" onclick="logout()">Logga ut</button>
+  </div>
+</aside>
+<div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div><div class="tb-title" id="tb-ttl">—</div><div class="tb-sub" id="tb-sub">—</div></div>
+    <div style="font-size:.76rem;color:var(--muted)" id="tb-date"></div>
+  </div>
+  <div class="pg" id="pg"></div>
+</div>
+</div>
+</div><!-- /platform -->
+
+<script>
+/* ═══════════════════ DATA ═══════════════════ */
+function DB(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+function DBs(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function getUsers(){return DB('IB_USERS')||[]}
+function getUppdrag(){return DB('IB_UPPDRAG')||[]}
+function getForetag(){return DB('IB_FORETAG')||[]}
+function saveUppdrag(a){DBs('IB_UPPDRAG',a)}
+function saveUsers(a){DBs('IB_USERS',a)}
+
+function seed(){
+  if(DB('IB_SEEDED')) return;
+  DBs('IB_USERS',[
+    {id:'U1',email:'admin@invoicerybusiness.se',password:'admin123',role:'admin',name:'Anna Lindström'},
+    {id:'U2',email:'sara@konsult.se',password:'klient123',role:'konsult',name:'Sara Bergström',orgNr:''},
+    {id:'U3',email:'erik@konsult.se',password:'klient123',role:'konsult',name:'Erik Johansson',orgNr:''},
+    {id:'U4',email:'info@foretag.se',password:'kund123',role:'foretag',name:'Lides Event AB',contactName:'Maria Lide',orgNr:'559123-4567'},
+    {id:'U5',email:'hr@prisjakt.se',password:'kund123',role:'foretag',name:'Prisjakt Sverige AB',contactName:'Jonas Svensson',orgNr:'556789-0123'},
+  ]);
+  DBs('IB_UPPDRAG',[
+    {id:'UPP-2026-001',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U4',foretagName:'Lides Event AB',typ:'SalaryInvoicing',beskrivning:'Koordination och logistik för evenemang april 2026',timmar:40,timlön:680,belopp:27200,period:'April 2026',status:'godkänt',skapadDatum:'2026-04-01',godkändDatum:'2026-04-03',adminNote:''},
+    {id:'UPP-2026-002',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U5',foretagName:'Prisjakt Sverige AB',typ:'SalaryInvoicing',beskrivning:'Frontend-utveckling och UX-analys',timmar:32,timlön:780,belopp:24960,period:'April 2026',status:'väntar_godkännande',skapadDatum:'2026-04-05',godkändDatum:'',adminNote:''},
+    {id:'UPP-2026-003',konsultId:'U3',konsultName:'Erik Johansson',foretagId:'U4',foretagName:'Lides Event AB',typ:'Excel-import',beskrivning:'Teknisk support och riggning',timmar:24,timlön:590,belopp:14160,period:'April 2026',status:'väntar_godkännande',skapadDatum:'2026-04-06',godkändDatum:'',adminNote:''},
+    {id:'UPP-2026-004',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U4',foretagName:'Lides Event AB',typ:'SalaryInvoicing',beskrivning:'Projektledning Q1 2026',timmar:60,timlön:720,belopp:43200,period:'Mars 2026',status:'utbetalt',skapadDatum:'2026-03-01',godkändDatum:'2026-03-04',adminNote:''},
+  ]);
+  DBs('IB_SEEDED','1');
+}
+
+/* ═══════════════════ AUTH ═══════════════════ */
+let ME = null;
+
+window.openLogin = function(){
+  document.getElementById('login-modal').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+window.closeLogin = function(){
+  document.getElementById('login-modal').classList.add('hidden');
+  document.body.style.overflow='';
+}
+window.fillDemo = function(e,p){
+  document.getElementById('l-email').value=e;
+  document.getElementById('l-pw').value=p;
+}
+window.doLogin = function(){
+  const email=document.getElementById('l-email').value.trim();
+  const pw=document.getElementById('l-pw').value;
+  const user=getUsers().find(u=>u.email===email&&u.password===pw);
+  if(!user){document.getElementById('l-err').style.display='block';return}
+  document.getElementById('l-err').style.display='none';
+  if(user.role==='admin'){
+    window.location.href='invoicery-business-admin.html';
+    return;
+  }
+  ME=user; DBs('IB_SESSION',user);
+  closeLogin();
+  launchPlatform();
+}
+
+document.getElementById('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('l-email').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin()});
+
+function launchPlatform(){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('platform').classList.remove('hidden');
+  document.querySelector('.sb').classList.remove('hidden');
+  document.body.style.background='var(--bg)';
+  const ini=ME.name.split(' ').map(n=>n[0]).join('').slice(0,2);
+  document.getElementById('sb-av').textContent=ini;
+  document.getElementById('sb-nm').textContent=ME.name;
+  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('sv-SE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  if(ME.role==='konsult'){
+    document.getElementById('nav-konsult').classList.remove('hidden');
+    document.getElementById('nav-foretag').classList.add('hidden');
+    document.getElementById('sb-rl').textContent='Konsult';
+    go('k-dash');
+  } else {
+    document.getElementById('nav-konsult').classList.add('hidden');
+    document.getElementById('nav-foretag').classList.remove('hidden');
+    document.getElementById('sb-rl').textContent='Företag';
+    go('f-dash');
+  }
+  updBadges();
+}
+
+function toggleSidebar(){
+  const sb=document.querySelector('.sb');
+  const ov=document.getElementById('sb-overlay');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('show',open);
+}
+function closeSidebar(){
+  document.querySelector('.sb').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('show');
+}
+function logout(){
+  ME=null; localStorage.removeItem('IB_SESSION');
+  document.getElementById('platform').classList.add('hidden');
+  document.querySelector('.sb').classList.add('hidden');
+  document.getElementById('landing').classList.remove('hidden');
+  document.body.style.background='#fff';
+  window.scrollTo(0,0);
+}
+function backToLanding(){logout()}
+
+function updBadges(){
+  const ups=getUppdrag();
+  const bk=document.getElementById('badge-k');
+  const bf=document.getElementById('badge-f');
+  if(ME&&bk&&ME.role==='konsult') bk.textContent=ups.filter(u=>u.konsultId===ME.id&&u.status==='väntar_godkännande').length;
+  if(ME&&bf&&ME.role==='foretag') bf.textContent=ups.filter(u=>u.foretagId===ME.id&&u.status==='väntar_godkännande').length;
+}
+
+/* ═══════════════════ ROUTING ═══════════════════ */
+const TITLES={
+  'k-dash':['Översikt','Välkommen till Invoicery Business'],
+  'k-new':['Skapa uppdrag','Registrera ett nytt uppdrag'],
+  'k-uppdrag':['Mina uppdrag','Status och historik för dina uppdrag'],
+  'k-lon':['Lönespecifikationer','Dina lönespec från Invoicery Business'],
+  'k-intyg':['Arbetsgivarintyg','Generera intyg för en period'],
+  'k-profil':['Profil & inställningar','Dina personuppgifter och kontouppgifter'],
+  'f-dash':['Översikt','Välkommen till företagsportalen'],
+  'f-godkann':['Godkänn uppdrag','Granska och godkänn inkomna uppdrag'],
+  'f-alla':['Alla uppdrag','Komplett uppdragshistorik'],
+  'f-fakturor':['Fakturor','Fakturor från Invoicery Business'],
+  'f-profil':['Företagsprofil','Ert företags uppgifter'],
+};
+
+function go(v){
+  closeSidebar();
+  document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  const t=TITLES[v]||[v,''];
+  document.getElementById('tb-ttl').textContent=t[0];
+  document.getElementById('tb-sub').textContent=t[1];
+  const el=document.getElementById('pg');
+  if(v==='k-dash') el.innerHTML=kDash();
+  else if(v==='k-new') el.innerHTML=kNew();
+  else if(v==='k-uppdrag') el.innerHTML=kUppdrag();
+  else if(v==='k-lon') el.innerHTML=kLon();
+  else if(v==='k-intyg') el.innerHTML=kIntyg();
+  else if(v==='k-profil') el.innerHTML=kProfil();
+  else if(v==='f-dash') el.innerHTML=fDash();
+  else if(v==='f-godkann') el.innerHTML=fGodkann();
+  else if(v==='f-alla') el.innerHTML=fAlla();
+  else if(v==='f-fakturor') el.innerHTML=fFakturor();
+  else if(v==='f-profil') el.innerHTML=fProfil();
+  window.scrollTo(0,0);
+}
+
+/* ═══════════════════ HELPERS ═══════════════════ */
+function fmt(n){return Number(n).toLocaleString('sv-SE',{style:'currency',currency:'SEK',maximumFractionDigits:0})}
+function fmtN(n){return Number(n).toLocaleString('sv-SE',{maximumFractionDigits:0})+' kr'}
+function statusBadge(s){
+  const map={
+    'godkänt':'<span class="badge b-gn">✓ Godkänt</span>',
+    'väntar_godkännande':'<span class="badge b-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Väntar godkännande</span>',
+    'utbetalt':'<span class="badge b-bl"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Utbetalt</span>',
+    'avvisat':'<span class="badge b-rd">✗ Avvisat</span>',
+    'utkast':'<span class="badge b-gr">● Utkast</span>',
+  };
+  return map[s]||`<span class="badge b-gr">${s}</span>`;
+}
+
+/* ═══════════════════ KONSULT VIEWS ═══════════════════ */
+function kDash(){
+  const ups=getUppdrag().filter(u=>u.konsultId===ME.id);
+  const aktiva=ups.filter(u=>['väntar_godkännande','godkänt'].includes(u.status));
+  const tot=ups.filter(u=>u.status==='utbetalt').reduce((a,u)=>a+u.belopp,0);
+  const väntar=ups.filter(u=>u.status==='väntar_godkännande').length;
+  return `
+  <div class="stats-g">
+    <div class="stat"><div class="stat-ico ico-bl"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></div><div class="stat-lbl">Aktiva uppdrag</div><div class="stat-val">${aktiva.length}</div><div class="stat-d">Pågående</div></div>
+    <div class="stat"><div class="stat-ico ico-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span></div><div class="stat-lbl">Väntar godkännande</div><div class="stat-val">${väntar}</div><div class="stat-d">Hos företaget</div></div>
+    <div class="stat"><div class="stat-ico ico-gn"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div><div class="stat-lbl">Totalt utbetalt</div><div class="stat-val" style="font-size:1.1rem">${fmtN(tot)}</div><div class="stat-d">Alla perioder</div></div>
+    <div class="stat"><div class="stat-ico ico-or"><span class="lci"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span></div><div class="stat-lbl">Avslutade uppdrag</div><div class="stat-val">${ups.filter(u=>u.status==='utbetalt').length}</div><div class="stat-d up">Genomförda</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.1rem">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Senaste uppdrag</span><button class="btn btn-or btn-sm" onclick="go('k-new')">+ Nytt uppdrag</button></div>
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th>Uppdrag</th><th>Företag</th><th>Period</th><th>Belopp</th><th>Status</th></tr></thead>
+          <tbody>
+            ${ups.slice(0,4).map(u=>`
+            <tr>
+              <td><div style="font-weight:700">${u.id}</div><div style="font-size:.74rem;color:var(--muted)">${u.typ}</div></td>
+              <td>${u.foretagName}</td>
+              <td>${u.period}</td>
+              <td style="font-weight:700">${fmtN(u.belopp)}</td>
+              <td>${statusBadge(u.status)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Snabbstart</span></div>
+      <div class="card-bd" style="display:flex;flex-direction:column;gap:.75rem">
+        <button class="btn btn-or btn-fw" onclick="go('k-new')"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span> Skapa nytt uppdrag</button>
+        <button class="btn btn-nv btn-fw" onclick="go('k-uppdrag')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Visa alla uppdrag</button>
+        <button class="btn btn-gh btn-fw" onclick="go('k-lon')"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Mina lönespec</button>
+        <button class="btn btn-gh btn-fw" onclick="go('k-intyg')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Arbetsgivarintyg</button>
+        <div style="margin-top:.5rem;padding:.8rem;background:var(--gbg);border-radius:6px;font-size:.78rem;color:var(--gtxt)">
+          <strong>Avgift:</strong> 6% av fakturerat belopp. Vi sköter allt — skatt, socialavgifter & försäkringar.
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function kNew(){
+  return `
+  <div class="card" style="max-width:700px">
+    <div class="card-hd"><span class="card-title">Skapa nytt uppdrag</span></div>
+    <div class="card-bd">
+      <div class="alert alert-am">Fyll i uppgifterna nedan. Uppdragsgivaren (företaget) kommer att få en notis och godkänna uppdraget.</div>
+      <div class="fg">
+        <div class="ig">
+          <label class="lbl">Uppdragsgivarens e-post *</label>
+          <input class="inp" id="n-femail" type="email" placeholder="info@foretag.se">
+        </div>
+        <div class="ig">
+          <label class="lbl">Typ av tjänst *</label>
+          <select class="inp sel" id="n-typ">
+            <option value="">Välj tjänst...</option>
+            <option value="SalaryInvoicing">SalaryInvoicing</option>
+            <option value="Excel-import">Excel-import</option>
+            <option value="API-integration">API-integration</option>
+            <option value="Workforce Management">Workforce Management</option>
+          </select>
+        </div>
+      </div>
+      <div class="ig fc">
+        <label class="lbl">Uppdragsbeskrivning *</label>
+        <textarea class="inp" id="n-beskr" placeholder="Beskriv uppdraget, arbetsuppgifter och leverabler..."></textarea>
+      </div>
+      <div class="fg-3">
+        <div class="ig">
+          <label class="lbl">Antal timmar *</label>
+          <input class="inp" id="n-timmar" type="number" placeholder="40" oninput="calcBelopp()">
+        </div>
+        <div class="ig">
+          <label class="lbl">Timlön (kr/h) *</label>
+          <input class="inp" id="n-timlön" type="number" placeholder="750" oninput="calcBelopp()">
+        </div>
+        <div class="ig">
+          <label class="lbl">Beräknat belopp</label>
+          <input class="inp" id="n-belopp" readonly placeholder="—" style="background:var(--bg)">
+        </div>
+      </div>
+      <div class="fg">
+        <div class="ig">
+          <label class="lbl">Period *</label>
+          <input class="inp" id="n-period" placeholder="April 2026">
+        </div>
+        <div class="ig">
+          <label class="lbl">Startdatum</label>
+          <input class="inp" id="n-start" type="date">
+        </div>
+      </div>
+      <div style="margin-top:.5rem;padding:.85rem;background:#f4f7fa;border-radius:7px;font-size:.8rem;color:var(--mid);margin-bottom:1.2rem">
+        <strong style="color:var(--text)">Avgift:</strong> 6% av fakturerat belopp debiteras av Invoicery Business. Vi sköter löneadministration, skatt, socialavgifter och försäkringar.
+      </div>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-or" onclick="submitUppdrag()">✓ Skicka till godkännande</button>
+        <button class="btn btn-gh" onclick="go('k-uppdrag')">Avbryt</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function calcBelopp(){
+  const t=parseFloat(document.getElementById('n-timmar').value)||0;
+  const p=parseFloat(document.getElementById('n-timlön').value)||0;
+  const b=document.getElementById('n-belopp');
+  if(t&&p) b.value=fmtN(t*p);
+  else b.value='—';
+}
+
+function submitUppdrag(){
+  const femail=document.getElementById('n-femail').value.trim();
+  const typ=document.getElementById('n-typ').value;
+  const beskr=document.getElementById('n-beskr').value.trim();
+  const timmar=parseFloat(document.getElementById('n-timmar').value)||0;
+  const timlön=parseFloat(document.getElementById('n-timlön').value)||0;
+  const period=document.getElementById('n-period').value.trim();
+  if(!femail||!typ||!beskr||!timmar||!timlön||!period){
+    alert('Fyll i alla obligatoriska fält (*).');return;
+  }
+  const users=getUsers();
+  const foretag=users.find(u=>u.email===femail&&u.role==='foretag');
+  if(!foretag){alert('Hittade inget företagskonto med den e-postadressen.');return;}
+  const ups=getUppdrag();
+  const id='UPP-2026-'+(ups.length+5).toString().padStart(3,'0');
+  ups.unshift({
+    id,konsultId:ME.id,konsultName:ME.name,
+    foretagId:foretag.id,foretagName:foretag.name,
+    typ,beskrivning:beskr,timmar,timlön,belopp:timmar*timlön,
+    period,status:'väntar_godkännande',
+    skapadDatum:new Date().toISOString().slice(0,10),godkändDatum:'',adminNote:''
+  });
+  saveUppdrag(ups);
+  updBadges();
+  document.getElementById('pg').innerHTML=`
+    <div class="card" style="max-width:500px;text-align:center">
+      <div class="card-bd" style="padding:3rem 2rem">
+        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">Uppdrag skickat!</h2>
+        <p style="color:var(--mid);margin-bottom:1.5rem">${foretag.name} har fått en notis och kommer att godkänna uppdraget. Du notifieras när det är klart.</p>
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem">Uppdrag-ID: <strong>${id}</strong></div>
+        <div style="display:flex;gap:.75rem;justify-content:center">
+          <button class="btn btn-or" onclick="go('k-uppdrag')">Visa mina uppdrag</button>
+          <button class="btn btn-gh" onclick="go('k-new')">+ Skapa nytt</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function kUppdrag(){
+  const ups=getUppdrag().filter(u=>u.konsultId===ME.id);
+  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></div><h3>Inga uppdrag ännu</h3><p>Skapa ditt första uppdrag för att komma igång.</p><br><button class="btn btn-or" onclick="go('k-new')">+ Skapa uppdrag</button></div>`;
+  return `
+  <div class="card">
+    <div class="card-hd"><span class="card-title">Mina uppdrag (${ups.length})</span><button class="btn btn-or btn-sm" onclick="go('k-new')">+ Nytt uppdrag</button></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>Företag</th><th>Typ</th><th>Period</th><th>Timmar</th><th>Belopp</th><th>Status</th><th>Datum</th></tr></thead>
+        <tbody>
+          ${ups.map(u=>`
+          <tr>
+            <td style="font-weight:700;font-size:.75rem">${u.id}</td>
+            <td>${u.foretagName}</td>
+            <td><span class="badge b-bl">${u.typ}</span></td>
+            <td>${u.period}</td>
+            <td>${u.timmar}h</td>
+            <td style="font-weight:700">${fmtN(u.belopp)}</td>
+            <td>${statusBadge(u.status)}</td>
+            <td style="color:var(--muted)">${u.skapadDatum}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function kLon(){
+  const ups=getUppdrag().filter(u=>u.konsultId===ME.id&&u.status==='utbetalt');
+  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div><h3>Inga lönespec ännu</h3><p>Lönespecifikationer genereras när uppdrag är utbetalda.</p></div>`;
+  return `
+  <div class="card">
+    <div class="card-hd"><span class="card-title">Lönespecifikationer</span></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Period</th><th>Uppdrag</th><th>Bruttolön</th><th>Avgift (6%)</th><th>Skatt (~32%)</th><th>Nettolön</th><th>Status</th></tr></thead>
+        <tbody>
+          ${ups.map(u=>{
+            const avgift=u.belopp*0.06;
+            const brutto=u.belopp-avgift;
+            const skatt=brutto*0.32;
+            const netto=brutto-skatt;
+            return `<tr>
+              <td style="font-weight:700">${u.period}</td>
+              <td>${u.foretagName}</td>
+              <td>${fmtN(brutto)}</td>
+              <td style="color:var(--mid)">${fmtN(avgift)}</td>
+              <td style="color:var(--mid)">${fmtN(skatt)}</td>
+              <td style="font-weight:800;color:var(--green)">${fmtN(netto)}</td>
+              <td><span class="badge b-gn">✓ Utbetalt</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function kIntyg(){
+  return `
+  <div class="card" style="max-width:600px">
+    <div class="card-hd"><span class="card-title">Generera arbetsgivarintyg</span></div>
+    <div class="card-bd">
+      <p style="font-size:.87rem;color:var(--mid);margin-bottom:1.25rem">Arbetsgivarintyget visar dina inkomster via Invoicery Business under en vald period. Används t.ex. för låneansokan, hyresansökan eller A-kassa.</p>
+      <div class="fg">
+        <div class="ig">
+          <label class="lbl">Från datum</label>
+          <input class="inp" type="date" value="2026-01-01">
+        </div>
+        <div class="ig">
+          <label class="lbl">Till datum</label>
+          <input class="inp" type="date" value="2026-04-10">
+        </div>
+      </div>
+      <div class="ig">
+        <label class="lbl">Ändamål</label>
+        <select class="inp sel">
+          <option>Låneansokan</option>
+          <option>Hyresansökan</option>
+          <option>A-kassa / Arbetslöshet</option>
+          <option>Övrigt</option>
+        </select>
+      </div>
+      <button class="btn btn-or"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Generera intyg (PDF)</button>
+    </div>
+  </div>`;
+}
+
+function kProfil(){
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.1rem">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Personuppgifter</span><button class="btn btn-gh btn-sm">Redigera</button></div>
+      <div class="card-bd">
+        <div class="ig"><label class="lbl">Namn</label><input class="inp" value="${ME.name}"></div>
+        <div class="ig"><label class="lbl">E-post</label><input class="inp" value="${ME.email}" readonly style="background:var(--bg)"></div>
+        <div class="ig"><label class="lbl">Telefon</label><input class="inp" placeholder="+46 70 xxx xx xx"></div>
+        <div class="ig"><label class="lbl">Personnummer</label><input class="inp" placeholder="XXXXXX-XXXX"></div>
+        <div class="ig"><label class="lbl">Adress</label><input class="inp" placeholder="Gatuadress"></div>
+        <div class="fg">
+          <div class="ig"><label class="lbl">Postnummer</label><input class="inp" placeholder="XXX XX"></div>
+          <div class="ig"><label class="lbl">Stad</label><input class="inp" placeholder="Stockholm"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Bankuppgifter & skatt</span></div>
+      <div class="card-bd">
+        <div class="ig"><label class="lbl">Clearingnummer</label><input class="inp" placeholder="XXXX"></div>
+        <div class="ig"><label class="lbl">Kontonummer</label><input class="inp" placeholder="XXXXXXXXX"></div>
+        <div class="ig"><label class="lbl">Skattenivå (%)</label><input class="inp" type="number" placeholder="32"></div>
+        <div style="padding:.8rem;background:var(--gbg);border-radius:6px;font-size:.78rem;color:var(--gtxt)">
+          ✓ Invoicery Business hanterar skattedeklaration, socialavgifter och alla arbetsgivaruppgifter åt dig.
+        </div>
+        <button class="btn btn-or btn-fw" style="margin-top:1rem">Spara uppgifter</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════ FÖRETAG VIEWS ═══════════════════ */
+function fDash(){
+  const ups=getUppdrag().filter(u=>u.foretagId===ME.id);
+  const väntar=ups.filter(u=>u.status==='väntar_godkännande');
+  const godkända=ups.filter(u=>u.status==='godkänt');
+  const totBelopp=ups.reduce((a,u)=>a+u.belopp,0);
+  return `
+  <div class="stats-g">
+    <div class="stat"><div class="stat-ico ico-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span></div><div class="stat-lbl">Väntar godkännande</div><div class="stat-val">${väntar.length}</div><div class="stat-d">Behöver åtgärd</div></div>
+    <div class="stat"><div class="stat-ico ico-gn"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div><div class="stat-lbl">Godkända uppdrag</div><div class="stat-val">${godkända.length}</div><div class="stat-d">Under perioden</div></div>
+    <div class="stat"><div class="stat-ico ico-bl"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span></div><div class="stat-lbl">Totalt uppdrag</div><div class="stat-val">${ups.length}</div><div class="stat-d">Alla perioder</div></div>
+    <div class="stat"><div class="stat-ico ico-or"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div><div class="stat-lbl">Totalt belopp</div><div class="stat-val" style="font-size:1.1rem">${fmtN(totBelopp)}</div><div class="stat-d">Alla perioder</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.1rem">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Väntar på godkännande</span>${väntar.length?`<button class="btn btn-or btn-sm" onclick="go('f-godkann')">Granska alla</button>`:''}</div>
+      ${väntar.length===0?`<div class="card-bd"><div class="alert alert-ok">✓ Inga uppdrag väntar på godkännande just nu.</div></div>`:`
+      <div style="overflow-x:auto"><table class="tbl">
+        <thead><tr><th>Konsult</th><th>Typ</th><th>Period</th><th>Belopp</th><th>Åtgärd</th></tr></thead>
+        <tbody>
+          ${väntar.slice(0,3).map(u=>`<tr>
+            <td style="font-weight:700">${u.konsultName}</td>
+            <td><span class="badge b-bl">${u.typ}</span></td>
+            <td>${u.period}</td>
+            <td style="font-weight:700">${fmtN(u.belopp)}</td>
+            <td><button class="btn btn-ok btn-sm" onclick="godkannUppdrag('${u.id}')">✓ Godkänn</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Snabbåtgärder</span></div>
+      <div class="card-bd" style="display:flex;flex-direction:column;gap:.75rem">
+        <button class="btn btn-or btn-fw" onclick="go('f-godkann')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Godkänn uppdrag</button>
+        <button class="btn btn-nv btn-fw" onclick="go('f-alla')"><span class="lci"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Alla uppdrag</button>
+        <button class="btn btn-gh btn-fw" onclick="go('f-fakturor')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Fakturor</button>
+        <div style="margin-top:.5rem;padding:.8rem;background:var(--bluebg);border-radius:6px;font-size:.78rem;color:var(--bluetxt)">
+          <strong>Hur det fungerar:</strong> Konsulter skickar uppdrag för er godkännande. Ni godkänner och Invoicery Business fakturerar er + betalar ut lön till konsulten.
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function fGodkann(){
+  const ups=getUppdrag().filter(u=>u.foretagId===ME.id&&u.status==='väntar_godkännande');
+  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div><h3>Allt klart!</h3><p>Inga uppdrag väntar på godkännande just nu.</p></div>`;
+  return `
+  <div style="display:flex;flex-direction:column;gap:1rem">
+    ${ups.map(u=>`
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">${u.konsultName} — ${u.period}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem">${u.id} · Inkommen ${u.skapadDatum}</div>
+        </div>
+        <span class="badge b-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Väntar godkännande</span>
+      </div>
+      <div class="card-bd">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.2rem">
+          <div><div class="lbl">Tjänst</div><div style="font-weight:700">${u.typ}</div></div>
+          <div><div class="lbl">Timmar</div><div style="font-weight:700">${u.timmar}h</div></div>
+          <div><div class="lbl">Timlön</div><div style="font-weight:700">${fmtN(u.timlön)}/h</div></div>
+          <div><div class="lbl">Totalt</div><div style="font-weight:800;color:var(--navy);font-size:1.1rem">${fmtN(u.belopp)}</div></div>
+        </div>
+        <div style="padding:.85rem;background:var(--bg);border-radius:6px;font-size:.85rem;color:var(--mid);margin-bottom:1.1rem">
+          <strong style="color:var(--text)">Beskrivning:</strong> ${u.beskrivning}
+        </div>
+        <div style="padding:.7rem;background:var(--abg);border-radius:6px;font-size:.78rem;color:var(--atxt);margin-bottom:1.1rem">
+          <span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Ni faktureras <strong>${fmtN(u.belopp)}</strong> + moms av Invoicery Business. Konsulten erhåller lön efter avdrag för avgifter och skatt.
+        </div>
+        <div style="display:flex;gap:.75rem">
+          <button class="btn btn-ok" onclick="godkannUppdrag('${u.id}')">✓ Godkänn uppdrag</button>
+          <button class="btn btn-dn" onclick="avvisaUppdrag('${u.id}')">✗ Avvisa</button>
+          <button class="btn btn-gh" onclick="begärÄndring('${u.id}')">↩ Begär ändring</button>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function godkannUppdrag(id){
+  const ups=getUppdrag();
+  const u=ups.find(x=>x.id===id);
+  if(u){u.status='godkänt';u.godkändDatum=new Date().toISOString().slice(0,10);}
+  saveUppdrag(ups);
+  updBadges();
+  go('f-godkann');
+}
+function avvisaUppdrag(id){
+  if(!confirm('Är du säker på att du vill avvisa uppdraget?')) return;
+  const ups=getUppdrag();
+  const u=ups.find(x=>x.id===id);
+  if(u) u.status='avvisat';
+  saveUppdrag(ups);
+  updBadges();
+  go('f-godkann');
+}
+function begärÄndring(id){
+  alert('Funktion: Skicka meddelande till konsulten om önskad ändring. (Implementeras med notifikationssystem.)');
+}
+
+function fAlla(){
+  const ups=getUppdrag().filter(u=>u.foretagId===ME.id);
+  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></div><h3>Inga uppdrag ännu</h3><p>Uppdrag från konsulter visas här.</p></div>`;
+  return `
+  <div class="card">
+    <div class="card-hd"><span class="card-title">Alla uppdrag (${ups.length})</span></div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>Konsult</th><th>Typ</th><th>Period</th><th>Timmar</th><th>Belopp</th><th>Status</th><th>Datum</th></tr></thead>
+        <tbody>
+          ${ups.map(u=>`<tr>
+            <td style="font-weight:700;font-size:.75rem">${u.id}</td>
+            <td>${u.konsultName}</td>
+            <td><span class="badge b-bl">${u.typ}</span></td>
+            <td>${u.period}</td>
+            <td>${u.timmar}h</td>
+            <td style="font-weight:700">${fmtN(u.belopp)}</td>
+            <td>${statusBadge(u.status)}</td>
+            <td style="color:var(--muted)">${u.skapadDatum}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function fFakturor(){
+  const ups=getUppdrag().filter(u=>u.foretagId===ME.id&&['godkänt','utbetalt'].includes(u.status));
+  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></div><h3>Inga fakturor ännu</h3><p>Fakturor skapas när uppdrag godkänts.</p></div>`;
+  const tot=ups.reduce((a,u)=>a+u.belopp,0);
+  return `
+  <div class="card">
+    <div class="card-hd">
+      <span class="card-title">Fakturor från Invoicery Business</span>
+      <div style="font-size:.82rem;color:var(--muted)">Totalt: <strong style="color:var(--navy)">${fmtN(tot*1.25)} inkl. moms</strong></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Faktura</th><th>Avser</th><th>Konsult</th><th>Period</th><th>Belopp ex moms</th><th>Moms</th><th>Totalt</th><th>Status</th></tr></thead>
+        <tbody>
+          ${ups.map((u,i)=>`<tr>
+            <td style="font-weight:700">IBFAKT-2026-${(i+1).toString().padStart(3,'0')}</td>
+            <td>${u.typ}</td>
+            <td>${u.konsultName}</td>
+            <td>${u.period}</td>
+            <td>${fmtN(u.belopp)}</td>
+            <td>${fmtN(u.belopp*0.25)}</td>
+            <td style="font-weight:800">${fmtN(u.belopp*1.25)}</td>
+            <td>${u.status==='utbetalt'?'<span class="badge b-gn">✓ Betald</span>':'<span class="badge b-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Obetald</span>'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function fProfil(){
+  return `
+  <div class="card" style="max-width:600px">
+    <div class="card-hd"><span class="card-title">Företagsprofil</span><button class="btn btn-gh btn-sm">Redigera</button></div>
+    <div class="card-bd">
+      <div class="ig"><label class="lbl">Företagsnamn</label><input class="inp" value="${ME.name}"></div>
+      <div class="fg">
+        <div class="ig"><label class="lbl">Organisationsnummer</label><input class="inp" value="${ME.orgNr||'—'}"></div>
+        <div class="ig"><label class="lbl">Kontaktperson</label><input class="inp" value="${ME.contactName||''}"></div>
+      </div>
+      <div class="ig"><label class="lbl">E-post</label><input class="inp" value="${ME.email}" readonly style="background:var(--bg)"></div>
+      <div class="ig"><label class="lbl">Telefon</label><input class="inp" placeholder="+46 8 xxx xx xx"></div>
+      <div class="ig"><label class="lbl">Fakturaadress</label><input class="inp" placeholder="Gatuadress"></div>
+      <div class="fg">
+        <div class="ig"><label class="lbl">Postnummer</label><input class="inp" placeholder="XXX XX"></div>
+        <div class="ig"><label class="lbl">Stad</label><input class="inp" placeholder="Stockholm"></div>
+      </div>
+      <button class="btn btn-or">Spara uppgifter</button>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════ LANDING SCRIPTS ═══════════════════ */
+// Navbar scroll
+window.addEventListener('scroll',()=>{
+  document.getElementById('l-nav').classList.toggle('scrolled',window.scrollY>20);
+});
+
+// FAQ toggle
+window.toggleFaq=function(btn){
+  const a=btn.nextElementSibling;
+  const icon=btn.querySelector('.l-faq-icon');
+  a.classList.toggle('open');
+  icon.textContent=a.classList.contains('open')?'−':'+';
+}
+
+// Calculator
+window.calcLon=function(){
+  const inv=parseFloat(document.getElementById('calc-inv').value)||0;
+  const tax=parseFloat(document.getElementById('calc-tax').value)||32;
+  if(!inv){document.getElementById('calc-res').style.display='none';document.getElementById('calc-bd').innerHTML='';return;}
+  const avgift=inv*0.06;
+  const brutto=inv-avgift;
+  const socialavg=brutto*0.3142;
+  const lön=brutto-socialavg;
+  const skatt=lön*(tax/100);
+  const netto=lön-skatt;
+  document.getElementById('calc-bd').innerHTML=`
+    <div class="l-bdown">
+      <div class="l-brow"><span>Fakturerat belopp</span><span class="lbv">${fmtN(inv)}</span></div>
+      <div class="l-brow"><span>Invoicery Business-avgift (6%)</span><span class="lbv red">−${fmtN(avgift)}</span></div>
+      <div class="l-brow"><span>Bruttolön</span><span class="lbv">${fmtN(brutto)}</span></div>
+      <div class="l-brow"><span>Socialavgifter (31,42%)</span><span class="lbv red">−${fmtN(socialavg)}</span></div>
+      <div class="l-brow"><span>Lön före skatt</span><span class="lbv">${fmtN(lön)}</span></div>
+      <div class="l-brow"><span>Skatt (${tax}%)</span><span class="lbv red">−${fmtN(skatt)}</span></div>
+    </div>`;
+  document.getElementById('calc-res').style.display='block';
+  document.getElementById('calc-net').textContent=fmtN(netto);
+}
+
+/* ═══════════════════ INIT ═══════════════════ */
+seed();
+// Auto-login if session exists
+(function(){
+  const s=DB('IB_SESSION');
+  if(s){
+    if(s.role==='admin'){return;} // admin goes to separate page
+    ME=s;
+    launchPlatform();
+  }
+})();
+</script>
+</body>
+</html>

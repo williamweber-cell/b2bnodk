@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoicery Business — Superadmin</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#2b5f8e; --dark:#1c3d5a; --darker:#163348;
+  --orange:#f0a020; --orange-d:#d98d15;
+  --white:#fff; --bg:#f0f4f8; --card:#fff;
+  --border:#cfdce8; --text:#1c2e3e; --mid:#4a6478; --muted:#8a9baa;
+  --green:#16a34a; --gbg:#dcfce7; --gtxt:#14532d;
+  --red:#dc2626; --rbg:#fee2e2; --rtxt:#7f1d1d;
+  --amber:#d97706; --abg:#fef3c7; --atxt:#78350f;
+  --bluebg:#dbeafe; --bluetxt:#1e3a8a;
+  --purplebg:#f3f0ff; --purpletxt:#5b21b6;
+  --sh:0 2px 12px rgba(0,0,0,.07); --shlg:0 8px 40px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Open Sans',sans-serif;color:var(--text);background:var(--bg)}
+.hidden{display:none!important}
+
+/* ══ SIDEBAR ══ */
+.sb{width:240px;flex-shrink:0;background:var(--darker);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto}
+.sb-logo{padding:1.15rem 1.2rem 1rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.sb-logo-mark{width:32px;height:32px;background:var(--orange);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.02em}
+.sb-logo-wrap{display:flex;flex-direction:column;line-height:1.15}
+.sb-logo-name{font-size:.88rem;font-weight:800;color:#fff}
+.sb-logo-sub{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase}
+.sb-admin-pill{margin:.75rem 1.2rem;background:rgba(240,160,32,.15);border:1px solid rgba(240,160,32,.3);border-radius:4px;padding:.3rem .75rem;display:flex;align-items:center;gap:.45rem;font-size:.7rem;font-weight:700;color:var(--orange)}
+.sb-section{padding:.75rem 1.2rem .2rem;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.22)}
+.sb-nav{list-style:none;padding:.25rem 0}
+.sb-nav li button{display:flex;align-items:center;gap:.62rem;width:100%;padding:.58rem 1.2rem;font-size:.82rem;font-weight:600;color:rgba(255,255,255,.52);background:transparent;border:none;cursor:pointer;font-family:inherit;transition:all .15s;text-align:left}
+.sb-nav li button:hover{color:#fff;background:rgba(255,255,255,.06)}
+.sb-nav li button.active{color:#fff;background:rgba(43,95,142,.5);border-right:3px solid var(--orange)}
+.sb-ni{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.7}
+.sb-nav li button.active .sb-ni,.sb-nav li button:hover .sb-ni{opacity:1}
+.sb-ni svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.sb-badge{margin-left:auto;background:var(--orange);color:#fff;border-radius:100px;font-size:.6rem;font-weight:800;padding:.06rem .42rem;min-width:16px;text-align:center;line-height:1.5}
+.sb-badge-gn{background:var(--green)}
+.sb-bot{margin-top:auto;padding:1rem;border-top:1px solid rgba(255,255,255,.07)}
+.sb-user{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
+.sb-name{font-size:.8rem;font-weight:700;color:#fff;line-height:1.2}
+.sb-role{font-size:.64rem;color:rgba(255,255,255,.38)}
+.sb-bot .btn-gh{color:rgba(255,255,255,.72)!important;border-color:rgba(255,255,255,.18)!important}
+.sb-bot .btn-gh:hover{color:#fff!important;border-color:rgba(255,255,255,.45)!important;background:rgba(255,255,255,.06)!important}
+
+/* ══ MAIN ══ */
+.app{display:flex;min-height:100vh}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:.82rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.topbar-left{display:flex;align-items:center;gap:.75rem}
+.tb-back{display:flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:600;color:var(--mid);text-decoration:none;padding:.3rem .6rem;border-radius:4px;transition:all .15s}
+.tb-back:hover{background:var(--bg);color:var(--navy)}
+.tb-back svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.tb-divider{width:1px;height:20px;background:var(--border)}
+.tb-title{font-size:1rem;font-weight:800;color:var(--dark)}
+.tb-sub{font-size:.73rem;color:var(--muted);margin-top:.03rem}
+.tb-right{display:flex;align-items:center;gap:.75rem}
+.tb-date{font-size:.76rem;color:var(--muted)}
+.tb-alert{display:flex;align-items:center;gap:.35rem;background:var(--abg);border:1px solid #fde68a;color:var(--atxt);padding:.3rem .75rem;border-radius:4px;font-size:.75rem;font-weight:700;cursor:pointer}
+.tb-alert svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.pg{padding:1.75rem 2rem;flex:1}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:.38rem;padding:.5rem 1.05rem;border-radius:5px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;transition:all .15s;font-family:inherit;text-decoration:none;white-space:nowrap}
+.btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.btn-or{background:var(--orange);color:#fff;box-shadow:0 2px 8px rgba(240,160,32,.25)}
+.btn-or:hover{background:var(--orange-d);transform:translateY(-1px)}
+.btn-nv{background:var(--navy);color:#fff}
+.btn-nv:hover{background:var(--dark)}
+.btn-gh{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-gh:hover{border-color:var(--navy);color:var(--navy)}
+.btn-ok{background:var(--green);color:#fff}
+.btn-ok:hover{background:#15803d}
+.btn-dn{background:var(--red);color:#fff}
+.btn-dn:hover{background:#b91c1c}
+.btn-am{background:var(--amber);color:#fff}
+.btn-am:hover{background:#b45309}
+.btn-sm{padding:.32rem .78rem;font-size:.74rem}
+.btn-lg{padding:.75rem 1.8rem;font-size:.9rem}
+.btn-fw{width:100%;justify-content:center}
+
+/* ══ INPUTS ══ */
+.inp{width:100%;padding:.56rem .82rem;border:1.5px solid var(--border);border-radius:5px;font-size:.86rem;font-family:inherit;color:var(--text);background:#fff;transition:border-color .2s,box-shadow .2s}
+.inp:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(43,95,142,.1)}
+.inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;min-height:72px}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%234a6478' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .72rem center;padding-right:1.9rem}
+.lbl{display:block;font-size:.72rem;font-weight:700;color:var(--mid);margin-bottom:.28rem}
+.ig{margin-bottom:.85rem}
+
+/* ══ CARDS ══ */
+.card{background:var(--card);border-radius:10px;border:1px solid var(--border);box-shadow:var(--sh)}
+.card-hd{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.card-bd{padding:1.35rem}
+.card-title{font-size:.88rem;font-weight:700;color:var(--text)}
+.card-sub{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+
+/* ══ STATS ══ */
+.stats-g{display:grid;gap:1rem;margin-bottom:1.65rem}
+.stats-g-4{grid-template-columns:repeat(4,1fr)}
+.stats-g-3{grid-template-columns:repeat(3,1fr)}
+.stat{background:#fff;border-radius:10px;border:1px solid var(--border);padding:1.15rem 1.3rem;box-shadow:var(--sh);position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-bl::before{background:var(--navy)}
+.stat-or::before{background:var(--orange)}
+.stat-gn::before{background:var(--green)}
+.stat-rd::before{background:var(--red)}
+.stat-am::before{background:var(--amber)}
+.stat-pu::before{background:#7c3aed}
+.stat-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:.65rem}
+.stat-ico svg{width:19px;height:19px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.ico-bl{background:rgba(43,95,142,.1);color:var(--navy)}
+.ico-or{background:#fff7ed;color:var(--orange)}
+.ico-gn{background:var(--gbg);color:var(--green)}
+.ico-rd{background:var(--rbg);color:var(--red)}
+.ico-am{background:var(--abg);color:var(--amber)}
+.ico-pu{background:var(--purplebg);color:#7c3aed}
+.stat-lbl{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.2rem}
+.stat-val{font-size:1.9rem;font-weight:800;color:var(--dark);letter-spacing:-.04em;line-height:1}
+.stat-d{font-size:.7rem;color:var(--muted);margin-top:.25rem;display:flex;align-items:center;gap:.3rem}
+.stat-d.up{color:var(--green)}
+.stat-d svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+
+/* ══ TABLE ══ */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:.62rem 1rem;text-align:left;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);background:#f7fafc;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:.78rem 1rem;font-size:.83rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafcfe}
+.tbl-wrap{overflow-x:auto}
+
+/* ══ BADGES ══ */
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.17rem .6rem;border-radius:100px;font-size:.67rem;font-weight:700;white-space:nowrap}
+.badge svg{width:10px;height:10px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.b-am{background:var(--abg);color:var(--atxt)}
+.b-gn{background:var(--gbg);color:var(--gtxt)}
+.b-rd{background:var(--rbg);color:var(--rtxt)}
+.b-bl{background:var(--bluebg);color:var(--bluetxt)}
+.b-gr{background:#f1f5f9;color:var(--mid)}
+.b-pu{background:var(--purplebg);color:var(--purpletxt)}
+.b-or{background:#fff7ed;color:#c2410c}
+
+/* ══ MISC ══ */
+.empty{text-align:center;padding:3.5rem 1rem;color:var(--muted)}
+.empty-ico{margin-bottom:.85rem;opacity:.4}
+.empty-ico svg{width:48px;height:48px;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.empty h3{font-size:.95rem;font-weight:700;color:var(--mid);margin-bottom:.35rem}
+.empty p{font-size:.83rem}
+.alert{padding:.75rem 1rem;border-radius:6px;font-size:.83rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:flex-start;gap:.55rem}
+.alert svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0;margin-top:.05rem}
+.alert-ok{background:var(--gbg);color:var(--gtxt);border:1px solid #bbf7d0}
+.alert-am{background:var(--abg);color:var(--atxt);border:1px solid #fde68a}
+.alert-rd{background:var(--rbg);color:var(--rtxt);border:1px solid #fecaca}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.fg-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.85rem}
+.fc{grid-column:1/-1}
+/* Search bar */
+.search-bar{display:flex;align-items:center;gap:.6rem;background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:.42rem .75rem;transition:border-color .2s;max-width:320px}
+.search-bar:focus-within{border-color:var(--navy)}
+.search-bar svg{width:15px;height:15px;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.search-bar input{border:none;outline:none;font-size:.84rem;font-family:inherit;color:var(--text);background:transparent;width:100%}
+.search-bar input::placeholder{color:var(--muted)}
+/* Activity feed */
+.activity{display:flex;flex-direction:column;gap:.65rem}
+.activity-item{display:flex;align-items:flex-start;gap:.75rem;padding:.65rem;border-radius:7px;background:var(--bg)}
+.act-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.act-ico svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.act-text{flex:1;min-width:0}
+.act-title{font-size:.82rem;font-weight:700;color:var(--text)}
+.act-sub{font-size:.74rem;color:var(--mid);margin-top:.08rem}
+.act-time{font-size:.7rem;color:var(--muted);flex-shrink:0;padding-top:.1rem}
+/* Tab nav */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.5rem}
+.tab{padding:.6rem 1.2rem;font-size:.83rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab:hover{color:var(--navy)}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+/* Payroll card */
+.proll-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.proll-row:last-child{border-bottom:none}
+.proll-info{display:flex;flex-direction:column;gap:.15rem}
+.proll-name{font-size:.85rem;font-weight:700;color:var(--text)}
+.proll-meta{font-size:.74rem;color:var(--mid)}
+.proll-amounts{display:flex;align-items:center;gap:1.5rem}
+.proll-amt{text-align:right}
+.proll-amt-lbl{font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.proll-amt-val{font-size:.92rem;font-weight:800;color:var(--dark)}
+/* Modal */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px)}
+.modal-box{background:#fff;border-radius:12px;width:100%;max-width:520px;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden}
+.modal-hd{background:var(--dark);padding:1.3rem 1.6rem;display:flex;align-items:center;justify-content:space-between}
+.modal-hd-title{font-size:.95rem;font-weight:800;color:#fff}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:1.3rem;line-height:1;transition:color .15s}
+.modal-close:hover{color:#fff}
+.modal-bd{padding:1.5rem}
+/* Progress bar */
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:.5rem}
+.progress-fill{height:100%;border-radius:3px;background:var(--orange);transition:width .4s ease}
+
+@media(max-width:900px){
+  .sb{transform:translateX(-100%);transition:transform .3s}
+  .sb.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .stats-g-4{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sb">
+  <a class="sb-logo" href="invoicery-business.html">
+    <div class="sb-logo-mark">IB</div>
+    <div class="sb-logo-wrap">
+      <div class="sb-logo-name">Invoicery Business</div>
+      <div class="sb-logo-sub">Superadmin</div>
+    </div>
+  </a>
+  <div class="sb-admin-pill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Superadmin-åtkomst
+  </div>
+
+  <div class="sb-section">Översikt</div>
+  <ul class="sb-nav">
+    <li><button onclick="go('a-dash')" data-v="a-dash">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+      Dashboard
+    </button></li>
+    <li><button onclick="go('a-activity')" data-v="a-activity">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      Aktivitetslogg
+    </button></li>
+  </ul>
+
+  <div class="sb-section">Uppdragshantering</div>
+  <ul class="sb-nav">
+    <li><button onclick="go('a-godkann')" data-v="a-godkann">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+      Godkänn uppdrag
+      <span class="sb-badge" id="adm-badge-godkann">0</span>
+    </button></li>
+    <li><button onclick="go('a-alla-uppdrag')" data-v="a-alla-uppdrag">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+      Alla uppdrag
+    </button></li>
+  </ul>
+
+  <div class="sb-section">Användare</div>
+  <ul class="sb-nav">
+    <li><button onclick="go('a-konsulter')" data-v="a-konsulter">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      Konsulter
+    </button></li>
+    <li><button onclick="go('a-foretag')" data-v="a-foretag">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
+      Företag
+    </button></li>
+  </ul>
+
+  <div class="sb-section">Ekonomi</div>
+  <ul class="sb-nav">
+    <li><button onclick="go('a-lon')" data-v="a-lon">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+      Lönekörning
+      <span class="sb-badge sb-badge-gn" id="adm-badge-lon">4</span>
+    </button></li>
+    <li><button onclick="go('a-fakturor')" data-v="a-fakturor">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+      Fakturor
+    </button></li>
+  </ul>
+
+  <div class="sb-section">System</div>
+  <ul class="sb-nav">
+    <li><button onclick="go('a-tjanster')" data-v="a-tjanster">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></span>
+      Tjänster & API
+    </button></li>
+    <li><button onclick="go('a-inst')" data-v="a-inst">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93 17.66 6.34A7.5 7.5 0 1 0 6.34 17.66l-1.41 1.41"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/></svg></span>
+      Inställningar
+    </button></li>
+  </ul>
+
+  <div class="sb-bot">
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av">AL</div>
+      <div>
+        <div class="sb-name" id="sb-nm">Anna Lindström</div>
+        <div class="sb-role">Superadministratör</div>
+      </div>
+    </div>
+    <button class="btn btn-gh btn-sm btn-fw" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logga ut
+    </button>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="invoicery-business.html" class="tb-back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Tillbaka
+      </a>
+      <div class="tb-divider"></div>
+      <div>
+        <div class="tb-title" id="tb-ttl">Dashboard</div>
+        <div class="tb-sub" id="tb-sub">Plattformsöversikt</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-date" id="tb-date"></div>
+      <div class="tb-alert" id="tb-alert" onclick="go('a-godkann')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alert-txt">2 uppdrag väntar</span>
+      </div>
+    </div>
+  </div>
+  <div class="pg" id="pg"></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- MODAL SLOT -->
+<div id="mslot"></div>
+
+<script>
+/* ═══ DATA ═══ */
+function DB(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+function DBs(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function getUsers(){return DB('IB_USERS')||[]}
+function getUppdrag(){return DB('IB_UPPDRAG')||[]}
+function saveUppdrag(a){DBs('IB_UPPDRAG',a)}
+function saveUsers(a){DBs('IB_USERS',a)}
+
+function seed(){
+  if(DB('IB_SEEDED')) return;
+  DBs('IB_USERS',[
+    {id:'U1',email:'admin@invoicerybusiness.se',password:'admin123',role:'admin',name:'Anna Lindström'},
+    {id:'U2',email:'sara@konsult.se',password:'klient123',role:'konsult',name:'Sara Bergström',phone:'+46 70 123 45 67',city:'Stockholm',status:'active',joined:'2025-11-15'},
+    {id:'U3',email:'erik@konsult.se',password:'klient123',role:'konsult',name:'Erik Johansson',phone:'+46 73 987 65 43',city:'Göteborg',status:'active',joined:'2026-01-08'},
+    {id:'U4',email:'info@foretag.se',password:'kund123',role:'foretag',name:'Lides Event AB',contactName:'Maria Lide',orgNr:'559123-4567',status:'active',joined:'2025-10-01'},
+    {id:'U5',email:'hr@prisjakt.se',password:'kund123',role:'foretag',name:'Prisjakt Sverige AB',contactName:'Jonas Svensson',orgNr:'556789-0123',status:'active',joined:'2025-12-20'},
+  ]);
+  DBs('IB_UPPDRAG',[
+    {id:'UPP-2026-001',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U4',foretagName:'Lides Event AB',typ:'SalaryInvoicing',beskrivning:'Koordination och logistik för evenemang april 2026',timmar:40,timlön:680,belopp:27200,period:'April 2026',status:'godkänt',skapadDatum:'2026-04-01',godkändDatum:'2026-04-03',adminNote:''},
+    {id:'UPP-2026-002',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U5',foretagName:'Prisjakt Sverige AB',typ:'SalaryInvoicing',beskrivning:'Frontend-utveckling och UX-analys',timmar:32,timlön:780,belopp:24960,period:'April 2026',status:'väntar_godkännande',skapadDatum:'2026-04-05',godkändDatum:'',adminNote:''},
+    {id:'UPP-2026-003',konsultId:'U3',konsultName:'Erik Johansson',foretagId:'U4',foretagName:'Lides Event AB',typ:'Excel-import',beskrivning:'Teknisk support och riggning',timmar:24,timlön:590,belopp:14160,period:'April 2026',status:'väntar_godkännande',skapadDatum:'2026-04-06',godkändDatum:'',adminNote:''},
+    {id:'UPP-2026-004',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U4',foretagName:'Lides Event AB',typ:'SalaryInvoicing',beskrivning:'Projektledning Q1 2026',timmar:60,timlön:720,belopp:43200,period:'Mars 2026',status:'utbetalt',skapadDatum:'2026-03-01',godkändDatum:'2026-03-04',adminNote:'Lönekörd 2026-03-15'},
+  ]);
+  DBs('IB_SEEDED','1');
+}
+
+/* ═══ HELPERS ═══ */
+function fmt(n){return Number(n).toLocaleString('sv-SE',{style:'currency',currency:'SEK',maximumFractionDigits:0})}
+function fmtN(n){return Number(n).toLocaleString('sv-SE',{maximumFractionDigits:0})+' kr'}
+function statusBadge(s){
+  const map={
+    'godkänt':'<span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Godkänt</span>',
+    'väntar_godkännande':'<span class="badge b-am"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Väntar</span>',
+    'utbetalt':'<span class="badge b-bl"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Utbetalt</span>',
+    'avvisat':'<span class="badge b-rd"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Avvisat</span>',
+  };
+  return map[s]||`<span class="badge b-gr">${s}</span>`;
+}
+function typBadge(t){
+  const map={
+    'SalaryInvoicing':'<span class="badge b-bl">SalaryInvoicing</span>',
+    'Excel-import':'<span class="badge b-pu">Excel-import</span>',
+    'API-integration':'<span class="badge b-or">API-integration</span>',
+    'Workforce Management':'<span class="badge b-gn">Workforce Mgmt</span>',
+  };
+  return map[t]||`<span class="badge b-gr">${t}</span>`;
+}
+
+/* ═══ ROUTING ═══ */
+const TITLES = {
+  'a-dash':['Dashboard','Plattformsöversikt'],
+  'a-activity':['Aktivitetslogg','Alla händelser i realtid'],
+  'a-godkann':['Godkänn uppdrag','Granska och behandla inkomna uppdrag'],
+  'a-alla-uppdrag':['Alla uppdrag','Komplett historik och status'],
+  'a-konsulter':['Konsulter','Hantera registrerade konsulter'],
+  'a-foretag':['Företag','Hantera registrerade företag'],
+  'a-lon':['Lönekörning','Bearbeta och betala ut löner'],
+  'a-fakturor':['Fakturor','Alla fakturor från Invoicery Business'],
+  'a-tjanster':['Tjänster & API','Plattformstjänster och API-inställningar'],
+  'a-inst':['Inställningar','Systeminställningar och konfiguration'],
+};
+
+function go(v){
+  document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  const t=TITLES[v]||[v,''];
+  document.getElementById('tb-ttl').textContent=t[0];
+  document.getElementById('tb-sub').textContent=t[1];
+  const el=document.getElementById('pg');
+  if(v==='a-dash') el.innerHTML=aDash();
+  else if(v==='a-activity') el.innerHTML=aActivity();
+  else if(v==='a-godkann') el.innerHTML=aGodkann();
+  else if(v==='a-alla-uppdrag') el.innerHTML=aAllaUppdrag();
+  else if(v==='a-konsulter') el.innerHTML=aKonsulter();
+  else if(v==='a-foretag') el.innerHTML=aForetag();
+  else if(v==='a-lon') el.innerHTML=aLon();
+  else if(v==='a-fakturor') el.innerHTML=aFakturor();
+  else if(v==='a-tjanster') el.innerHTML=aTjanster();
+  else if(v==='a-inst') el.innerHTML=aInst();
+  window.scrollTo(0,0);
+  updBadges();
+}
+
+function updBadges(){
+  const ups=getUppdrag();
+  const väntar=ups.filter(u=>u.status==='väntar_godkännande').length;
+  document.getElementById('adm-badge-godkann').textContent=väntar;
+  document.getElementById('adm-badge-godkann').style.display=väntar?'':'none';
+  const alertEl=document.getElementById('tb-alert');
+  if(väntar){
+    alertEl.style.display='flex';
+    document.getElementById('alert-txt').textContent=`${väntar} uppdrag väntar`;
+  } else {
+    alertEl.style.display='none';
+  }
+}
+
+/* ═══════════════════════════════════════
+   VIEWS
+═══════════════════════════════════════ */
+
+function aDash(){
+  const ups=getUppdrag();
+  const users=getUsers();
+  const konsulter=users.filter(u=>u.role==='konsult');
+  const foretag=users.filter(u=>u.role==='foretag');
+  const väntar=ups.filter(u=>u.status==='väntar_godkännande');
+  const totVol=ups.reduce((a,u)=>a+u.belopp,0);
+  const avgift=totVol*0.06;
+
+  return `
+  <div class="stats-g stats-g-4" style="margin-bottom:1.5rem">
+    <div class="stat stat-bl">
+      <div class="stat-ico ico-bl"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+      <div class="stat-lbl">Totalt uppdrag</div>
+      <div class="stat-val">${ups.length}</div>
+      <div class="stat-d up"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Alla perioder</div>
+    </div>
+    <div class="stat stat-am">
+      <div class="stat-ico ico-am"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="stat-lbl">Väntar godkännande</div>
+      <div class="stat-val">${väntar.length}</div>
+      <div class="stat-d" style="color:var(--amber)">Behöver åtgärd</div>
+    </div>
+    <div class="stat stat-gn">
+      <div class="stat-ico ico-gn"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="stat-lbl">Aktiva användare</div>
+      <div class="stat-val">${konsulter.length + foretag.length}</div>
+      <div class="stat-d up">${konsulter.length} konsulter · ${foretag.length} företag</div>
+    </div>
+    <div class="stat stat-or">
+      <div class="stat-ico ico-or"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div class="stat-lbl">Intäkt (6% avgift)</div>
+      <div class="stat-val" style="font-size:1.2rem">${fmtN(avgift)}</div>
+      <div class="stat-d up">Av ${fmtN(totVol)} total volym</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1.2rem;margin-bottom:1.2rem">
+    <div class="card">
+      <div class="card-hd">
+        <div><div class="card-title">Senaste uppdrag</div><div class="card-sub">Realtidsöversikt</div></div>
+        <button class="btn btn-gh btn-sm" onclick="go('a-alla-uppdrag')">Visa alla</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>ID</th><th>Konsult</th><th>Företag</th><th>Belopp</th><th>Status</th></tr></thead>
+          <tbody>
+            ${ups.slice(0,5).map(u=>`<tr>
+              <td style="font-size:.74rem;font-weight:700;color:var(--muted)">${u.id}</td>
+              <td style="font-weight:600">${u.konsultName}</td>
+              <td style="color:var(--mid)">${u.foretagName}</td>
+              <td style="font-weight:700">${fmtN(u.belopp)}</td>
+              <td>${statusBadge(u.status)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Volym per tjänst</div></div>
+      <div class="card-bd">
+        ${['SalaryInvoicing','Excel-import','API-integration','Workforce Management'].map(typ=>{
+          const vol=ups.filter(u=>u.typ===typ).reduce((a,u)=>a+u.belopp,0);
+          const pct=totVol?Math.round((vol/totVol)*100):0;
+          return `<div style="margin-bottom:1rem">
+            <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+              <span style="font-size:.8rem;font-weight:700">${typ}</span>
+              <span style="font-size:.78rem;color:var(--mid)">${fmtN(vol)} <span style="color:var(--muted)">(${pct}%)</span></span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Snabbåtgärder</div></div>
+      <div class="card-bd" style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+        <button class="btn btn-or btn-fw" onclick="go('a-godkann')">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Godkänn uppdrag
+        </button>
+        <button class="btn btn-nv btn-fw" onclick="go('a-lon')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Lönekörning
+        </button>
+        <button class="btn btn-gh btn-fw" onclick="go('a-konsulter')">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Konsulter
+        </button>
+        <button class="btn btn-gh btn-fw" onclick="go('a-foretag')">
+          <svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/></svg> Företag
+        </button>
+        <button class="btn btn-gh btn-fw" onclick="go('a-fakturor')">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Fakturor
+        </button>
+        <button class="btn btn-gh btn-fw" onclick="go('a-tjanster')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg> Tjänster & API
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Systemstatus</div></div>
+      <div class="card-bd" style="display:flex;flex-direction:column;gap:.65rem">
+        ${[
+          {label:'Plattform',status:'Operativ',ok:true},
+          {label:'SalaryInvoicing API',status:'Operativ',ok:true},
+          {label:'Excel-import',status:'Operativ',ok:true},
+          {label:'Betalningssystem',status:'Operativ',ok:true},
+          {label:'E-postnotiser',status:'Operativ',ok:true},
+          {label:'Bankintegrationer',status:'Operativ',ok:true},
+        ].map(s=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--bg);border-radius:6px">
+            <span style="font-size:.82rem;font-weight:600">${s.label}</span>
+            <span class="badge ${s.ok?'b-gn':'b-rd'}">
+              <svg viewBox="0 0 24 24">${s.ok?'<polyline points="20 6 9 17 4 12"/>':'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'}</svg>
+              ${s.status}
+            </span>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function aActivity(){
+  const entries=[
+    {ico:'ok',title:'Sara Bergström skapade uppdrag UPP-2026-002',sub:'SalaryInvoicing · Prisjakt Sverige AB · 24 960 kr',time:'Idag 09:41'},
+    {ico:'ok',title:'Erik Johansson skapade uppdrag UPP-2026-003',sub:'Excel-import · Lides Event AB · 14 160 kr',time:'Idag 08:17'},
+    {ico:'gn',title:'Uppdrag UPP-2026-001 godkänt av Lides Event AB',sub:'Sara Bergström · 27 200 kr',time:'3 apr 14:22'},
+    {ico:'bl',title:'Lönekörning genomförd för UPP-2026-004',sub:'Sara Bergström · 43 200 kr',time:'15 mar 10:00'},
+    {ico:'usr',title:'Nytt företag registrerat: Prisjakt Sverige AB',sub:'Jonas Svensson · hr@prisjakt.se',time:'20 dec 2025'},
+    {ico:'usr',title:'Ny konsult registrerad: Erik Johansson',sub:'erik@konsult.se · Göteborg',time:'8 jan 2026'},
+  ];
+  const icoMap={
+    ok:{bg:'ico-am',svg:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'},
+    gn:{bg:'ico-gn',svg:'<polyline points="20 6 9 17 4 12"/>'},
+    bl:{bg:'ico-bl',svg:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
+    usr:{bg:'ico-or',svg:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'},
+  };
+  return `
+  <div class="card">
+    <div class="card-hd"><div class="card-title">Aktivitetslogg</div><div class="card-sub">Senaste händelser på plattformen</div></div>
+    <div class="card-bd">
+      <div class="activity">
+        ${entries.map(e=>`
+        <div class="activity-item">
+          <div class="act-ico ${icoMap[e.ico].bg}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icoMap[e.ico].svg}</svg></div>
+          <div class="act-text"><div class="act-title">${e.title}</div><div class="act-sub">${e.sub}</div></div>
+          <div class="act-time">${e.time}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function aGodkann(){
+  const ups=getUppdrag().filter(u=>u.status==='väntar_godkännande');
+  if(!ups.length) return `
+    <div class="card"><div class="card-bd">
+      <div class="empty">
+        <div class="empty-ico"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <h3>Allt klart!</h3><p>Inga uppdrag väntar på godkännande just nu.</p>
+      </div>
+    </div></div>`;
+  return `
+  <div class="alert alert-am">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>${ups.length} uppdrag väntar på administrativt godkännande innan lönekörning kan genomföras.</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:1rem">
+    ${ups.map(u=>{
+      const avgift=u.belopp*0.06;
+      const brutto=u.belopp-avgift;
+      const socialavg=brutto*0.3142;
+      const lön=brutto-socialavg;
+      return `
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">${u.konsultName} → ${u.foretagName}</div>
+            <div class="card-sub">${u.id} · Inkom ${u.skapadDatum}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.6rem">
+            ${typBadge(u.typ)}
+            ${statusBadge(u.status)}
+          </div>
+        </div>
+        <div class="card-bd">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;padding:.85rem;background:var(--bg);border-radius:8px;margin-bottom:1.1rem">
+            <div><div class="lbl">Period</div><div style="font-weight:700">${u.period}</div></div>
+            <div><div class="lbl">Timmar</div><div style="font-weight:700">${u.timmar}h</div></div>
+            <div><div class="lbl">Timlön</div><div style="font-weight:700">${fmtN(u.timlön)}/h</div></div>
+            <div><div class="lbl">Fakturabelopp</div><div style="font-weight:800;color:var(--navy)">${fmtN(u.belopp)}</div></div>
+            <div><div class="lbl">IB-avgift (6%)</div><div style="font-weight:700;color:var(--orange)">${fmtN(avgift)}</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.1rem">
+            <div style="padding:.85rem;background:var(--bg);border-radius:8px">
+              <div class="lbl" style="margin-bottom:.5rem">Ekonomisk fördelning</div>
+              <div style="display:flex;flex-direction:column;gap:.3rem;font-size:.8rem">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--mid)">Bruttolön till konsult</span><strong>${fmtN(brutto)}</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--mid)">Socialavgifter (31,42%)</span><strong style="color:var(--red)">−${fmtN(socialavg)}</strong></div>
+                <div style="display:flex;justify-content:space-between;padding-top:.3rem;border-top:1px solid var(--border)"><span style="color:var(--mid)">Lön före skatt</span><strong>${fmtN(lön)}</strong></div>
+              </div>
+            </div>
+            <div style="padding:.85rem;background:var(--bg);border-radius:8px">
+              <div class="lbl" style="margin-bottom:.5rem">Uppdragsbeskrivning</div>
+              <p style="font-size:.83rem;color:var(--mid);line-height:1.6">${u.beskrivning}</p>
+            </div>
+          </div>
+          <div class="ig">
+            <label class="lbl">Adminkommentar (valfritt)</label>
+            <input class="inp" id="note-${u.id}" placeholder="Lägg till intern notering...">
+          </div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <button class="btn btn-ok" onclick="admGodkann('${u.id}')">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Godkänn & skicka
+            </button>
+            <button class="btn btn-am" onclick="admSkickaKorr('${u.id}')">
+              <svg viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg> Be om korrigering
+            </button>
+            <button class="btn btn-dn" onclick="admAvvisa('${u.id}')">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Avvisa
+            </button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function admGodkann(id){
+  const ups=getUppdrag();
+  const u=ups.find(x=>x.id===id);
+  const noteEl=document.getElementById(`note-${id}`);
+  if(u){u.status='godkänt';u.godkändDatum=new Date().toISOString().slice(0,10);if(noteEl)u.adminNote=noteEl.value;}
+  saveUppdrag(ups);updBadges();go('a-godkann');
+}
+function admAvvisa(id){
+  if(!confirm('Avvisa uppdraget? Konsulten notifieras.')) return;
+  const ups=getUppdrag();const u=ups.find(x=>x.id===id);
+  if(u)u.status='avvisat';saveUppdrag(ups);updBadges();go('a-godkann');
+}
+function admSkickaKorr(id){
+  alert('Funktion: Skicka korrigeringsbegäran med meddelande till konsulten. (Implementeras med notifikationssystem.)');
+}
+
+function aAllaUppdrag(){
+  const ups=getUppdrag();
+  const filt=['alla','väntar_godkännande','godkänt','utbetalt','avvisat'];
+  return `
+  <div class="card">
+    <div class="card-hd">
+      <div><div class="card-title">Alla uppdrag (${ups.length})</div></div>
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Sök uppdrag..." oninput="filterUppdrag(this.value)" id="search-ups">
+        </div>
+        <select class="inp sel" style="width:auto;font-size:.8rem" onchange="filterUppdragStatus(this.value)">
+          <option value="">Alla statusar</option>
+          <option value="väntar_godkännande">Väntar</option>
+          <option value="godkänt">Godkänt</option>
+          <option value="utbetalt">Utbetalt</option>
+          <option value="avvisat">Avvisat</option>
+        </select>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl" id="ups-tbl">
+        <thead><tr><th>ID</th><th>Konsult</th><th>Företag</th><th>Typ</th><th>Period</th><th>Timmar</th><th>Belopp</th><th>IB-avgift</th><th>Status</th><th>Datum</th></tr></thead>
+        <tbody id="ups-tbody">
+          ${upsRows(ups)}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function upsRows(ups){
+  return ups.map(u=>`<tr data-konsult="${u.konsultName.toLowerCase()}" data-foretag="${u.foretagName.toLowerCase()}" data-id="${u.id.toLowerCase()}" data-status="${u.status}">
+    <td style="font-size:.73rem;font-weight:700;color:var(--muted)">${u.id}</td>
+    <td><div style="font-weight:700">${u.konsultName}</div></td>
+    <td style="color:var(--mid)">${u.foretagName}</td>
+    <td>${typBadge(u.typ)}</td>
+    <td>${u.period}</td>
+    <td style="color:var(--mid)">${u.timmar}h</td>
+    <td style="font-weight:800">${fmtN(u.belopp)}</td>
+    <td style="color:var(--orange);font-weight:700">${fmtN(u.belopp*0.06)}</td>
+    <td>${statusBadge(u.status)}</td>
+    <td style="color:var(--muted);font-size:.76rem">${u.skapadDatum}</td>
+  </tr>`).join('');
+}
+
+window.filterUppdrag=function(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('#ups-tbody tr').forEach(r=>{
+    const match=r.dataset.konsult.includes(q)||r.dataset.foretag.includes(q)||r.dataset.id.includes(q);
+    r.style.display=match?'':'none';
+  });
+}
+window.filterUppdragStatus=function(s){
+  document.querySelectorAll('#ups-tbody tr').forEach(r=>{
+    r.style.display=(!s||r.dataset.status===s)?'':'none';
+  });
+}
+
+function aKonsulter(){
+  const konsulter=getUsers().filter(u=>u.role==='konsult');
+  const ups=getUppdrag();
+  return `
+  <div class="card">
+    <div class="card-hd">
+      <div><div class="card-title">Konsulter (${konsulter.length})</div></div>
+      <div style="display:flex;gap:.6rem">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Sök konsult...">
+        </div>
+        <button class="btn btn-or btn-sm" onclick="openNyKonsult()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Lägg till
+        </button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Namn</th><th>E-post</th><th>Stad</th><th>Uppdrag</th><th>Total volym</th><th>Status</th><th>Registrerad</th><th></th></tr></thead>
+        <tbody>
+          ${konsulter.map(k=>{
+            const kupp=ups.filter(u=>u.konsultId===k.id);
+            const vol=kupp.reduce((a,u)=>a+u.belopp,0);
+            const ini=k.name.split(' ').map(n=>n[0]).join('').slice(0,2);
+            return `<tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:#fff;flex-shrink:0">${ini}</div>
+                  <div style="font-weight:700">${k.name}</div>
+                </div>
+              </td>
+              <td style="color:var(--mid)">${k.email}</td>
+              <td>${k.city||'—'}</td>
+              <td style="font-weight:700">${kupp.length}</td>
+              <td style="font-weight:700">${fmtN(vol)}</td>
+              <td><span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Aktiv</span></td>
+              <td style="color:var(--muted);font-size:.76rem">${k.joined||'—'}</td>
+              <td>
+                <button class="btn btn-gh btn-sm">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function openNyKonsult(){
+  document.getElementById('mslot').innerHTML=`
+  <div class="modal-ov" onclick="if(event.target===this)closeModal()">
+    <div class="modal-box">
+      <div class="modal-hd">
+        <div class="modal-hd-title">Lägg till konsult</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-bd">
+        <div class="fg">
+          <div class="ig"><label class="lbl">Förnamn</label><input class="inp" id="m-fn" placeholder="Sara"></div>
+          <div class="ig"><label class="lbl">Efternamn</label><input class="inp" id="m-ln" placeholder="Bergström"></div>
+        </div>
+        <div class="ig"><label class="lbl">E-post</label><input class="inp" id="m-em" type="email" placeholder="sara@konsult.se"></div>
+        <div class="ig"><label class="lbl">Telefon</label><input class="inp" id="m-ph" placeholder="+46 70 xxx xx xx"></div>
+        <div class="fg">
+          <div class="ig"><label class="lbl">Stad</label><input class="inp" id="m-ct" placeholder="Stockholm"></div>
+          <div class="ig"><label class="lbl">Lösenord</label><input class="inp" type="password" id="m-pw" placeholder="Temporärt lösenord"></div>
+        </div>
+        <div style="display:flex;gap:.65rem;margin-top:.5rem">
+          <button class="btn btn-or" onclick="spараKonsult()">Spara konsult</button>
+          <button class="btn btn-gh" onclick="closeModal()">Avbryt</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+window.spараKonsult=function(){
+  const fn=document.getElementById('m-fn').value.trim();
+  const ln=document.getElementById('m-ln').value.trim();
+  const em=document.getElementById('m-em').value.trim();
+  const ph=document.getElementById('m-ph').value.trim();
+  const ct=document.getElementById('m-ct').value.trim();
+  const pw=document.getElementById('m-pw').value;
+  if(!fn||!ln||!em||!pw){alert('Fyll i obligatoriska fält.');return;}
+  const users=getUsers();
+  if(users.find(u=>u.email===em)){alert('En användare med den e-postadressen finns redan.');return;}
+  users.push({id:'U'+Date.now(),email:em,password:pw,role:'konsult',name:`${fn} ${ln}`,phone:ph,city:ct,status:'active',joined:new Date().toISOString().slice(0,10)});
+  saveUsers(users);closeModal();go('a-konsulter');
+}
+window.closeModal=function(){document.getElementById('mslot').innerHTML='';}
+
+function aForetag(){
+  const foretag=getUsers().filter(u=>u.role==='foretag');
+  const ups=getUppdrag();
+  return `
+  <div class="card">
+    <div class="card-hd">
+      <div><div class="card-title">Företag (${foretag.length})</div></div>
+      <div style="display:flex;gap:.6rem">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Sök företag...">
+        </div>
+        <button class="btn btn-or btn-sm">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Lägg till
+        </button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Företag</th><th>Org.nr</th><th>Kontaktperson</th><th>E-post</th><th>Uppdrag</th><th>Total volym</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${foretag.map(f=>{
+            const fupp=ups.filter(u=>u.foretagId===f.id);
+            const vol=fupp.reduce((a,u)=>a+u.belopp,0);
+            const ini=f.name.split(' ').map(n=>n[0]).join('').slice(0,2);
+            return `<tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                  <div style="width:28px;height:28px;border-radius:7px;background:var(--dark);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;flex-shrink:0">${ini}</div>
+                  <div style="font-weight:700">${f.name}</div>
+                </div>
+              </td>
+              <td style="font-size:.76rem;color:var(--muted);font-weight:700">${f.orgNr||'—'}</td>
+              <td>${f.contactName||'—'}</td>
+              <td style="color:var(--mid)">${f.email}</td>
+              <td style="font-weight:700">${fupp.length}</td>
+              <td style="font-weight:700">${fmtN(vol)}</td>
+              <td><span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Aktiv</span></td>
+              <td>
+                <button class="btn btn-gh btn-sm">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function aLon(){
+  const ups=getUppdrag().filter(u=>u.status==='godkänt');
+  const tot=ups.reduce((a,u)=>a+u.belopp,0);
+  const avgifter=tot*0.06;
+  const brutto=tot-avgifter;
+  const social=brutto*0.3142;
+  const nettolöner=brutto-social;
+
+  return `
+  <div class="stats-g stats-g-3" style="margin-bottom:1.5rem">
+    <div class="stat stat-or">
+      <div class="stat-ico ico-or"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="stat-lbl">Att köra lön</div>
+      <div class="stat-val">${ups.length}</div>
+      <div class="stat-d">Godkända uppdrag</div>
+    </div>
+    <div class="stat stat-gn">
+      <div class="stat-ico ico-gn"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div class="stat-lbl">Nettolöner att betala</div>
+      <div class="stat-val" style="font-size:1.2rem">${fmtN(nettolöner)}</div>
+      <div class="stat-d">Efter skatt & avg.</div>
+    </div>
+    <div class="stat stat-bl">
+      <div class="stat-ico ico-bl"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+      <div class="stat-lbl">IB-intäkt denna körning</div>
+      <div class="stat-val" style="font-size:1.2rem">${fmtN(avgifter)}</div>
+      <div class="stat-d">6% serviceavgift</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1.2rem">
+    <div class="card">
+      <div class="card-hd">
+        <div><div class="card-title">Uppdrag klara för lönekörning</div><div class="card-sub">Godkända och redo för utbetalning</div></div>
+        ${ups.length?`<button class="btn btn-or" onclick="köraAllLon()">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Kör alla löner
+        </button>`:''}
+      </div>
+      ${ups.length===0?`<div class="card-bd"><div class="alert alert-ok"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Inga löner att köra just nu. Alla godkända uppdrag är utbetalda.</span></div></div>`:`
+      <div>
+        ${ups.map(u=>{
+          const avgift=u.belopp*0.06;
+          const brutto=u.belopp-avgift;
+          const social=brutto*0.3142;
+          const lön=brutto-social;
+          const skatt=lön*0.32;
+          const netto=lön-skatt;
+          return `<div class="proll-row" style="padding:.85rem 1.35rem">
+            <div class="proll-info">
+              <div class="proll-name">${u.konsultName}</div>
+              <div class="proll-meta">${u.id} · ${u.foretagName} · ${u.period} · ${u.typ}</div>
+            </div>
+            <div class="proll-amounts">
+              <div class="proll-amt"><div class="proll-amt-lbl">Faktura</div><div class="proll-amt-val">${fmtN(u.belopp)}</div></div>
+              <div class="proll-amt"><div class="proll-amt-lbl">IB-avgift</div><div class="proll-amt-val" style="color:var(--orange)">${fmtN(avgift)}</div></div>
+              <div class="proll-amt"><div class="proll-amt-lbl">Nettolön</div><div class="proll-amt-val" style="color:var(--green)">${fmtN(netto)}</div></div>
+              <button class="btn btn-ok btn-sm" onclick="köraEnLon('${u.id}')">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Kör
+              </button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`}
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Beräkningssammanfattning</div></div>
+      <div class="card-bd">
+        <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.1rem">
+          ${[
+            ['Total fakturering',fmtN(tot),''],
+            ['IB-serviceavgift (6%)',fmtN(avgifter),'var(--orange)'],
+            ['Bruttolöner',fmtN(brutto),''],
+            ['Socialavgifter (31,42%)',fmtN(social),'var(--red)'],
+            ['Löner före skatt',fmtN(nettolöner),'var(--navy)'],
+          ].map(([l,v,c])=>`
+            <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.82rem">
+              <span style="color:var(--mid)">${l}</span>
+              <strong style="${c?'color:'+c:''}">${v}</strong>
+            </div>`).join('')}
+        </div>
+        <div style="padding:.85rem;background:var(--gbg);border-radius:7px;font-size:.78rem;color:var(--gtxt)">
+          <strong>Obs:</strong> Skatteberäkning baseras på genomsnittlig skattesats (32%). Individuell skatt avräknas per konsults skattedeklaration.
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+window.köraEnLon=function(id){
+  if(!confirm('Genomför lönekörning för detta uppdrag?')) return;
+  const ups=getUppdrag();const u=ups.find(x=>x.id===id);
+  if(u){u.status='utbetalt';u.adminNote=(u.adminNote?u.adminNote+' · ':'')+`Lönekörd ${new Date().toISOString().slice(0,10)}`;}
+  saveUppdrag(ups);updBadges();go('a-lon');
+}
+window.köraAllLon=function(){
+  if(!confirm('Genomför lönekörning för alla godkända uppdrag?')) return;
+  const ups=getUppdrag();
+  ups.filter(u=>u.status==='godkänt').forEach(u=>{
+    u.status='utbetalt';u.adminNote=(u.adminNote?u.adminNote+' · ':'')+`Lönekörd ${new Date().toISOString().slice(0,10)}`;
+  });
+  saveUppdrag(ups);updBadges();go('a-lon');
+}
+
+function aFakturor(){
+  const ups=getUppdrag().filter(u=>['godkänt','utbetalt'].includes(u.status));
+  const tot=ups.reduce((a,u)=>a+(u.belopp*1.25),0);
+  return `
+  <div class="card">
+    <div class="card-hd">
+      <div><div class="card-title">Utgående fakturor</div><div class="card-sub">Totalt ${fmtN(tot)} inkl. moms</div></div>
+      <button class="btn btn-gh btn-sm">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportera
+      </button>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Fakturanr</th><th>Mottagare</th><th>Konsult</th><th>Period</th><th>Ex moms</th><th>Moms (25%)</th><th>Totalt</th><th>IB-avgift</th><th>Status</th></tr></thead>
+        <tbody>
+          ${ups.map((u,i)=>`<tr>
+            <td style="font-weight:700;font-size:.75rem">IBFAKT-2026-${(i+1).toString().padStart(3,'0')}</td>
+            <td style="font-weight:600">${u.foretagName}</td>
+            <td style="color:var(--mid)">${u.konsultName}</td>
+            <td>${u.period}</td>
+            <td>${fmtN(u.belopp)}</td>
+            <td style="color:var(--mid)">${fmtN(u.belopp*0.25)}</td>
+            <td style="font-weight:800">${fmtN(u.belopp*1.25)}</td>
+            <td style="color:var(--orange);font-weight:700">${fmtN(u.belopp*0.06)}</td>
+            <td>${u.status==='utbetalt'?`<span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Betald</span>`:`<span class="badge b-am"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Obetald</span>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function aTjanster(){
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem">
+    ${[
+      {name:'SalaryInvoicing',desc:'Samarbetsportal för företag och konsulter',status:'Aktiv',users:3,ico:'bl'},
+      {name:'Excel-import',desc:'Mallösning för löneunderlag via Excel',status:'Aktiv',users:1,ico:'pu'},
+      {name:'API-integration',desc:'Automatiserad systemintegration via REST API',status:'Aktiv',users:0,ico:'gn'},
+      {name:'Workforce Management',desc:'Heltäckande lösning med fullt arbetsgivaransvar',status:'Aktiv',users:0,ico:'or'},
+    ].map(s=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="card-title">${s.name}</div><div class="card-sub">${s.desc}</div></div>
+          <span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> ${s.status}</span>
+        </div>
+        <div class="card-bd">
+          <div style="display:flex;gap:1.5rem;margin-bottom:.85rem">
+            <div><div class="lbl">Aktiva användare</div><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${s.users}</div></div>
+            <div><div class="lbl">Tillgänglighet</div><div style="font-size:1rem;font-weight:700;color:var(--green)">99.9%</div></div>
+          </div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-gh btn-sm">Konfigurera</button>
+            <button class="btn btn-gh btn-sm">Visa loggar</button>
+          </div>
+        </div>
+      </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-hd"><div class="card-title">API-nycklar</div><div class="card-sub">Hantera externa integrationer</div><button class="btn btn-or btn-sm"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Ny nyckel</button></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Namn</th><th>Nyckel</th><th>Behörighet</th><th>Skapad</th><th>Senast använd</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700">Produktion</td>
+            <td><code style="font-size:.74rem;background:var(--bg);padding:.15rem .4rem;border-radius:3px">ib_live_••••••••••••3a9f</code></td>
+            <td><span class="badge b-bl">Läs & skriv</span></td>
+            <td style="color:var(--muted)">2026-01-01</td>
+            <td style="color:var(--muted)">Idag</td>
+            <td><span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Aktiv</span></td>
+            <td><button class="btn btn-gh btn-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button></td>
+          </tr>
+          <tr>
+            <td style="font-weight:700">Test</td>
+            <td><code style="font-size:.74rem;background:var(--bg);padding:.15rem .4rem;border-radius:3px">ib_test_••••••••••••8c2d</code></td>
+            <td><span class="badge b-pu">Endast läs</span></td>
+            <td style="color:var(--muted)">2026-03-15</td>
+            <td style="color:var(--muted)">Igår</td>
+            <td><span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Aktiv</span></td>
+            <td><button class="btn btn-gh btn-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function aInst(){
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Allmänna inställningar</div></div>
+      <div class="card-bd">
+        <div class="ig"><label class="lbl">Plattformsnamn</label><input class="inp" value="Invoicery Business"></div>
+        <div class="ig"><label class="lbl">Serviceavgift (%)</label><input class="inp" type="number" value="6"></div>
+        <div class="ig"><label class="lbl">Standardskattenivå (%)</label><input class="inp" type="number" value="32"></div>
+        <div class="ig"><label class="lbl">Fakturavaluta</label><select class="inp sel"><option>SEK — Svensk krona</option><option>NOK — Norsk krone</option><option>DKK — Dansk krone</option><option>EUR — Euro</option></select></div>
+        <div class="ig"><label class="lbl">Moms (%)</label><input class="inp" type="number" value="25"></div>
+        <button class="btn btn-or">Spara inställningar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Notifikationer</div></div>
+      <div class="card-bd">
+        ${[
+          ['Nytt uppdrag inkommet','E-post till admin vid nytt uppdrag',true],
+          ['Uppdrag godkänt','E-post till konsult vid godkännande',true],
+          ['Lön utbetald','E-post till konsult vid löneutbetalning',true],
+          ['Faktura förfallen','Påminnelse till företag',true],
+          ['Ny användare','Välkomstmejl automatiskt',false],
+        ].map(([t,d,on])=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:.83rem;font-weight:700">${t}</div>
+              <div style="font-size:.73rem;color:var(--muted)">${d}</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:36px;height:20px;cursor:pointer">
+              <input type="checkbox" ${on?'checked':''} style="opacity:0;width:0;height:0">
+              <span style="position:absolute;inset:0;background:${on?'var(--green)':'var(--border)'};border-radius:20px;transition:.2s"></span>
+              <span style="position:absolute;top:3px;left:${on?'19':'3'}px;width:14px;height:14px;background:#fff;border-radius:50%;transition:.2s"></span>
+            </label>
+          </div>`).join('')}
+        <button class="btn btn-or" style="margin-top:1rem">Spara</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Administratörer</div><button class="btn btn-or btn-sm"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Lägg till</button></div>
+      <div class="card-bd">
+        <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem;background:var(--bg);border-radius:7px">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff">AL</div>
+          <div>
+            <div style="font-size:.85rem;font-weight:700">Anna Lindström</div>
+            <div style="font-size:.74rem;color:var(--muted)">admin@invoicerybusiness.se</div>
+          </div>
+          <span class="badge b-or" style="margin-left:auto">Superadmin</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Säkerhet</div></div>
+      <div class="card-bd" style="display:flex;flex-direction:column;gap:.65rem">
+        <button class="btn btn-gh btn-fw">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Ändra lösenord
+        </button>
+        <button class="btn btn-gh btn-fw">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Aktivera tvåfaktorsinloggning
+        </button>
+        <button class="btn btn-gh btn-fw">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportera revisionslogg
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function logout(){
+  localStorage.removeItem('IB_SESSION');
+  window.location.href='invoicery-business.html';
+}
+
+/* ═══ INIT ═══ */
+seed();
+document.getElementById('tb-date').textContent=new Date().toLocaleDateString('sv-SE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+go('a-dash');
+</script>
+</body>
+</html>
