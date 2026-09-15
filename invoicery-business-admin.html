@@ -333,36 +333,17 @@ textarea.inp{resize:vertical;min-height:72px}
 <!-- MODAL SLOT -->
 <div id="mslot"></div>
 
+<script src="ib-core.js"></script>
 <script>
-/* ═══ DATA ═══ */
-function DB(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
-function DBs(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function getUsers(){return DB('IB_USERS')||[]}
-function getUppdrag(){return DB('IB_UPPDRAG')||[]}
-function saveUppdrag(a){DBs('IB_UPPDRAG',a)}
-function saveUsers(a){DBs('IB_USERS',a)}
+/* ═══ DATA ═══
+   Storage, seed data, payroll math and formatting live in ib-core.js,
+   shared with invoicery-business.html. Do not reimplement — see CLAUDE.md. */
+const {DB,DBs,getUsers,getUppdrag,getForetag,saveUppdrag,saveUsers,
+       seed,nextUppdragId,calcPayroll,calcPayrollBatch,fmt,fmtN,esc,today,STATUS}=IB;
 
-function seed(){
-  if(DB('IB_SEEDED')) return;
-  DBs('IB_USERS',[
-    {id:'U1',email:'admin@invoicerybusiness.se',password:'admin123',role:'admin',name:'Anna Lindström'},
-    {id:'U2',email:'sara@konsult.se',password:'klient123',role:'konsult',name:'Sara Bergström',phone:'+46 70 123 45 67',city:'Stockholm',status:'active',joined:'2025-11-15'},
-    {id:'U3',email:'erik@konsult.se',password:'klient123',role:'konsult',name:'Erik Johansson',phone:'+46 73 987 65 43',city:'Göteborg',status:'active',joined:'2026-01-08'},
-    {id:'U4',email:'info@foretag.se',password:'kund123',role:'foretag',name:'Lides Event AB',contactName:'Maria Lide',orgNr:'559123-4567',status:'active',joined:'2025-10-01'},
-    {id:'U5',email:'hr@prisjakt.se',password:'kund123',role:'foretag',name:'Prisjakt Sverige AB',contactName:'Jonas Svensson',orgNr:'556789-0123',status:'active',joined:'2025-12-20'},
-  ]);
-  DBs('IB_UPPDRAG',[
-    {id:'UPP-2026-001',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U4',foretagName:'Lides Event AB',typ:'SalaryInvoicing',beskrivning:'Koordination och logistik för evenemang april 2026',timmar:40,timlön:680,belopp:27200,period:'April 2026',status:'godkänt',skapadDatum:'2026-04-01',godkändDatum:'2026-04-03',adminNote:''},
-    {id:'UPP-2026-002',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U5',foretagName:'Prisjakt Sverige AB',typ:'SalaryInvoicing',beskrivning:'Frontend-utveckling och UX-analys',timmar:32,timlön:780,belopp:24960,period:'April 2026',status:'väntar_godkännande',skapadDatum:'2026-04-05',godkändDatum:'',adminNote:''},
-    {id:'UPP-2026-003',konsultId:'U3',konsultName:'Erik Johansson',foretagId:'U4',foretagName:'Lides Event AB',typ:'Excel-import',beskrivning:'Teknisk support och riggning',timmar:24,timlön:590,belopp:14160,period:'April 2026',status:'väntar_godkännande',skapadDatum:'2026-04-06',godkändDatum:'',adminNote:''},
-    {id:'UPP-2026-004',konsultId:'U2',konsultName:'Sara Bergström',foretagId:'U4',foretagName:'Lides Event AB',typ:'SalaryInvoicing',beskrivning:'Projektledning Q1 2026',timmar:60,timlön:720,belopp:43200,period:'Mars 2026',status:'utbetalt',skapadDatum:'2026-03-01',godkändDatum:'2026-03-04',adminNote:'Lönekörd 2026-03-15'},
-  ]);
-  DBs('IB_SEEDED','1');
-}
-
-/* ═══ HELPERS ═══ */
-function fmt(n){return Number(n).toLocaleString('sv-SE',{style:'currency',currency:'SEK',maximumFractionDigits:0})}
-function fmtN(n){return Number(n).toLocaleString('sv-SE',{maximumFractionDigits:0})+' kr'}
+/* ═══ HELPERS ═══
+   statusBadge/typBadge stay local — admin renders different badge markup
+   than the consultant app. */
 function statusBadge(s){
   const map={
     'godkänt':'<span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Godkänt</span>',
@@ -441,7 +422,7 @@ function aDash(){
   const foretag=users.filter(u=>u.role==='foretag');
   const väntar=ups.filter(u=>u.status==='väntar_godkännande');
   const totVol=ups.reduce((a,u)=>a+u.belopp,0);
-  const avgift=totVol*0.06;
+  const avgift=calcPayrollBatch(ups).serviceavgift;
 
   return `
   <div class="stats-g stats-g-4" style="margin-bottom:1.5rem">
@@ -482,9 +463,9 @@ function aDash(){
           <thead><tr><th>ID</th><th>Konsult</th><th>Företag</th><th>Belopp</th><th>Status</th></tr></thead>
           <tbody>
             ${ups.slice(0,5).map(u=>`<tr>
-              <td style="font-size:.74rem;font-weight:700;color:var(--muted)">${u.id}</td>
-              <td style="font-weight:600">${u.konsultName}</td>
-              <td style="color:var(--mid)">${u.foretagName}</td>
+              <td style="font-size:.74rem;font-weight:700;color:var(--muted)">${esc(u.id)}</td>
+              <td style="font-weight:600">${esc(u.konsultName)}</td>
+              <td style="color:var(--mid)">${esc(u.foretagName)}</td>
               <td style="font-weight:700">${fmtN(u.belopp)}</td>
               <td>${statusBadge(u.status)}</td>
             </tr>`).join('')}
@@ -604,16 +585,17 @@ function aGodkann(){
   </div>
   <div style="display:flex;flex-direction:column;gap:1rem">
     ${ups.map(u=>{
-      const avgift=u.belopp*0.06;
-      const brutto=u.belopp-avgift;
-      const socialavg=brutto*0.3142;
-      const lön=brutto-socialavg;
+      const p=calcPayroll(u.belopp);
+      const avgift=p.serviceavgift;
+      const brutto=p.lonebas;
+      const socialavg=p.arbetsgivaravgift;
+      const lön=p.bruttolon;
       return `
       <div class="card">
         <div class="card-hd">
           <div>
-            <div class="card-title">${u.konsultName} → ${u.foretagName}</div>
-            <div class="card-sub">${u.id} · Inkom ${u.skapadDatum}</div>
+            <div class="card-title">${esc(u.konsultName)} → ${esc(u.foretagName)}</div>
+            <div class="card-sub">${esc(u.id)} · Inkom ${esc(u.skapadDatum)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:.6rem">
             ${typBadge(u.typ)}
@@ -622,7 +604,7 @@ function aGodkann(){
         </div>
         <div class="card-bd">
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;padding:.85rem;background:var(--bg);border-radius:8px;margin-bottom:1.1rem">
-            <div><div class="lbl">Period</div><div style="font-weight:700">${u.period}</div></div>
+            <div><div class="lbl">Period</div><div style="font-weight:700">${esc(u.period)}</div></div>
             <div><div class="lbl">Timmar</div><div style="font-weight:700">${u.timmar}h</div></div>
             <div><div class="lbl">Timlön</div><div style="font-weight:700">${fmtN(u.timlön)}/h</div></div>
             <div><div class="lbl">Fakturabelopp</div><div style="font-weight:800;color:var(--navy)">${fmtN(u.belopp)}</div></div>
@@ -639,21 +621,21 @@ function aGodkann(){
             </div>
             <div style="padding:.85rem;background:var(--bg);border-radius:8px">
               <div class="lbl" style="margin-bottom:.5rem">Uppdragsbeskrivning</div>
-              <p style="font-size:.83rem;color:var(--mid);line-height:1.6">${u.beskrivning}</p>
+              <p style="font-size:.83rem;color:var(--mid);line-height:1.6">${esc(u.beskrivning)}</p>
             </div>
           </div>
           <div class="ig">
             <label class="lbl">Adminkommentar (valfritt)</label>
-            <input class="inp" id="note-${u.id}" placeholder="Lägg till intern notering...">
+            <input class="inp" id="note-${esc(u.id)}" placeholder="Lägg till intern notering...">
           </div>
           <div style="display:flex;gap:.75rem;flex-wrap:wrap">
-            <button class="btn btn-ok" onclick="admGodkann('${u.id}')">
+            <button class="btn btn-ok" onclick="admGodkann('${esc(u.id)}')">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Godkänn & skicka
             </button>
-            <button class="btn btn-am" onclick="admSkickaKorr('${u.id}')">
+            <button class="btn btn-am" onclick="admSkickaKorr('${esc(u.id)}')">
               <svg viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg> Be om korrigering
             </button>
-            <button class="btn btn-dn" onclick="admAvvisa('${u.id}')">
+            <button class="btn btn-dn" onclick="admAvvisa('${esc(u.id)}')">
               <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Avvisa
             </button>
           </div>
@@ -712,17 +694,17 @@ function aAllaUppdrag(){
 }
 
 function upsRows(ups){
-  return ups.map(u=>`<tr data-konsult="${u.konsultName.toLowerCase()}" data-foretag="${u.foretagName.toLowerCase()}" data-id="${u.id.toLowerCase()}" data-status="${u.status}">
-    <td style="font-size:.73rem;font-weight:700;color:var(--muted)">${u.id}</td>
-    <td><div style="font-weight:700">${u.konsultName}</div></td>
-    <td style="color:var(--mid)">${u.foretagName}</td>
+  return ups.map(u=>`<tr data-konsult="${u.konsultName.toLowerCase()}" data-foretag="${u.foretagName.toLowerCase()}" data-id="${u.id.toLowerCase()}" data-status="${esc(u.status)}">
+    <td style="font-size:.73rem;font-weight:700;color:var(--muted)">${esc(u.id)}</td>
+    <td><div style="font-weight:700">${esc(u.konsultName)}</div></td>
+    <td style="color:var(--mid)">${esc(u.foretagName)}</td>
     <td>${typBadge(u.typ)}</td>
-    <td>${u.period}</td>
+    <td>${esc(u.period)}</td>
     <td style="color:var(--mid)">${u.timmar}h</td>
     <td style="font-weight:800">${fmtN(u.belopp)}</td>
-    <td style="color:var(--orange);font-weight:700">${fmtN(u.belopp*0.06)}</td>
+    <td style="color:var(--orange);font-weight:700">${fmtN(calcPayroll(u.belopp).serviceavgift)}</td>
     <td>${statusBadge(u.status)}</td>
-    <td style="color:var(--muted);font-size:.76rem">${u.skapadDatum}</td>
+    <td style="color:var(--muted);font-size:.76rem">${esc(u.skapadDatum)}</td>
   </tr>`).join('');
 }
 
@@ -769,10 +751,10 @@ function aKonsulter(){
               <td>
                 <div style="display:flex;align-items:center;gap:.6rem">
                   <div style="width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:#fff;flex-shrink:0">${ini}</div>
-                  <div style="font-weight:700">${k.name}</div>
+                  <div style="font-weight:700">${esc(k.name)}</div>
                 </div>
               </td>
-              <td style="color:var(--mid)">${k.email}</td>
+              <td style="color:var(--mid)">${esc(k.email)}</td>
               <td>${k.city||'—'}</td>
               <td style="font-weight:700">${kupp.length}</td>
               <td style="font-weight:700">${fmtN(vol)}</td>
@@ -811,7 +793,7 @@ function openNyKonsult(){
           <div class="ig"><label class="lbl">Lösenord</label><input class="inp" type="password" id="m-pw" placeholder="Temporärt lösenord"></div>
         </div>
         <div style="display:flex;gap:.65rem;margin-top:.5rem">
-          <button class="btn btn-or" onclick="spараKonsult()">Spara konsult</button>
+          <button class="btn btn-or" onclick="sparaKonsult()">Spara konsult</button>
           <button class="btn btn-gh" onclick="closeModal()">Avbryt</button>
         </div>
       </div>
@@ -819,7 +801,7 @@ function openNyKonsult(){
   </div>`;
 }
 
-window.spараKonsult=function(){
+window.sparaKonsult=function(){
   const fn=document.getElementById('m-fn').value.trim();
   const ln=document.getElementById('m-ln').value.trim();
   const em=document.getElementById('m-em').value.trim();
@@ -864,12 +846,12 @@ function aForetag(){
               <td>
                 <div style="display:flex;align-items:center;gap:.6rem">
                   <div style="width:28px;height:28px;border-radius:7px;background:var(--dark);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;flex-shrink:0">${ini}</div>
-                  <div style="font-weight:700">${f.name}</div>
+                  <div style="font-weight:700">${esc(f.name)}</div>
                 </div>
               </td>
               <td style="font-size:.76rem;color:var(--muted);font-weight:700">${f.orgNr||'—'}</td>
               <td>${f.contactName||'—'}</td>
-              <td style="color:var(--mid)">${f.email}</td>
+              <td style="color:var(--mid)">${esc(f.email)}</td>
               <td style="font-weight:700">${fupp.length}</td>
               <td style="font-weight:700">${fmtN(vol)}</td>
               <td><span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Aktiv</span></td>
@@ -888,11 +870,12 @@ function aForetag(){
 
 function aLon(){
   const ups=getUppdrag().filter(u=>u.status==='godkänt');
-  const tot=ups.reduce((a,u)=>a+u.belopp,0);
-  const avgifter=tot*0.06;
-  const brutto=tot-avgifter;
-  const social=brutto*0.3142;
-  const nettolöner=brutto-social;
+  const b=calcPayrollBatch(ups);
+  const tot=b.fakturabelopp;
+  const avgifter=b.serviceavgift;
+  const brutto=b.lonebas;
+  const social=b.arbetsgivaravgift;
+  const nettolöner=b.nettolon;
 
   return `
   <div class="stats-g stats-g-3" style="margin-bottom:1.5rem">
@@ -928,22 +911,19 @@ function aLon(){
       ${ups.length===0?`<div class="card-bd"><div class="alert alert-ok"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Inga löner att köra just nu. Alla godkända uppdrag är utbetalda.</span></div></div>`:`
       <div>
         ${ups.map(u=>{
-          const avgift=u.belopp*0.06;
-          const brutto=u.belopp-avgift;
-          const social=brutto*0.3142;
-          const lön=brutto-social;
-          const skatt=lön*0.32;
-          const netto=lön-skatt;
+          const p=calcPayroll(u.belopp);
+          const avgift=p.serviceavgift;
+          const netto=p.nettolon;
           return `<div class="proll-row" style="padding:.85rem 1.35rem">
             <div class="proll-info">
-              <div class="proll-name">${u.konsultName}</div>
-              <div class="proll-meta">${u.id} · ${u.foretagName} · ${u.period} · ${u.typ}</div>
+              <div class="proll-name">${esc(u.konsultName)}</div>
+              <div class="proll-meta">${esc(u.id)} · ${esc(u.foretagName)} · ${esc(u.period)} · ${esc(u.typ)}</div>
             </div>
             <div class="proll-amounts">
               <div class="proll-amt"><div class="proll-amt-lbl">Faktura</div><div class="proll-amt-val">${fmtN(u.belopp)}</div></div>
               <div class="proll-amt"><div class="proll-amt-lbl">IB-avgift</div><div class="proll-amt-val" style="color:var(--orange)">${fmtN(avgift)}</div></div>
               <div class="proll-amt"><div class="proll-amt-lbl">Nettolön</div><div class="proll-amt-val" style="color:var(--green)">${fmtN(netto)}</div></div>
-              <button class="btn btn-ok btn-sm" onclick="köraEnLon('${u.id}')">
+              <button class="btn btn-ok btn-sm" onclick="köraEnLon('${esc(u.id)}')">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                 Kör
               </button>
@@ -959,9 +939,11 @@ function aLon(){
           ${[
             ['Total fakturering',fmtN(tot),''],
             ['IB-serviceavgift (6%)',fmtN(avgifter),'var(--orange)'],
-            ['Bruttolöner',fmtN(brutto),''],
+            ['Lönebas',fmtN(brutto),''],
             ['Socialavgifter (31,42%)',fmtN(social),'var(--red)'],
-            ['Löner före skatt',fmtN(nettolöner),'var(--navy)'],
+            ['Bruttolöner',fmtN(b.bruttolon),'var(--navy)'],
+            ['Preliminärskatt (32%)',fmtN(b.preliminarskatt),'var(--red)'],
+            ['Nettolöner att betala ut',fmtN(nettolöner),'var(--green)'],
           ].map(([l,v,c])=>`
             <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.82rem">
               <span style="color:var(--mid)">${l}</span>
@@ -993,7 +975,7 @@ window.köraAllLon=function(){
 
 function aFakturor(){
   const ups=getUppdrag().filter(u=>['godkänt','utbetalt'].includes(u.status));
-  const tot=ups.reduce((a,u)=>a+(u.belopp*1.25),0);
+  const tot=calcPayrollBatch(ups).fakturatotal;
   return `
   <div class="card">
     <div class="card-hd">
@@ -1009,13 +991,13 @@ function aFakturor(){
         <tbody>
           ${ups.map((u,i)=>`<tr>
             <td style="font-weight:700;font-size:.75rem">IBFAKT-2026-${(i+1).toString().padStart(3,'0')}</td>
-            <td style="font-weight:600">${u.foretagName}</td>
-            <td style="color:var(--mid)">${u.konsultName}</td>
-            <td>${u.period}</td>
+            <td style="font-weight:600">${esc(u.foretagName)}</td>
+            <td style="color:var(--mid)">${esc(u.konsultName)}</td>
+            <td>${esc(u.period)}</td>
             <td>${fmtN(u.belopp)}</td>
-            <td style="color:var(--mid)">${fmtN(u.belopp*0.25)}</td>
-            <td style="font-weight:800">${fmtN(u.belopp*1.25)}</td>
-            <td style="color:var(--orange);font-weight:700">${fmtN(u.belopp*0.06)}</td>
+            <td style="color:var(--mid)">${fmtN(calcPayroll(u.belopp).moms)}</td>
+            <td style="font-weight:800">${fmtN(calcPayroll(u.belopp).fakturatotal)}</td>
+            <td style="color:var(--orange);font-weight:700">${fmtN(calcPayroll(u.belopp).serviceavgift)}</td>
             <td>${u.status==='utbetalt'?`<span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Betald</span>`:`<span class="badge b-am"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Obetald</span>`}</td>
           </tr>`).join('')}
         </tbody>
