@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invoicery Business — Löne- & personaladministration i Norden</title>
+<title data-i18n="meta.title">Invoicery Business — Løn- & personaleadministration i Norden</title>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -22,6 +22,11 @@
   --ease-in-out:cubic-bezier(.77,0,.175,1);
   --ease-drawer:cubic-bezier(.32,.72,0,1);
   --dur-press:140ms; --dur-fast:180ms; --dur-base:220ms; --dur-modal:280ms;
+
+  --container:1200px;
+  --gutter:clamp(1.25rem,4vw,2.75rem);
+  --pad-x:max(var(--gutter),calc((100% - var(--container)) / 2));
+
 
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -433,18 +438,25 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 .l-modal-ov.open .l-modal-box{transform:none}
 
 /* ── faq accordion ───────────────────────────────────────────────────────
-   grid-template-rows 0fr→1fr animates to the content's real height. The
-   previous max-height:200px silently clipped longer Danish answers. */
+   Three approaches failed before this one, so the reasoning is worth keeping:
+
+   1. max-height:200px (original) silently clipped the longer Danish answers.
+   2. grid-template-rows 0fr→1fr resolves to 0 here — the grid container is
+      auto-height, so there is no free space for 1fr to claim.
+   3. Measuring scrollHeight at toggle time reads 0, because a collapsed
+      overflow:hidden panel reports no content height.
+
+   interpolate-size: allow-keywords lets height:auto animate directly. No
+   measurement, no cap, and it cannot clip whatever the copy length. Where it
+   is unsupported the panel snaps open instead of sliding — still correct,
+   just not animated. */
+:root{interpolate-size:allow-keywords}
 .l-faq-a{
-  display:grid;grid-template-rows:0fr;
-  padding:0 1.3rem;overflow:hidden;
-  transition:grid-template-rows var(--dur-base) var(--ease-out),
-             padding var(--dur-base) var(--ease-out);
+  height:0;overflow:hidden;
+  transition:height var(--dur-base) var(--ease-out);
 }
-.l-faq-a>*{min-height:0}
-.l-faq-item.open .l-faq-a{
-  grid-template-rows:1fr;padding:.3rem 1.3rem 1.1rem;
-}
+.l-faq-item.open .l-faq-a{height:auto}
+.l-faq-a p{padding:.2rem 1.3rem 1.15rem}
 .l-faq-icon{
   display:inline-block;
   transition:transform var(--dur-base) var(--ease-out);
@@ -496,6 +508,120 @@ tr.row-warn{background:rgba(217,119,6,.045)}
   .l-hero-visual{animation:none;opacity:1;transform:none}
   .l-modal-box{transform:none}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LAYOUT — container
+
+   Sections previously used `padding: 5.5rem 8vw`. On a 3261px monitor that
+   left a 2650px content box, so service cards ran to 1590px wide holding
+   14px type: a ~200 character line, roughly three times the readable limit.
+   Everything now centres at --container and keeps a gutter below that.
+   ═══════════════════════════════════════════════════════════════════════ */
+.l-nav{padding-inline:var(--pad-x)}
+.l-hero{padding-left:var(--pad-x);padding-right:var(--pad-x)}
+.l-trust{padding-inline:var(--pad-x)}
+.l-sec,.l-sec-gray,.l-sec-blue{padding-inline:var(--pad-x)}
+.l-cta{padding-inline:var(--pad-x)}
+.l-footer{padding-inline:var(--pad-x)}
+
+/* Hero: 100vh on a 1945px-tall window meant 700px of content floating in
+   1950px of navy. Cap it, and let the grid breathe instead. */
+.l-hero{
+  min-height:min(100svh,880px);
+  padding-top:calc(68px + clamp(2rem,5vh,4.5rem));
+  padding-bottom:clamp(2rem,5vh,4.5rem);
+  gap:clamp(2rem,5vw,4.5rem);
+  align-items:center;
+}
+.l-hero-content{padding:0;max-width:640px}
+.l-hero-visual{padding:0}
+.l-hero h1{font-size:clamp(2.1rem,3.4vw,3.35rem);letter-spacing:-.03em}
+.l-hero-sub{max-width:52ch;font-size:1.02rem}
+
+/* The mock card was a fixed 340px adrift in a huge column. */
+.l-mockup{width:400px;max-width:100%}
+.l-hero-visual{justify-content:flex-end}
+
+/* Copy measure: a max-width in px is meaningless once the container moved.
+   ch ties it to the font, which is what actually governs readability. */
+.l-sub{max-width:62ch}
+.l-svc p,.l-step p,.l-case p{max-width:none}
+
+/* Section rhythm */
+.l-sec,.l-sec-gray,.l-sec-blue{padding-block:clamp(3.5rem,7vh,5.5rem)}
+.l-title{font-size:clamp(1.65rem,2.6vw,2.4rem);letter-spacing:-.025em}
+
+/* Cards: four services read better than two very wide ones once the
+   container is bounded. */
+.l-services-grid{grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1.25rem}
+.l-steps{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.l-cases-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.l-pricing-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem}
+
+/* Pricing figure: the % sat before the number, reading "%6". */
+.l-pnum{display:flex;align-items:baseline;gap:.15rem}
+.l-pbig{font-size:clamp(3rem,6vw,4.2rem);font-weight:800;letter-spacing:-.04em;line-height:1}
+.l-psym{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;line-height:1}
+.l-punit{margin-left:.6rem;font-size:.92rem;opacity:.72;align-self:flex-end;padding-bottom:.35rem}
+
+@media(max-width:900px){
+  .l-hero{grid-template-columns:1fr;min-height:0}
+  .l-hero-visual{justify-content:flex-start}
+  .l-pricing-grid{grid-template-columns:1fr}
+}
+
+/* ── refinements after measuring in-browser ─────────────────────────── */
+
+/* 4 service cards at 285px held 3-sentence paragraphs — too narrow to read.
+   2 columns at ~590px gives a ~75-character measure, which is the target. */
+.l-services-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:1.4rem}
+.l-cases-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.l-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+/* Give the headline column the extra room; it was wrapping to 3 lines. */
+.l-hero{grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr)}
+.l-hero h1{font-size:clamp(2rem,3vw,3.05rem);line-height:1.06;text-wrap:balance}
+.l-title{text-wrap:balance}
+.l-sub,.l-hero-sub{text-wrap:pretty}
+
+/* Cap the visual to the card plus a 20px overhang on each side, so the
+   pills can hang off the card's corners without any chance of pushing the
+   page sideways. .l-hero clips as a belt-and-braces guard. */
+.l-hero-visual{position:relative;width:min(100%,440px);justify-self:end}
+.l-pill{box-shadow:0 8px 24px -6px rgba(0,0,0,.35)}
+.l-pill-1{top:64px;right:-26px;left:auto}
+.l-pill-2{bottom:52px;left:-26px;right:auto}
+.l-hero{overflow:hidden}
+
+/* Text column needs the extra room; "personaladministrasjon" is 21
+   characters and was forcing a break after "Lønns- &". */
+.l-hero{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}
+
+/* Stats were 1.7rem numbers with 0.72rem labels — too quiet to anchor the
+   bottom of the hero. */
+.l-stat-n{font-size:clamp(1.75rem,2.2vw,2.15rem);letter-spacing:-.035em}
+.l-stat-l{font-size:.74rem;letter-spacing:.07em;color:rgba(255,255,255,.55)}
+.l-stats{gap:clamp(1.75rem,4vw,3.25rem)}
+
+/* Trust bar reads as a seam between hero and page; give it real presence. */
+.l-trust{padding-block:1.1rem}
+.l-ti{font-size:.82rem}
+
+/* The mock card is the hero's focal point — let it carry more weight. */
+.l-mockup{box-shadow:0 32px 80px -12px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06)}
+
+/* Hero gradient was flat navy; a soft radial adds depth behind the card. */
+.l-hero::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 50% at 72% 45%,rgba(240,160,32,.10),transparent 70%);
+}
+.l-hero-content,.l-hero-visual{position:relative;z-index:2}
+
+@media(max-width:900px){
+  .l-services-grid,.l-cases-grid,.l-steps{grid-template-columns:1fr}
+  .l-hero{grid-template-columns:1fr}
+  .l-pill-1,.l-pill-2{display:none}
+}
 </style>
 </head>
 <body>
@@ -529,8 +655,8 @@ tr.row-warn{background:rgba(217,119,6,.045)}
   <!-- HERO -->
   <section class="l-hero">
     <div class="l-hero-content">
-      <div class="l-badge"><span class="l-badge-dot"></span> Sveriges ledande lösning för flexibel arbetskraft</div>
-      <h1 data-i18n-html="hero.h1">Løn- & personale&shy;administration <span>i Norden</span></h1>
+      <div class="l-badge"><span class="l-badge-dot"></span> <span data-i18n="hero.badge">Fuldt arbejdsgiveransvar i Norden</span></div>
+      <h1 data-i18n-html="hero.h1">Løn- & personaleadministration <span>i Norden</span></h1>
       <p class="l-hero-sub" data-i18n="hero.sub">Vi hjælper virksomheder med at håndtere fleksibel arbejdskraft gennem trygge, smidige og omkostningseffektive løsninger — alt med fuldt arbejdsgiveransvar.</p>
       <ul class="l-checks">
         <li data-i18n="hero.check.1">Fuldt arbejdsgiveransvar — vi klarer det hele</li>
@@ -549,34 +675,23 @@ tr.row-warn{background:rgba(217,119,6,.045)}
       </div>
     </div>
     <div class="l-hero-visual">
-      <div class="l-mockup">
-        <div class="l-mock-hd">
-          <div class="l-mock-logo">Invoicery Business</div>
-          <div class="l-mock-badge">LIVE</div>
-        </div>
-        <div class="l-mock-body">
-          <div class="l-mock-ttl" data-i18n="mock.title">Aktive opgaver — april 2026</div>
-          <div class="l-mock-row l-mock-row-ok">
-            <div><div class="l-mock-lbl">Lides Event AB</div><div style="font-size:.58rem;color:var(--mid)">SalaryInvoicing · 40h</div></div>
-            <div style="text-align:right"><div class="l-mock-amt">28 500 kr</div><span class="l-mock-stat l-mock-stat-ok" data-i18n="mock.approved">Godkendt</span></div>
-          </div>
-          <div class="l-mock-row l-mock-row-pend">
-            <div><div class="l-mock-lbl">Prisjakt Sverige AB</div><div style="font-size:.58rem;color:var(--mid)">SalaryInvoicing · 32h</div></div>
-            <div style="text-align:right"><div class="l-mock-amt">21 760 kr</div><span class="l-mock-stat l-mock-stat-pend" data-i18n="mock.pending">Afventer</span></div>
-          </div>
-          <div class="l-mock-row l-mock-row-new">
-            <div><div class="l-mock-lbl">Butterfly Effect</div><div style="font-size:.58rem;color:var(--mid)">Excel-import · 24h</div></div>
-            <div style="text-align:right"><div class="l-mock-amt">15 200 kr</div><span class="l-mock-stat l-mock-stat-blue" data-i18n="mock.new">Ny</span></div>
-          </div>
-          <div class="l-mock-total">
-            <div class="l-mock-total-lbl" data-i18n="mock.total">I alt denne periode</div>
-            <div class="l-mock-total-amt">65 460 kr</div>
-          </div>
+    <div class="l-mockup">
+      <div class="l-mock-hd">
+        <div class="l-mock-logo">Invoicery Business</div>
+        <div class="l-mock-badge">LIVE</div>
+      </div>
+      <div class="l-mock-body">
+        <div class="l-mock-ttl" data-i18n="mock.title">Aktive opgaver — april 2026</div>
+        <div id="mock-rows"></div>
+        <div class="l-mock-total">
+          <div class="l-mock-total-lbl" data-i18n="mock.total">I alt denne periode</div>
+          <div class="l-mock-total-amt" id="mock-total">&mdash;</div>
         </div>
       </div>
-      <div class="l-pill l-pill-1"><span class="l-pdot l-pdot-g"></span><span data-i18n="hero.pill.1">Opgave godkendt</span></div>
-      <div class="l-pill l-pill-2"><span class="l-pdot l-pdot-o"></span><span data-i18n="hero.pill.2">Løn udbetalt</span></div>
     </div>
+    <div class="l-pill l-pill-1"><span class="l-pdot l-pdot-g"></span><span data-i18n="hero.pill.1">Opgave godkendt</span></div>
+    <div class="l-pill l-pill-2"><span class="l-pdot l-pdot-o"></span><span data-i18n="hero.pill.2">Løn udbetalt</span></div>
+  </div>
   </section>
 
   <!-- TRUST BAR -->
@@ -589,7 +704,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
     <div class="l-ti"><span class="l-tichk">✓</span> <span data-i18n="trust.6">Fuldt arbejdsgiveransvar</span></div>
   </div>
 
-  <!-- TJÄNSTER -->
+  <!-- SERVICES -->
   <section class="l-sec l-sec-gray" id="tjanster">
     <div class="l-tag" data-i18n="svc.tag">Ydelser</div>
     <h2 class="l-title" data-i18n-html="svc.title">Alt hvad I har brug for til <br>fleksibel personalehåndtering</h2>
@@ -650,24 +765,24 @@ tr.row-warn{background:rgba(217,119,6,.045)}
     <p class="l-sub l-sub-w" data-i18n="price.sub">Ét fast gebyr. Ingen skjulte omkostninger. Intet opstartsgebyr.</p>
     <div class="l-pricing-grid">
       <div class="l-pcard">
-        <div><span class="l-psym">%</span><span class="l-pbig">6</span><span class="l-punit" data-i18n="price.rate.of">af det fakturerede beløb</span></div>
+        <div class="l-pnum"><span class="l-pbig">6</span><span class="l-psym">%</span><span class="l-punit" data-i18n="price.rate.of">af det fakturerede beløb</span></div>
         <p class="l-pdesc" data-i18n="price.allin">Alt-i-én-løsning til lønhåndtering og personaleadministration</p>
         <ul class="l-pfeat">
-          <li><span class="l-pfeat-chk">✓</span> Fullt arbetsgivaransvar</li>
-          <li><span class="l-pfeat-chk">✓</span> Lönehantering & utbetalning</li>
-          <li><span class="l-pfeat-chk">✓</span> Skattedeklaration & socialavgifter</li>
-          <li><span class="l-pfeat-chk">✓</span> Försäkringar inkluderade</li>
-          <li><span class="l-pfeat-chk">✓</span> Nordisk compliance</li>
-          <li><span class="l-pfeat-chk">✓</span> Lönespecifikationer</li>
-          <li><span class="l-pfeat-chk">✓</span> Arbetsgivarintyg</li>
-          <li><span class="l-pfeat-chk">✓</span> Tillgång till SalaryInvoicing-portalen</li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.1">Lønadministration og udbetaling</span></li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.2">A-skat, AM-bidrag og ATP</span></li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.3">Arbejdsskade- og erhvervsforsikring</span></li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.4">Feriegodtgørelse</span></li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.5">Fakturering og rykkerhåndtering</span></li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.6">Support på dansk</span></li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.7">Ansættelsesbevis</span></li>
+          <li><span class="l-pfeat-chk">✓</span> <span data-i18n="price.incl.8">Adgang til SalaryInvoicing-portalen</span></li>
         </ul>
         <button class="btn btn-or btn-fw btn-lg" onclick="openLogin()" data-i18n="nav.cta">Kom i gang</button>
       </div>
       <div class="l-calc-card">
-        <div class="l-calc-title" style="display:flex;align-items:center;gap:.5rem"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Räkna ut din lön</div>
+        <div class="l-calc-title" style="display:flex;align-items:center;gap:.5rem"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> <span data-i18n="price.calc.h">Beregn din løn</span></div>
         <div class="l-calc-lbl" data-i18n="price.calc.invoice">Fakturabeløb (kr.)</div>
-        <input class="l-calc-inp" type="number" id="calc-inv" placeholder="100 000" oninput="calcLon()">
+        <input class="l-calc-inp" type="number" id="calc-inv" placeholder="100 000" value="50000" oninput="calcLon()">
         <div class="l-calc-lbl" data-i18n="price.calc.tax">Din trækprocent (%)</div>
         <input class="l-calc-inp" type="number" id="calc-tax" placeholder="32" oninput="calcLon()" value="32">
         <div class="l-bdown" id="calc-bd"></div>
@@ -690,7 +805,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
         <p class="l-ctext" data-i18n="case.1.q">"Invoicery Business har gjort det muligt for os at skalere op med ekstra personale uden bureaukratiske forhindringer. Alt håndteres smidigt, og vi slipper for at bekymre os om arbejdsgiveransvar."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#2b5f8e">LE</div>
-          <div><div class="l-cname">Lides Event AB</div><div class="l-crole" data-i18n="case.1.r">Event & logistik</div></div>
+          <div><div class="l-cname" data-i18n="case.1.co">Lides Event A/S</div><div class="l-crole" data-i18n="case.1.r">Event & logistik</div></div>
         </div>
       </div>
       <div class="l-case">
@@ -698,7 +813,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
         <p class="l-ctext" data-i18n="case.2.q">"Som kommunikationsbureau har vi svingende behov for specialister. Invoicery Business gør det nemt at hente den rigtige kompetence ind, når vi har brug for den — uden bøvl."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#f0a020">BE</div>
-          <div><div class="l-cname">Butterfly Effect</div><div class="l-crole" data-i18n="case.2.r">Kommunikation & PR</div></div>
+          <div><div class="l-cname" data-i18n="case.2.co">Butterfly Effect</div><div class="l-crole" data-i18n="case.2.r">Kommunikation & PR</div></div>
         </div>
       </div>
       <div class="l-case">
@@ -706,7 +821,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
         <p class="l-ctext" data-i18n="case.3.q">"Vi har brug for hurtigt at kunne tage personale ind til korte opgaver. Med Invoicery Business løser vi det på minutter, og konsulenterne er tilfredse med, hvor smidigt det hele fungerer."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#16a34a">GU</div>
-          <div><div class="l-cname">Gubbe</div><div class="l-crole" data-i18n="case.3.r">Vikar & rekruttering</div></div>
+          <div><div class="l-cname" data-i18n="case.3.co">Nordisk Bemanding</div><div class="l-crole" data-i18n="case.3.r">Vikar & rekruttering</div></div>
         </div>
       </div>
       <div class="l-case">
@@ -714,7 +829,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
         <p class="l-ctext" data-i18n="case.4.q">"Prisjakt bruger Invoicery Business til at håndtere eksterne IT-konsulenter. Platformen er intuitiv, og vi sparer massevis af tid på administration hver måned."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#7c3aed">PS</div>
-          <div><div class="l-cname">Prisjakt</div><div class="l-crole" data-i18n="case.4.r">E-handel & tech</div></div>
+          <div><div class="l-cname" data-i18n="case.4.co">Prisjakt Danmark</div><div class="l-crole" data-i18n="case.4.r">E-handel & tech</div></div>
         </div>
       </div>
     </div>
@@ -767,7 +882,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
           <span style="font-weight:800;color:#fff;font-size:.9rem">Invoicery Business</span>
         </div>
         <p style="font-size:.83rem;line-height:1.68;max-width:280px;margin-bottom:1rem" data-i18n="foot.tagline">En del af Invoicery Group — Nordens førende organisation inden for opgavebaseret personale og lønadministration siden 1999.</p>
-        <p style="font-size:.78rem">© 2026 Invoicery Business AB</p>
+        <p style="font-size:.78rem" id="foot-copy">© 2026</p>
       </div>
       <div class="l-fcol">
         <h4 data-i18n="svc.tag">Ydelser</h4>
@@ -799,7 +914,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
     </div>
     <hr class="l-fdivider">
     <div class="l-fbottom">
-      <span>Invoicery Business AB · Org.nr 559XXX-XXXX · Stockholm, Sverige</span>
+      <span id="foot-legal"></span>
     </div>
   </footer>
 </div><!-- /landing -->
@@ -954,6 +1069,38 @@ function renderDemoAccounts(){
     ${DEMO_ICON[u.role]||''} ${esc(t('login.demo.'+u.role))} <em>${esc(u.email)}</em></button>`).join('');
 }
 
+/* The hero mock card and the footer legal line were hardcoded with Swedish
+   companies, SEK amounts and a Stockholm address. Both now render from the
+   active market so they are correct in DK and NO. */
+function renderMockup(){
+  const host=document.getElementById('mock-rows');
+  if(!host) return;
+  const tone=['ok','pend','new'];
+  const rows=getAssignments().slice(0,3);
+  host.innerHTML=rows.map((a,i)=>{
+    const statusKey=a.status===STATUS.APPROVED?'mock.approved'
+      :a.status===STATUS.PENDING?'mock.pending':'mock.new';
+    const statTone=['ok','pend','blue'][i];
+    return `<div class="l-mock-row l-mock-row-${tone[i]}">
+      <div><div class="l-mock-lbl">${esc(a.companyName)}</div>
+        <div style="font-size:.58rem;color:var(--mid)">${esc(a.type)} · ${a.hours}h</div></div>
+      <div style="text-align:right"><div class="l-mock-amt">${fmtN(a.amount)}</div>
+        <span class="l-mock-stat l-mock-stat-${statTone}">${esc(t(statusKey))}</span></div>
+    </div>`;
+  }).join('');
+  const total=document.getElementById('mock-total');
+  if(total) total.textContent=fmtN(rows.reduce((x,a)=>x+a.amount,0));
+}
+
+function renderFooter(){
+  const m=currentMarket();
+  const legal=document.getElementById('foot-legal');
+  if(legal) legal.textContent=
+    `${m.entity.legalName} · ${m.entity.regLabel} ${m.entity.regNumber} · ${m.entity.address}`;
+  const copy=document.getElementById('foot-copy');
+  if(copy) copy.textContent=`© ${new Date().getFullYear()} ${m.entity.legalName}`;
+}
+
 function applyMarketChrome(){
   const m=currentMarket();
   document.documentElement.lang=m.lang;
@@ -964,6 +1111,8 @@ function applyMarketChrome(){
   const sbm=document.getElementById('sb-market');
   if(sbm) sbm.textContent=m.flag+' '+m.name;
   renderDemoAccounts();
+  renderMockup();
+  renderFooter();
 }
 
 /* ═══════════════════ AUTH ═══════════════════ */
@@ -1637,6 +1786,7 @@ window.calcLon=function(){
 seedAll();
 IB.syncLang();
 applyMarketChrome();
+if(document.getElementById('calc-inv')) calcLon();
 
 document.getElementById('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 document.getElementById('l-email').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});

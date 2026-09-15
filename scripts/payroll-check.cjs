@@ -229,16 +229,58 @@ console.log(bold('\nI18N — both languages complete'));
   if (!unknown.length) ok('every referenced key exists', `${used.size} referenced`);
   else unknown.forEach(k => fail(`unknown key referenced: ${k}`, 'a defined key', 'missing'));
 
-  // No Swedish left over — the markets we serve are DK and NO.
-  const swedish = /\b(uppdrag|konsult|företag|lönekörning|arbetsgivaravgift|väntar_godkännande|godkänt|utbetalt|avvisat|timlön|belopp|Logga in|Översikt)\b/;
+  /* No Swedish left over. A word list was the wrong instrument — it missed
+     "Räkna ut din lön", the hero badge, the pricing feature list and the
+     <title>, all of which hid behind a nested <span> so no data-i18n ever
+     landed on them.
+
+     Danish and Norwegian use æ/ø; ä and ö are Swedish-only. Scanning rendered
+     MARKUP (scripts and styles blanked, line numbers preserved) for those two
+     characters catches the whole class precisely. Surnames are the exception. */
+  const SURNAME_OK = /Lindström|Bergström|Söderberg|Öberg/g;
+  const blank = m => m.replace(/[^\n]/g, ' ');
   let leftovers = 0;
   ['invoicery-business.html', 'invoicery-business-admin.html'].forEach(f => {
-    const lines = fs.readFileSync(path.join(ROOT, f), 'utf8').split(/\r?\n/);
-    lines.forEach((line, i) => {
-      if (swedish.test(line)) { leftovers++; if (leftovers <= 5) fail(`${f}:${i + 1} — Swedish text remains`, 'da/nb only', line.trim().slice(0, 70)); }
+    const markup = fs.readFileSync(path.join(ROOT, f), 'utf8')
+      .replace(/<script[\s\S]*?<\/script>/g, blank)
+      .replace(/<style[\s\S]*?<\/style>/g, blank);
+    markup.split(/\r?\n/).forEach((line, i) => {
+      if (/[äöÄÖ]/.test(line.replace(SURNAME_OK, ''))) {
+        leftovers++;
+        if (leftovers <= 5) fail(`${f}:${i + 1} — Swedish copy in markup`,
+                                 'da/nb via t() or data-i18n', line.trim().slice(0, 70));
+      }
     });
   });
-  if (!leftovers) ok('no Swedish strings remain in either app');
+  if (!leftovers) ok('no Swedish copy remains in either app');
+
+  /* Every visible string must be keyed. Text with no data-i18n on its own
+     element or its parent is copy that can never translate — which is how
+     the badge and the calculator title survived the migration. */
+  const SKIP = /^(Invoicery Business|IB|LIVE|FAQ|SalaryInvoicing|Excel-import|API-integration|Workforce Management|Portal|Superadmin|[A-Z]{2})$/;
+  let unkeyed = 0;
+  ['invoicery-business.html', 'invoicery-business-admin.html'].forEach(f => {
+    const markup = fs.readFileSync(path.join(ROOT, f), 'utf8')
+      .replace(/<script[\s\S]*?<\/script>/g, '')
+      .replace(/<style[\s\S]*?<\/style>/g, '')
+      .replace(/<!--[\s\S]*?-->/g, '');
+    const re = /<(\w+)([^>]*)>([^<>]{3,}?)<\/\1>/g;
+    let m;
+    while ((m = re.exec(markup))) {
+      const txt = m[3].trim();
+      if (!txt || SKIP.test(txt)) continue;
+      if (/^&[a-z]+;$/.test(txt)) continue;   // bare HTML entity placeholder
+      if (!/[a-zA-ZæøåÆØÅäöÄÖ]{4,}/.test(txt)) continue;   // numbers, symbols
+      if (m[2].includes('data-i18n')) continue;
+      if (m[2].includes('data-runtime')) continue;   // JS fills this at boot
+      const before = markup.slice(Math.max(0, m.index - 260), m.index);
+      const lastOpen = before.lastIndexOf('<');
+      if (lastOpen !== -1 && before.slice(lastOpen).includes('data-i18n')) continue;
+      unkeyed++;
+      if (unkeyed <= 6) fail(`${f} — unkeyed visible text`, 'data-i18n="key"', txt.slice(0, 58));
+    }
+  });
+  if (!unkeyed) ok('every visible string is keyed for translation');
 }
 
 /* ═══════════════════ 5. IDENTIFIERS ═══════════════════ */

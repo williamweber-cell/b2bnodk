@@ -407,7 +407,7 @@
     'misc.of': 'af',
     'misc.perHour': '/t',
     'nav.cta': 'Kom i gang',
-    'hero.h1': 'Løn- & personale&shy;administration <span>i Norden</span>',
+    'hero.h1': 'Løn- & personaleadministration <span>i Norden</span>',
     'hero.check.4': 'Enkelt for konsulenten, smidigt for virksomheden',
     'hero.stat.1.n': '6%',
     'hero.stat.1.l': 'Fast gebyr',
@@ -517,6 +517,12 @@
     'jeeves.notConfigured': 'Ikke konfigureret',
     'jeeves.mapping': 'Feltmapning',
     'jeeves.unverifiedShort': 'Ikke bekræftet',
+    'price.incl.7': 'Ansættelsesbevis',
+    'price.incl.8': 'Adgang til SalaryInvoicing-portalen',
+    'case.1.co': 'Lides Event A/S',
+    'case.2.co': 'Butterfly Effect',
+    'case.3.co': 'Nordisk Bemanding',
+    'case.4.co': 'Prisjakt Danmark',
   },
 
   /* ══════════════════════════════════════════════════════════════════════
@@ -908,7 +914,7 @@
     'misc.of': 'av',
     'misc.perHour': '/t',
     'nav.cta': 'Kom i gang',
-    'hero.h1': 'Lønns- & personal&shy;administrasjon <span>i Norden</span>',
+    'hero.h1': 'Lønns- & personaladministrasjon <span>i Norden</span>',
     'hero.check.4': 'Enkelt for konsulenten, smidig for bedriften',
     'hero.stat.1.n': '6%',
     'hero.stat.1.l': 'Fast gebyr',
@@ -1018,6 +1024,12 @@
     'jeeves.notConfigured': 'Ikke konfigurert',
     'jeeves.mapping': 'Feltmapping',
     'jeeves.unverifiedShort': 'Ikke bekreftet',
+    'price.incl.7': 'Arbeidsbekreftelse',
+    'price.incl.8': 'Tilgang til SalaryInvoicing-portalen',
+    'case.1.co': 'Lides Event AS',
+    'case.2.co': 'Butterfly Effect',
+    'case.3.co': 'Nordisk Bemanning',
+    'case.4.co': 'Prisjakt Norge',
   }
   };
 
