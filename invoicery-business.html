@@ -1310,8 +1310,8 @@ function fProfil(){
     <div class="card-bd">
       <div class="ig"><label class="lbl">Företagsnamn</label><input class="inp" value="${esc(ME.name)}"></div>
       <div class="fg">
-        <div class="ig"><label class="lbl">Organisationsnummer</label><input class="inp" value="${ME.orgNr||'—'}"></div>
-        <div class="ig"><label class="lbl">Kontaktperson</label><input class="inp" value="${ME.contactName||''}"></div>
+        <div class="ig"><label class="lbl">Organisationsnummer</label><input class="inp" value="${esc(ME.orgNr||'—')}"></div>
+        <div class="ig"><label class="lbl">Kontaktperson</label><input class="inp" value="${esc(ME.contactName||'')}"></div>
       </div>
       <div class="ig"><label class="lbl">E-post</label><input class="inp" value="${esc(ME.email)}" readonly style="background:var(--bg)"></div>
       <div class="ig"><label class="lbl">Telefon</label><input class="inp" placeholder="+46 8 xxx xx xx"></div>

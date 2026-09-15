@@ -694,7 +694,7 @@ function aAllaUppdrag(){
 }
 
 function upsRows(ups){
-  return ups.map(u=>`<tr data-konsult="${u.konsultName.toLowerCase()}" data-foretag="${u.foretagName.toLowerCase()}" data-id="${u.id.toLowerCase()}" data-status="${esc(u.status)}">
+  return ups.map(u=>`<tr data-konsult="${esc(u.konsultName.toLowerCase())}" data-foretag="${esc(u.foretagName.toLowerCase())}" data-id="${esc(u.id.toLowerCase())}" data-status="${esc(u.status)}">
     <td style="font-size:.73rem;font-weight:700;color:var(--muted)">${esc(u.id)}</td>
     <td><div style="font-weight:700">${esc(u.konsultName)}</div></td>
     <td style="color:var(--mid)">${esc(u.foretagName)}</td>
@@ -755,11 +755,11 @@ function aKonsulter(){
                 </div>
               </td>
               <td style="color:var(--mid)">${esc(k.email)}</td>
-              <td>${k.city||'—'}</td>
+              <td>${esc(k.city||'—')}</td>
               <td style="font-weight:700">${kupp.length}</td>
               <td style="font-weight:700">${fmtN(vol)}</td>
               <td><span class="badge b-gn"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Aktiv</span></td>
-              <td style="color:var(--muted);font-size:.76rem">${k.joined||'—'}</td>
+              <td style="color:var(--muted);font-size:.76rem">${esc(k.joined||'—')}</td>
               <td>
                 <button class="btn btn-gh btn-sm">
                   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
@@ -849,8 +849,8 @@ function aForetag(){
                   <div style="font-weight:700">${esc(f.name)}</div>
                 </div>
               </td>
-              <td style="font-size:.76rem;color:var(--muted);font-weight:700">${f.orgNr||'—'}</td>
-              <td>${f.contactName||'—'}</td>
+              <td style="font-size:.76rem;color:var(--muted);font-weight:700">${esc(f.orgNr||'—')}</td>
+              <td>${esc(f.contactName||'—')}</td>
               <td style="color:var(--mid)">${esc(f.email)}</td>
               <td style="font-weight:700">${fupp.length}</td>
               <td style="font-weight:700">${fmtN(vol)}</td>
