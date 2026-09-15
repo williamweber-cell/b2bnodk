@@ -19,10 +19,28 @@ dropped; no Swedish copy or SE rate should exist anywhere.
 | `invoicery-business-admin.html` | Back-office: approvals, payroll runs, invoicing, registers |
 | `scripts/payroll-check.cjs` | Golden values, invariants, parity, i18n, homoglyphs. |
 | `scripts/render-smoke.cjs` | Every view, every role, both markets. |
+| `scripts/serve.cjs` | Zero-dependency local dev server. |
 
 No build step, no dependencies, no framework. The HTML files open directly
 from disk — that's what makes sales demos trivial. Scripts load in order:
 `ib-markets.js` → `ib-i18n.js` → `ib-core.js` → app.
+
+## Running it
+
+```bash
+node scripts/serve.cjs          # http://localhost:8080
+node scripts/serve.cjs 8081     # another port
+```
+
+Opening the files from disk works too, and is the fastest path for a quick
+look. Prefer the server when you care about `localStorage` behaving exactly as
+it will in production (some browsers treat `file://` as an opaque origin and
+drop storage), or when demoing to someone else on the same Wi-Fi — the server
+prints a LAN address for that.
+
+Every text response carries an explicit `charset=utf-8`. Without it a browser
+may sniff latin-1 and render `lønkørsel` as `lÃ¸nkÃ¸rsel`, which tends to
+surface first in front of a Danish customer.
 
 ## Markets
 
