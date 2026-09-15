@@ -1,99 +1,100 @@
 ---
 name: new-view
-description: Scaffold a new portal view — TITLES entry, go() branch, sidebar nav item and render function — wired correctly across all four sites in the right file.
+description: Scaffold a new portal view — title keys, VIEWS entry, sidebar nav item and render function — wired correctly and translated into both languages.
 disable-model-invocation: true
 ---
 
 # /new-view
 
-Add a portal view. Adding one by hand means editing four disconnected places
-in a 1 400-line file, and doing three of the four produces a silently blank
-page with no error.
+Add a portal view. By hand this is four disconnected edits plus three
+translation keys in two languages; doing seven of the ten produces a blank
+page or an untranslated marker.
 
 ## Arguments
 
-`/new-view <role> <slug> "<Title>" "<Subtitle>"`
+`/new-view <role> <slug> "<Danish title>" "<Norwegian title>"`
 
-Example: `/new-view k rapporter "Rapporter" "Ladda ner underlag och sammanställningar"`
+Example: `/new-view c reports "Rapporter" "Rapporter"`
 
-If the user did not supply arguments, ask for the role and the title; derive
-the slug yourself and state what you derived.
+If the user gave no arguments, ask for the role and the Danish title; derive
+the slug and draft the Norwegian yourself, then state what you derived so they
+can correct it.
 
 ## Role prefixes
 
 | Prefix | Role | File | Sidebar block |
 |---|---|---|---|
-| `k-` | konsult | `invoicery-business.html` | `#nav-konsult` |
-| `f-` | företag | `invoicery-business.html` | `#nav-foretag` |
+| `c-` | consultant | `invoicery-business.html` | `#nav-consultant` |
+| `b-` | company | `invoicery-business.html` | `#nav-company` |
 | `a-` | admin | `invoicery-business-admin.html` | admin sidebar |
 
-The view id is `<prefix><slug>`, e.g. `k-rapporter`.
+View id is `<prefix><slug>`, e.g. `c-reports`. The render function is the
+camelCase form: `cReports`.
 
-## The four edits
+## The edits
 
-Make all four, in this order, in the file the prefix selects.
-
-**1. `TITLES` map** — page heading and subheading:
-
-```js
-'k-rapporter':['Rapporter','Ladda ner underlag och sammanställningar'],
-```
-
-**2. `go()` dispatch** — add a branch in the existing if/else chain, grouped
-with the other views of the same role:
+**1. Translation keys** — `ib-i18n.js`, in **both** `da` and `nb`:
 
 ```js
-else if(v==='k-rapporter') el.innerHTML=kRapporter();
+'nav.c.reports':   'Rapporter',
+'title.c.reports': 'Rapporter',
+'sub.c.reports':   'Download underlag og opgørelser',
 ```
 
-**3. Sidebar nav item** — inside the correct role's `<nav>` block. Match the
-surrounding markup exactly, including the `data-v` attribute and a Feather-
-style inline SVG in an `.lci` span:
+Note the key shape: `go()` derives them by replacing the first `-` with `.`,
+so view `c-reports` looks up `title.c.reports` and `sub.c.reports`.
+
+**2. `VIEWS` map** — maps view id to render function:
+
+```js
+const VIEWS={ /* … */ 'c-reports':cReports };
+```
+
+**3. Sidebar nav item** — inside the correct role's block, matching the
+surrounding markup including `data-v` and a 24×24 stroke SVG:
 
 ```html
-<button class="sb-i" data-v="k-rapporter" onclick="go('k-rapporter')">
-  <span class="lci"><svg viewBox="0 0 24 24"><!-- 24x24 stroke icon --></svg></span>
-  Rapporter
-</button>
+<li><button onclick="go('c-reports')" data-v="c-reports">
+  <span class="lci"><svg viewBox="0 0 24 24"><!-- icon --></svg></span>
+  <span data-i18n="nav.c.reports">Rapporter</span>
+</button></li>
 ```
 
-**4. Render function** — camelCase of the view id, returning a template
-string. Follow the house shape: a `.card` with `.card-hd` / `.card-bd`, and
-an `.empty` block when there is no data.
+The label goes in its own `span[data-i18n]` so the icon survives translation.
+
+**4. Render function** — returns a template string:
 
 ```js
-function kRapporter(){
-  const ups=getUppdrag().filter(u=>u.konsultId===ME.id);
-  if(!ups.length) return `<div class="empty">
-    <div class="empty-ico">…</div>
-    <h3>Inga rapporter ännu</h3>
-    <p>…</p>
-  </div>`;
+function cReports(){
+  const list=mine();
+  if(!list.length) return empty(ICO_DOC,'c.reports.empty.h','c.reports.empty.p');
   return `
   <div class="card">
-    <div class="card-hd"><span class="card-title">Rapporter</span></div>
-    <div class="card-bd">…</div>
+    <div class="card-hd"><span class="card-title">${esc(t('nav.c.reports'))}</span></div>
+    <div class="card-bd"></div>
   </div>`;
 }
 ```
 
 ## Rules the scaffold must follow
 
-- Every user-derived value interpolated into the template goes through
-  `esc()` — names, `beskrivning`, `period`, `adminNote`, and anything inside
-  an `onclick="fn('${...}')"` attribute.
-- Any money comes from `IB.calcPayroll()` / `IB.calcPayrollBatch()` and is
-  displayed with `fmtN()`. No rate literals.
-- Status comparisons use `IB.STATUS.*`, not retyped strings with diacritics.
-- Konsult views filter on `u.konsultId===ME.id`; företag views on
-  `u.foretagId===ME.id`. Admin views see everything.
-- Identifiers ASCII-only — no Cyrillic or Greek homoglyphs.
+- No user-visible string inline. `t('key')` everywhere, keys in both languages.
+- Every interpolated user value through `esc()`, including inside
+  `onclick="fn('…')"` and `data-*` attributes.
+- Money only from `IB.calcPayroll(amount,{hours})` or `calcPayrollBatch`,
+  displayed with `fmtN()`. Never a rate literal — the two markets differ.
+- Status via `IB.STATUS.*`, labels via `t('status.'+s)`.
+- Consultant views filter with `mine()`, company views with `ours()`, admin
+  sees everything.
+- Identifiers ASCII.
 
 ## Afterwards
 
 ```bash
 node scripts/payroll-check.cjs
+node scripts/render-smoke.cjs
 ```
 
-Then tell the user to open the file and click the new nav item, since there
-is no test harness that exercises rendering.
+The smoke test does not discover new functions — add the name to
+`CONSULTANT_VIEWS`, `COMPANY_VIEWS` or `ADMIN_VIEWS` in
+`scripts/render-smoke.cjs` so it is exercised in both markets.

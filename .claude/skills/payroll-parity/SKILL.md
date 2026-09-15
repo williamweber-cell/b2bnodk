@@ -1,62 +1,74 @@
 ---
 name: payroll-parity
-description: Verify payroll correctness — golden values, algebraic invariants, no inline rate literals in views, no homoglyph identifiers. Run before committing anything that touches money.
+description: Verify payroll correctness across both markets — golden values, reconciliation invariants, no inline rates, complete translations, no homoglyphs. Run before committing anything that touches money or copy.
 disable-model-invocation: true
 ---
 
 # /payroll-parity
 
-Run the guard:
+Run both guards:
 
 ```bash
 node scripts/payroll-check.cjs
+node scripts/render-smoke.cjs
 ```
 
-Report the output. If it exits 0, say so plainly and stop.
+Report the output. If both exit 0, say so plainly and stop.
 
 ## If it fails
 
-Each failure category has one correct fix. Do not work around the check.
+Each category has one correct fix. Do not work around the check.
 
 ### `inline <rate> in a view`
 
-A view is computing money itself. Replace it:
+A view is computing money. Replace it:
 
 ```js
-// before
-const avgift = u.belopp * 0.06;
-const brutto = u.belopp - avgift;
-
-// after
-const p = IB.calcPayroll(u.belopp);
-// p.serviceavgift, p.lonebas, p.bruttolon, p.arbetsgivaravgift,
-// p.preliminarskatt, p.nettolon, p.moms, p.fakturatotal
+const p = IB.calcPayroll(a.amount, {hours: a.hours});
+// p.serviceFee, p.salaryBase, p.gross, p.holidayPay, p.employerCost,
+// p.employeeDeductions, p.withholding, p.net, p.vat, p.invoiceTotal
+// p.detail.*  — market-specific (employerTax, atpEmployer, amContribution)
+// p.lines     — ordered breakdown, each {key, amount, sign}
 ```
 
-For a total across several uppdrag use `IB.calcPayrollBatch(list)` rather
-than summing formatted values or re-deriving the total.
-
-### `confusable character in source`
-
-A Cyrillic or Greek homoglyph is sitting inside an identifier. The report
-names the file, line and the exact codepoint. Replace it with the ASCII
-letter it imitates. Check both the definition and every call site — they are
-usually pasted together and both poisoned.
+Denmark and Norway have different chains, so a literal rate is wrong in at
+least one market. Use `IB.calcPayrollBatch(list)` for totals — never sum
+formatted values.
 
 ### A golden value moved
 
-`calcPayroll` changed behaviour. Either the change was wrong, or a statutory
-rate genuinely changed and the golden values in `scripts/payroll-check.cjs`
-need updating alongside it — with the new derivation written out in the
-comment above them, the way the existing one is.
+`calcPayroll` changed behaviour. Either the change is wrong, or a statutory
+rate genuinely changed and the golden values need updating alongside it, with
+the new derivation written out in the comment the way the existing two are.
 
-Never update a golden value to match a new output without first deriving by
-hand what the output *should* be. That is how the original 8 676 kr
-discrepancy would have been ratified instead of caught.
+Never update a golden value to match new output without first deriving by hand
+what the output *should* be. That is how a real discrepancy gets ratified
+instead of caught.
 
 ### An invariant broke
 
-An algebraic property of the model no longer holds — gross plus employer
-fees no longer reconstitutes the pot, or something went negative. This is
-almost always a real bug in `calcPayroll`, not a stale test. Read the
-`payroll-domain` skill and re-derive.
+`gross + employerCost !== salaryBase`, or
+`gross − employeeDeductions !== net`. These are algebraic properties of the
+models, not test expectations. A break is almost always a real bug in
+`calcPayroll`. Read the `payroll-domain` skill and re-derive.
+
+### An untranslated marker in rendered output
+
+A translation key is referenced but not defined. Add it to **both** `da` and
+`nb` in `ib-i18n.js` — the check requires parity, deliberately, so a
+half-translated screen cannot ship.
+
+Norwegian doubles the *n* in lønn-compounds (`lønnskjøring`, `bruttolønn`);
+Danish does not (`lønkørsel`, `bruttoløn`). See `nordic-domain-conventions`
+before writing the copy.
+
+### `Swedish text remains`
+
+Leftover copy from before the DK/NO migration. Replace it with a `t('key')`
+call or a `data-i18n` attribute and add the key to both languages.
+
+### `confusable character in source`
+
+A Cyrillic or Greek homoglyph inside an identifier. The report names the file,
+line and codepoint. Replace with the ASCII letter it imitates, and check every
+call site — they are usually pasted together and both poisoned.

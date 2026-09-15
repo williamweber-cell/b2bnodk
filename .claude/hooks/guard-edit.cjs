@@ -3,14 +3,18 @@
    guard-edit.cjs — PostToolUse hook for Invoicery Business
 
    Runs after Claude edits or writes a .html or .js file in this project and
-   reports three classes of defect that are invisible on inspection:
+   reports four classes of defect that are invisible on inspection:
 
-     1. HOMOGLYPHS   Cyrillic/Greek lookalikes in source. Swedish aao are
+     1. HOMOGLYPHS   Cyrillic/Greek lookalikes in source. Nordic aeoaa are
                      fine; Cyrillic a/p/e/o are not. This is what made
                      sparaKonsult a silent landmine.
      2. RATE LITERALS Money math done in a view instead of IB.calcPayroll.
+                     Denmark and Norway use structurally different models,
+                     so a literal is wrong in at least one market by
+                     construction.
      3. UNESCAPED     User-derived values interpolated into innerHTML
                      templates without esc().
+     4. SWEDISH       Leftover Swedish copy. The product serves DK and NO.
 
    Reads the hook payload on stdin, writes findings to stderr and exits 2 so
    the message is fed back to Claude. Never blocks the edit — these are
@@ -38,7 +42,7 @@ process.stdin.on('end', () => {
   try { src = fs.readFileSync(file, 'utf8'); } catch (e) { process.exit(0); }
 
   const name = file.split(/[\\/]/).pop();
-  const isCore = name === 'ib-core.js';
+  const isCore = ['ib-core.js', 'ib-markets.js', 'ib-i18n.js'].includes(name);
   const isCheck = /payroll-check|guard-edit/.test(name);
   const lines = src.split(/\r?\n/);
   const findings = [];
@@ -61,20 +65,25 @@ process.stdin.on('end', () => {
   /* ── 2. Rate literals outside ib-core.js ───────────────────────────── */
   if (!isCore && !isCheck) {
     const rates = [
-      [/\*\s*0\.06\b/, 'serviceavgift 0.06'],
-      [/\*\s*0\.3142\b/, 'arbetsgivaravgift 0.3142'],
-      [/\/\s*1\.3142\b/, 'arbetsgivaravgift divisor 1.3142'],
-      [/\*\s*0\.32\b/, 'preliminarskatt 0.32'],
-      [/\*\s*1\.25\b/, 'moms 1.25'],
-      [/\*\s*0\.25\b/, 'moms 0.25'],
-      [/\*\s*0\.94\b/, 'pre-multiplied net-of-fee 0.94']
+      [/\*\s*0\.06\b/,  'serviceFee 0.06'],
+      [/\*\s*0\.141\b/, 'arbeidsgiveravgift 0.141 (NO)'],
+      [/\*\s*0\.102\b/, 'feriepenger 0.102 (NO)'],
+      [/\*\s*0\.125\b/, 'feriegodtgoerelse 0.125 (DK)'],
+      [/\*\s*0\.08\b/,  'AM-bidrag 0.08 (DK)'],
+      [/\*\s*0\.32\b/,  'forskuddstrekk 0.32 (NO)'],
+      [/\*\s*0\.38\b/,  'A-skat 0.38 (DK)'],
+      [/\*\s*1\.25\b/,  'vat 1.25'],
+      [/\*\s*0\.25\b/,  'vat 0.25'],
+      [/\/\s*1\.3142\b/,'legacy SE divisor 1.3142']
     ];
     lines.forEach((line, i) => {
+      if (/^\s*\.mkt|^\s*--/.test(line)) return;   // CSS, not money
       rates.forEach(([re, what]) => {
         if (re.test(line)) {
           findings.push(
             `${name}:${i + 1}  inline rate literal (${what})\n` +
-            `    Views must not compute money. Use IB.calcPayroll(belopp) or ` +
+            `    Views must not compute money, and the two markets use ` +
+            `different models. Use IB.calcPayroll(amount, {hours}) or ` +
             `IB.calcPayrollBatch(list) and read the field off the result.`
           );
         }
@@ -85,8 +94,8 @@ process.stdin.on('end', () => {
   /* ── 3. Unescaped user data in templates ───────────────────────────── */
   if (!isCore && !isCheck) {
     const userFields = [
-      'beskrivning', 'konsultName', 'foretagName', 'adminNote',
-      'contactName', 'orgNr', 'personnummer', 'period'
+      'description', 'consultantName', 'companyName', 'adminNote',
+      'contactName', 'regNumber', 'personalId', 'period'
     ];
     lines.forEach((line, i) => {
       userFields.forEach(f => {
@@ -95,11 +104,25 @@ process.stdin.on('end', () => {
         if (re.test(line)) {
           findings.push(
             `${name}:${i + 1}  unescaped "${f}" interpolated into a template\n` +
-            `    Wrap it: \${esc(u.${f})}. Stored XSS — a consultant can script ` +
-            `the foretag and admin screens by typing into a form field.`
+            `    Wrap it: \${esc(a.${f})}. Stored XSS — a consultant can script ` +
+            `the company and admin screens by typing into a form field.`
           );
         }
       });
+    });
+  }
+
+  /* ── 4. Swedish leftovers ──────────────────────────────────────────── */
+  if (!isCheck) {
+    const swedish = /(uppdrag|konsult|företag|lönekörning|arbetsgivaravgift|timlön|godkänt|utbetalt|avvisat|Logga in|Översikt)/;
+    lines.forEach((line, i) => {
+      if (swedish.test(line)) {
+        findings.push(
+          `${name}:${i + 1}  Swedish term in source\n` +
+          `    This product serves Denmark and Norway only. UI copy goes ` +
+          `through t('key') in ib-i18n.js; schema field names are English.`
+        );
+      }
     });
   }
 

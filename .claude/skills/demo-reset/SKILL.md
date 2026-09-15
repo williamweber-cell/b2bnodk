@@ -1,53 +1,62 @@
 ---
 name: demo-reset
-description: Print the snippet that resets Invoicery Business demo data to a known clean state, for sales demos and manual testing.
+description: Print the snippet that resets Invoicery Business demo data to a known clean state, per market or for both, for sales demos and manual testing.
 disable-model-invocation: true
 ---
 
 # /demo-reset
 
-Demo data lives in the browser's `localStorage`, so it persists across
-reloads and between the two apps. A demo left half-approved stays
-half-approved until it is cleared — which is exactly when someone is
-watching.
+Demo data lives in the browser's `localStorage`, scoped per market
+(`IB_DK_*`, `IB_NO_*`), so it survives reloads and persists between the two
+apps. A demo left half-approved stays half-approved — usually discovered
+while someone is watching.
 
 ## Give the user this
 
 Open either app, press **F12**, paste into the Console, press Enter:
 
 ```js
-IB.resetDemo(); location.reload();
+IB.resetDemo(); location.reload();          // both markets
+IB.resetDemo('DK'); location.reload();      // Denmark only
+IB.resetDemo('NO'); location.reload();      // Norway only
 ```
 
-That removes every `IB_*` key and reseeds at the current `SEED_VERSION`.
+To switch market from the console:
 
-## What they get back
+```js
+IB.setMarket('NO'); location.reload();
+```
 
-| | |
-|---|---|
-| Admin | `admin@invoicerybusiness.se` / `admin123` — Anna Lindström |
-| Konsult | `sara@konsult.se` / `klient123` — Sara Bergström |
-| Konsult | `erik@konsult.se` / `klient123` — Erik Johansson |
-| Företag | `info@foretag.se` / `kund123` — Lides Event AB |
-| Företag | `hr@prisjakt.se` / `kund123` — Prisjakt Sverige AB |
+## What they get back, per market
 
-Four uppdrag: one `godkänt` (ready for lönekörning), two
-`väntar_godkännande`, one `utbetalt`.
+| Role | Denmark | Norway |
+|---|---|---|
+| Admin | `admin@invoicerybusiness.dk` | `admin@invoicerybusiness.no` |
+| Consultant | `sara@konsulent.dk` | `sara@konsulent.no` |
+| Consultant | `erik@konsulent.dk` | `erik@konsulent.no` |
+| Company | `info@virksomhed.dk` | `info@bedrift.no` |
+| Company | `hr@prisjakt.dk` | `hr@prisjakt.no` |
 
-That mix is deliberate — it gives every screen something to show. A demo
-that starts from an empty state spends its first two minutes on data entry.
+Passwords: `admin123` / `klient123` / `kund123`.
+
+Four assignments each: one `approved` (ready for a payroll run), two
+`pending`, one `paid`. That mix is deliberate — every screen has something to
+show. A demo starting from empty spends its first two minutes on data entry.
+
+The login box builds these buttons from the seeded users at runtime, so they
+always match the selected market.
 
 ## A good demo path
 
-1. Log in as **Sara** → Skapa uppdrag against `info@foretag.se`
-2. Log out → in as **Lides Event** → Godkänn uppdrag → approve it
-3. Log out → in as **admin** → Lönekörning → Kör lön
-4. Back as **Sara** → Lönespecifikationer → the payslip is there
+1. Log in as **Sara**, create an assignment against the company address
+2. Log out, in as the **company**, approve it
+3. Log out, in as **admin**, Payroll, run it
+4. Back as **Sara**, Payslips, the full breakdown is there
 
-That covers the whole value chain in about ninety seconds.
+Then flip the market switch and show the same flow in the other country —
+different language, currency, legal entity and payroll model, same product.
+That contrast is the strongest ninety seconds in the demo.
 
 ## Note
 
-These are demo credentials with plaintext passwords in `ib-core.js`. They
-exist for the prototype only and must not survive into anything
-internet-facing.
+Plaintext demo passwords live in `ib-core.js`. Prototype only; never ship.

@@ -323,6 +323,15 @@ textarea.inp{resize:vertical;min-height:78px}
   .stats-g{grid-template-columns:1fr 1fr}
   .fg{grid-template-columns:1fr}
 }
+
+/* ── market switcher ── */
+.mkt-switch{display:inline-flex;gap:.25rem;background:rgba(255,255,255,.12);padding:.2rem;border-radius:6px;vertical-align:middle}
+.mkt-btn{display:flex;align-items:center;gap:.3rem;background:none;border:none;cursor:pointer;font-family:inherit;padding:.28rem .55rem;border-radius:4px;font-size:.78rem;font-weight:700;color:rgba(255,255,255,.7);transition:background .18s,color .18s}
+.mkt-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+.mkt-btn.active{background:var(--orange);color:#fff}
+.mkt-flag{font-size:.95rem;line-height:1}
+.mkt-compact .mkt-code{display:none}
+@media(max-width:860px){.mkt-code{display:none}}
 </style>
 </head>
 <body>
@@ -339,16 +348,17 @@ textarea.inp{resize:vertical;min-height:78px}
       </div>
     </a>
     <ul class="l-nav-links">
-      <li><a href="#tjanster">Tjänster</a></li>
-      <li><a href="#sa-funkar">Så funkar det</a></li>
-      <li><a href="#priser">Priser</a></li>
-      <li><a href="#kundcase">Kundcase</a></li>
+      <li><a href="#tjanster" data-i18n="svc.tag">Ydelser</a></li>
+      <li><a href="#sa-funkar" data-i18n="nav.how">Sådan fungerer det</a></li>
+      <li><a href="#priser" data-i18n="nav.pricing">Priser</a></li>
+      <li><a href="#kundcase" data-i18n="case.tag">Kundecases</a></li>
       <li><a href="#faq">FAQ</a></li>
-      <li><a href="#kontakt">Kontakt</a></li>
+      <li><a href="#kontakt" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
     <div class="l-nav-right">
-      <button class="l-btn-login" onclick="openLogin()">Logga in</button>
-      <button class="l-btn-kom" onclick="openLogin()">Kom igång</button>
+      <span id="market-switch"></span>
+      <button class="l-btn-login" onclick="openLogin()" data-i18n="nav.login">Log ind</button>
+      <button class="l-btn-kom" onclick="openLogin()" data-i18n="nav.cta">Kom i gang</button>
     </div>
   </nav>
 
@@ -356,22 +366,22 @@ textarea.inp{resize:vertical;min-height:78px}
   <section class="l-hero">
     <div class="l-hero-content">
       <div class="l-badge"><span class="l-badge-dot"></span> Sveriges ledande lösning för flexibel arbetskraft</div>
-      <h1>Löne- & personal&shy;administration <span>i Norden</span></h1>
-      <p class="l-hero-sub">Vi hjälper företag att hantera flexibel arbetskraft med trygga, smidiga och kostnadseffektiva lösningar — allt med fullt arbetsgivaransvar.</p>
+      <h1 data-i18n-html="hero.h1">Løn- & personale&shy;administration <span>i Norden</span></h1>
+      <p class="l-hero-sub" data-i18n="hero.sub">Vi hjælper virksomheder med at håndtere fleksibel arbejdskraft gennem trygge, smidige og omkostningseffektive løsninger — alt med fuldt arbejdsgiveransvar.</p>
       <ul class="l-checks">
-        <li>Fullt arbetsgivaransvar — vi sköter allt</li>
-        <li>Lönehantering, skatter & försäkringar inkluderat</li>
-        <li>Nordisk compliance i alla länder</li>
-        <li>Enkelt för konsulten, smidigt för företaget</li>
+        <li data-i18n="hero.check.1">Fuldt arbejdsgiveransvar — vi klarer det hele</li>
+        <li data-i18n="hero.check.2">Lønhåndtering, skat & forsikringer inkluderet</li>
+        <li data-i18n="hero.check.3">Nordisk compliance i alle lande</li>
+        <li data-i18n="hero.check.4">Enkelt for konsulenten, smidigt for virksomheden</li>
       </ul>
       <div class="l-actions">
-        <button class="l-btn-hero" onclick="openLogin()">Kom igång gratis</button>
-        <button class="l-btn-ghost" onclick="document.getElementById('sa-funkar').scrollIntoView({behavior:'smooth'})">Så funkar det →</button>
+        <button class="l-btn-hero" onclick="openLogin()" data-i18n="hero.cta">Kom gratis i gang</button>
+        <button class="l-btn-ghost" onclick="document.getElementById('sa-funkar').scrollIntoView({behavior:'smooth'})" data-i18n="hero.ghost">Sådan fungerer det →</button>
       </div>
       <div class="l-stats">
-        <div><div class="l-stat-n">6%</div><div class="l-stat-l">Fast avgift</div></div>
-        <div><div class="l-stat-n">+500</div><div class="l-stat-l">Företag</div></div>
-        <div><div class="l-stat-n">Norden</div><div class="l-stat-l">Täckning</div></div>
+        <div><div class="l-stat-n" data-i18n="hero.stat.1.n">6%</div><div class="l-stat-l" data-i18n="hero.stat.1.l">Fast gebyr</div></div>
+        <div><div class="l-stat-n" data-i18n="hero.stat.2.n">+500</div><div class="l-stat-l" data-i18n="hero.stat.2.l">Virksomheder</div></div>
+        <div><div class="l-stat-n" data-i18n="hero.stat.3.n">Norden</div><div class="l-stat-l" data-i18n="hero.stat.3.l">Dækning</div></div>
       </div>
     </div>
     <div class="l-hero-visual">
@@ -381,103 +391,103 @@ textarea.inp{resize:vertical;min-height:78px}
           <div class="l-mock-badge">LIVE</div>
         </div>
         <div class="l-mock-body">
-          <div class="l-mock-ttl">Aktiva uppdrag — april 2026</div>
+          <div class="l-mock-ttl" data-i18n="mock.title">Aktive opgaver — april 2026</div>
           <div class="l-mock-row l-mock-row-ok">
             <div><div class="l-mock-lbl">Lides Event AB</div><div style="font-size:.58rem;color:var(--mid)">SalaryInvoicing · 40h</div></div>
-            <div style="text-align:right"><div class="l-mock-amt">28 500 kr</div><span class="l-mock-stat l-mock-stat-ok">Godkänt</span></div>
+            <div style="text-align:right"><div class="l-mock-amt">28 500 kr</div><span class="l-mock-stat l-mock-stat-ok" data-i18n="mock.approved">Godkendt</span></div>
           </div>
           <div class="l-mock-row l-mock-row-pend">
             <div><div class="l-mock-lbl">Prisjakt Sverige AB</div><div style="font-size:.58rem;color:var(--mid)">SalaryInvoicing · 32h</div></div>
-            <div style="text-align:right"><div class="l-mock-amt">21 760 kr</div><span class="l-mock-stat l-mock-stat-pend">Väntar</span></div>
+            <div style="text-align:right"><div class="l-mock-amt">21 760 kr</div><span class="l-mock-stat l-mock-stat-pend" data-i18n="mock.pending">Afventer</span></div>
           </div>
           <div class="l-mock-row l-mock-row-new">
             <div><div class="l-mock-lbl">Butterfly Effect</div><div style="font-size:.58rem;color:var(--mid)">Excel-import · 24h</div></div>
-            <div style="text-align:right"><div class="l-mock-amt">15 200 kr</div><span class="l-mock-stat l-mock-stat-blue">Ny</span></div>
+            <div style="text-align:right"><div class="l-mock-amt">15 200 kr</div><span class="l-mock-stat l-mock-stat-blue" data-i18n="mock.new">Ny</span></div>
           </div>
           <div class="l-mock-total">
-            <div class="l-mock-total-lbl">Totalt denna period</div>
+            <div class="l-mock-total-lbl" data-i18n="mock.total">I alt denne periode</div>
             <div class="l-mock-total-amt">65 460 kr</div>
           </div>
         </div>
       </div>
-      <div class="l-pill l-pill-1"><span class="l-pdot l-pdot-g"></span> Uppdrag godkänt</div>
-      <div class="l-pill l-pill-2"><span class="l-pdot l-pdot-o"></span> Lön utbetald</div>
+      <div class="l-pill l-pill-1"><span class="l-pdot l-pdot-g"></span><span data-i18n="hero.pill.1">Opgave godkendt</span></div>
+      <div class="l-pill l-pill-2"><span class="l-pdot l-pdot-o"></span><span data-i18n="hero.pill.2">Løn udbetalt</span></div>
     </div>
   </section>
 
   <!-- TRUST BAR -->
   <div class="l-trust">
-    <div class="l-ti"><span class="l-tichk">✓</span> Tryggt & hållbart</div>
-    <div class="l-ti"><span class="l-tichk">✓</span> Enkelt & smidigt</div>
-    <div class="l-ti"><span class="l-tichk">✓</span> Flexibelt & skalbart</div>
-    <div class="l-ti"><span class="l-tichk">✓</span> Inga dolda avgifter</div>
-    <div class="l-ti"><span class="l-tichk">✓</span> Nordisk compliance</div>
-    <div class="l-ti"><span class="l-tichk">✓</span> Fullt arbetsgivaransvar</div>
+    <div class="l-ti"><span class="l-tichk">✓</span> <span data-i18n="trust.1">Trygt & bæredygtigt</span></div>
+    <div class="l-ti"><span class="l-tichk">✓</span> <span data-i18n="trust.2">Enkelt & smidigt</span></div>
+    <div class="l-ti"><span class="l-tichk">✓</span> <span data-i18n="trust.3">Fleksibelt & skalerbart</span></div>
+    <div class="l-ti"><span class="l-tichk">✓</span> <span data-i18n="trust.4">Ingen skjulte gebyrer</span></div>
+    <div class="l-ti"><span class="l-tichk">✓</span> <span data-i18n="trust.5">Nordisk compliance</span></div>
+    <div class="l-ti"><span class="l-tichk">✓</span> <span data-i18n="trust.6">Fuldt arbejdsgiveransvar</span></div>
   </div>
 
   <!-- TJÄNSTER -->
   <section class="l-sec l-sec-gray" id="tjanster">
-    <div class="l-tag">Tjänster</div>
-    <h2 class="l-title">Allt du behöver för <br>flexibel personalhantering</h2>
-    <p class="l-sub">Vi erbjuder anpassade lösningar för företag i alla storlekar — från enkel löneadministration till fullständig automatisering.</p>
+    <div class="l-tag" data-i18n="svc.tag">Ydelser</div>
+    <h2 class="l-title" data-i18n-html="svc.title">Alt hvad I har brug for til <br>fleksibel personalehåndtering</h2>
+    <p class="l-sub" data-i18n="svc.sub">Vi tilbyder tilpassede løsninger til virksomheder i alle størrelser — fra enkel lønadministration til fuld automatisering.</p>
     <div class="l-services-grid">
       <div class="l-svc">
-        <div class="l-svc-tag">Populärast</div>
+        <div class="l-svc-tag" data-i18n="svc.popular">Mest populær</div>
         <div class="l-svc-icon l-svc-icon-or"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span></div>
         <h3>SalaryInvoicing</h3>
-        <p>Nordens ledande samarbetsportal för företag och konsulter. En komplett plattform för löne- och personaladministration där konsulten fakturerar via oss och vi hanterar hela arbetsgivaransvaret.</p>
+        <p data-i18n="svc.1.p">Nordens førende samarbejdsportal for virksomheder og konsulenter. En komplet platform til løn- og personaleadministration, hvor konsulenten fakturerer gennem os, og vi bærer hele arbejdsgiveransvaret.</p>
       </div>
       <div class="l-svc">
         <div class="l-svc-icon l-svc-icon-bl"><span class="lci"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span></div>
         <h3>Excel-import</h3>
-        <p>Intuitiv och lättanvänd mallösning för löneunderlag. Ladda upp en Excel-fil med timlöner, arvoden och tillägg — vi hanterar resten. Anpassad för nordiska krav och utformad för enkelhet.</p>
+        <p data-i18n="svc.2.p">Intuitiv skabelonløsning til løngrundlag. Upload en Excel-fil med timeløn, honorarer og tillæg — vi klarer resten. Tilpasset nordiske krav og bygget til enkelhed.</p>
       </div>
       <div class="l-svc">
         <div class="l-svc-icon l-svc-icon-gn"><span class="lci"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span></div>
         <h3>API-integration</h3>
-        <p>Automatiserad administrationslösning för företag som vill effektivisera sin personal- och lönehantering, oavsett vilket affärssystem ni använder. Sömlös integration mot ert befintliga system.</p>
+        <p data-i18n="svc.3.p">Automatiseret administrationsløsning til virksomheder, der vil effektivisere deres personale- og lønhåndtering, uanset hvilket forretningssystem I bruger. Sømløs integration med jeres eksisterende system.</p>
       </div>
       <div class="l-svc">
         <div class="l-svc-icon l-svc-icon-pu"><span class="lci"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span></div>
         <h3>Workforce Management</h3>
-        <p>Vår heltäckande lösning där Invoicery Business tar fullt arbetsgivaransvar. Vi hanterar anställningar, försäkringar, skattedeklarationer och alla personalfrågor — ni fokuserar på kärnverksamheten.</p>
+        <p data-i18n="svc.4.p">Helhedsløsning med fuldt arbejdsgiveransvar. Vi håndterer rekruttering, ansættelse, løn og afvikling — I fokuserer på jeres kerneforretning.</p>
       </div>
     </div>
   </section>
 
   <!-- SÅ FUNKAR DET -->
   <section class="l-sec" id="sa-funkar">
-    <div class="l-tag">Så funkar det</div>
-    <h2 class="l-title">Tre enkla steg</h2>
-    <p class="l-sub">Kom igång på minuter. Inga komplicerade avtal eller långa processer — vi gör det enkelt för er.</p>
+    <div class="l-tag" data-i18n="nav.how">Sådan fungerer det</div>
+    <h2 class="l-title" data-i18n="how.title">Tre enkle trin</h2>
+    <p class="l-sub" data-i18n="how.sub">Kom i gang på minutter. Ingen komplicerede aftaler eller lange processer — vi gør det nemt for jer.</p>
     <div class="l-steps">
       <div class="l-step">
         <div class="l-step-n">1</div>
-        <h3>Registrera ert uppdrag</h3>
-        <p>Konsulten skapar ett uppdrag i portalen med uppgifter om arbetsgivaren, antal timmar, arvode och period. Det tar under fem minuter.</p>
+        <h3 data-i18n="how.1.h">Registrér opgaven</h3>
+        <p data-i18n="how.1.p">Konsulenten opretter en opgave i portalen med oplysninger om virksomheden, antal timer, honorar og periode. Det tager under et minut.</p>
       </div>
       <div class="l-step">
         <div class="l-step-n">2</div>
-        <h3>Företaget godkänner</h3>
-        <p>Uppdragsgivaren loggar in och godkänner uppdraget med ett klick. Vi skickar fakturan direkt till företaget med alla juridiska krav uppfyllda.</p>
+        <h3 data-i18n="how.2.h">Virksomheden godkender</h3>
+        <p data-i18n="how.2.p">Virksomheden logger ind og godkender opgaven med ét klik. Vi sender fakturaen direkte til virksomheden med tydelig specifikation.</p>
       </div>
       <div class="l-step">
         <div class="l-step-n">3</div>
-        <h3>Lön utbetalas</h3>
-        <p>När företaget betalat fakturan beräknar och betalar vi ut lönen till konsulten med korrekt skatteavdrag, socialavgifter och lönespec.</p>
+        <h3 data-i18n="how.3.h">Lønnen udbetales</h3>
+        <p data-i18n="how.3.p">Når virksomheden har betalt fakturaen, beregner og udbetaler vi lønnen til konsulenten med korrekt A-skat, AM-bidrag, ATP og forsikringer.</p>
       </div>
     </div>
   </section>
 
   <!-- PRISER -->
   <section class="l-sec-blue" id="priser">
-    <div class="l-tag">Priser</div>
-    <h2 class="l-title l-title-w">Enkel, transparent prissättning</h2>
-    <p class="l-sub l-sub-w">En fast avgift. Inga dolda kostnader. Inga setup-avgifter.</p>
+    <div class="l-tag" data-i18n="nav.pricing">Priser</div>
+    <h2 class="l-title l-title-w" data-i18n="price.title">Enkel, gennemsigtig prissætning</h2>
+    <p class="l-sub l-sub-w" data-i18n="price.sub">Ét fast gebyr. Ingen skjulte omkostninger. Intet opstartsgebyr.</p>
     <div class="l-pricing-grid">
       <div class="l-pcard">
-        <div><span class="l-psym">%</span><span class="l-pbig">6</span><span class="l-punit">av fakturerat belopp</span></div>
-        <p class="l-pdesc">Allt-i-ett-lösning för lönehantering och personaladministration</p>
+        <div><span class="l-psym">%</span><span class="l-pbig">6</span><span class="l-punit" data-i18n="price.rate.of">af det fakturerede beløb</span></div>
+        <p class="l-pdesc" data-i18n="price.allin">Alt-i-én-løsning til lønhåndtering og personaleadministration</p>
         <ul class="l-pfeat">
           <li><span class="l-pfeat-chk">✓</span> Fullt arbetsgivaransvar</li>
           <li><span class="l-pfeat-chk">✓</span> Lönehantering & utbetalning</li>
@@ -488,17 +498,17 @@ textarea.inp{resize:vertical;min-height:78px}
           <li><span class="l-pfeat-chk">✓</span> Arbetsgivarintyg</li>
           <li><span class="l-pfeat-chk">✓</span> Tillgång till SalaryInvoicing-portalen</li>
         </ul>
-        <button class="btn btn-or btn-fw btn-lg" onclick="openLogin()">Kom igång</button>
+        <button class="btn btn-or btn-fw btn-lg" onclick="openLogin()" data-i18n="nav.cta">Kom i gang</button>
       </div>
       <div class="l-calc-card">
         <div class="l-calc-title" style="display:flex;align-items:center;gap:.5rem"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Räkna ut din lön</div>
-        <div class="l-calc-lbl">Fakturerat belopp (kr)</div>
+        <div class="l-calc-lbl" data-i18n="price.calc.invoice">Fakturabeløb (kr.)</div>
         <input class="l-calc-inp" type="number" id="calc-inv" placeholder="100 000" oninput="calcLon()">
-        <div class="l-calc-lbl">Din skattenivå (%)</div>
+        <div class="l-calc-lbl" data-i18n="price.calc.tax">Din trækprocent (%)</div>
         <input class="l-calc-inp" type="number" id="calc-tax" placeholder="32" oninput="calcLon()" value="32">
         <div class="l-bdown" id="calc-bd"></div>
         <div class="l-calc-res" id="calc-res" style="display:none">
-          <div class="l-cr-lbl">Din nettolön efter skatt</div>
+          <div class="l-cr-lbl" data-i18n="price.calc.result">Din nettoløn efter skat</div>
           <div class="l-cr-amt" id="calc-net">—</div>
         </div>
       </div>
@@ -507,40 +517,40 @@ textarea.inp{resize:vertical;min-height:78px}
 
   <!-- KUNDCASE -->
   <section class="l-sec l-sec-gray" id="kundcase">
-    <div class="l-tag">Kundcase</div>
-    <h2 class="l-title">Företag som litar på oss</h2>
-    <p class="l-sub">Från evenemangsbranschen till tech — vi hanterar flexibel arbetskraft för företag i hela Norden.</p>
+    <div class="l-tag" data-i18n="case.tag">Kundecases</div>
+    <h2 class="l-title" data-i18n="case.title">Virksomheder der stoler på os</h2>
+    <p class="l-sub" data-i18n="case.sub">Fra eventbranchen til tech — vi håndterer fleksibel arbejdskraft for virksomheder i hele Norden.</p>
     <div class="l-cases-grid">
       <div class="l-case">
         <div class="l-stars">★★★★★</div>
-        <p class="l-ctext">"Invoicery Business har gjort det möjligt för oss att skala upp med extrapersonal utan byråkratiska hinder. Allt sköts smidigt och vi slipper oroa oss för arbetsgivaransvar."</p>
+        <p class="l-ctext" data-i18n="case.1.q">"Invoicery Business har gjort det muligt for os at skalere op med ekstra personale uden bureaukratiske forhindringer. Alt håndteres smidigt, og vi slipper for at bekymre os om arbejdsgiveransvar."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#2b5f8e">LE</div>
-          <div><div class="l-cname">Lides Event AB</div><div class="l-crole">Evenemang & logistik</div></div>
+          <div><div class="l-cname">Lides Event AB</div><div class="l-crole" data-i18n="case.1.r">Event & logistik</div></div>
         </div>
       </div>
       <div class="l-case">
         <div class="l-stars">★★★★★</div>
-        <p class="l-ctext">"Som kommunikationsbyrå har vi varierande behov av specialister. Invoicery Business gör det enkelt att ta in rätt kompetens när vi behöver det — utan krångel."</p>
+        <p class="l-ctext" data-i18n="case.2.q">"Som kommunikationsbureau har vi svingende behov for specialister. Invoicery Business gør det nemt at hente den rigtige kompetence ind, når vi har brug for den — uden bøvl."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#f0a020">BE</div>
-          <div><div class="l-cname">Butterfly Effect</div><div class="l-crole">Kommunikation & PR</div></div>
+          <div><div class="l-cname">Butterfly Effect</div><div class="l-crole" data-i18n="case.2.r">Kommunikation & PR</div></div>
         </div>
       </div>
       <div class="l-case">
         <div class="l-stars">★★★★★</div>
-        <p class="l-ctext">"Vi behöver snabbt kunna ta in personal för korta uppdrag. Med Invoicery Business löser vi det på minuter och konsulterna är nöjda med hur smidigt allt fungerar."</p>
+        <p class="l-ctext" data-i18n="case.3.q">"Vi har brug for hurtigt at kunne tage personale ind til korte opgaver. Med Invoicery Business løser vi det på minutter, og konsulenterne er tilfredse med, hvor smidigt det hele fungerer."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#16a34a">GU</div>
-          <div><div class="l-cname">Gubbe</div><div class="l-crole">Bemanning & rekrytering</div></div>
+          <div><div class="l-cname">Gubbe</div><div class="l-crole" data-i18n="case.3.r">Vikar & rekruttering</div></div>
         </div>
       </div>
       <div class="l-case">
         <div class="l-stars">★★★★★</div>
-        <p class="l-ctext">"Prisjakt använder Invoicery Business för att hantera externa IT-konsulter. Plattformen är intuitiv och vi sparar massor av tid på administration varje månad."</p>
+        <p class="l-ctext" data-i18n="case.4.q">"Prisjakt bruger Invoicery Business til at håndtere eksterne IT-konsulenter. Platformen er intuitiv, og vi sparer massevis af tid på administration hver måned."</p>
         <div class="l-cauthor">
           <div class="l-cav" style="background:#7c3aed">PS</div>
-          <div><div class="l-cname">Prisjakt</div><div class="l-crole">E-handel & tech</div></div>
+          <div><div class="l-cname">Prisjakt</div><div class="l-crole" data-i18n="case.4.r">E-handel & tech</div></div>
         </div>
       </div>
     </div>
@@ -548,39 +558,39 @@ textarea.inp{resize:vertical;min-height:78px}
 
   <!-- FAQ -->
   <section class="l-sec" id="faq">
-    <div class="l-tag">Vanliga frågor</div>
-    <h2 class="l-title">Frågor & svar</h2>
+    <div class="l-tag" data-i18n="faq.tag">Ofte stillede spørgsmål</div>
+    <h2 class="l-title" data-i18n="faq.title">Spørgsmål & svar</h2>
     <div class="l-faq">
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)">Vad innebär fullt arbetsgivaransvar? <span class="l-faq-icon">+</span></button>
-        <div class="l-faq-a"><p>Det innebär att Invoicery Business formellt är arbetsgivare för konsulten. Vi hanterar alla arbetsgivarskyldigheter: sociala avgifter, skattedeklarationer, försäkringar, semesterersättning och mer. Ert företag är uppdragsgivare och betalar fakturan — vi sköter allt administrativt.</p></div>
+        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.1.q">Hvad betyder fuldt arbejdsgiveransvar?</span> <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p data-i18n="faq.1.a">Det betyder, at Invoicery Business formelt er arbejdsgiver for konsulenten. Vi håndterer alle arbejdsgiverforpligtelser — ansættelseskontrakt, lønudbetaling, A-skat, AM-bidrag, ATP, forsikringer og arbejdsmiljøansvar.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)">Hur beräknas den 6-procentiga avgiften? <span class="l-faq-icon">+</span></button>
-        <div class="l-faq-a"><p>Avgiften beräknas på det totala fakturerade beloppet inklusive moms. Det är en allt-i-ett-avgift som täcker löneadministration, arbetsgivaravgifter, försäkringar och vår plattform. Inga ytterligare kostnader tillkommer.</p></div>
+        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.2.q">Hvordan beregnes gebyret på 6%?</span> <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p data-i18n="faq.2.a">Gebyret beregnes af det fakturerede beløb. Det er et alt-i-én-gebyr, der dækker lønadministration, arbejdsgiverbidrag, forsikringer og vores platform. Der kommer ingen yderligere omkostninger.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)">Vilka länder i Norden täcker ni? <span class="l-faq-icon">+</span></button>
-        <div class="l-faq-a"><p>Vi täcker Sverige, Norge, Danmark och Finland. Vår plattform hanterar lokala skatteregler, arbetsrätt och löneadministration i respektive land, anpassat för varje marknad.</p></div>
+        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.3.q">Hvilke lande i Norden dækker I?</span> <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p data-i18n="faq.3.a">Vi dækker Danmark, Norge, Sverige og Finland. Vores platform håndterer lokale skatteregler, ansættelsesret og lønadministration i hvert land.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)">Hur snabbt kan en konsult komma igång? <span class="l-faq-icon">+</span></button>
-        <div class="l-faq-a"><p>Registreringen tar under 5 minuter. Konsulten skapar ett konto, fyller i personuppgifter och bankuppgifter, och kan sedan direkt skapa sitt första uppdrag. Vi verifierar kontot inom en arbetsdag.</p></div>
+        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.4.q">Hvor hurtigt kan en konsulent komme i gang?</span> <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p data-i18n="faq.4.a">Registreringen tager under 5 minutter. Konsulenten opretter en konto, udfylder person- og bankoplysninger og kan derefter registrere sin første opgave med det samme.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)">Vad händer om mitt företag redan har ett lönesystem? <span class="l-faq-icon">+</span></button>
-        <div class="l-faq-a"><p>Inga problem. Via vår API-integration kopplar vi oss mot de flesta affärssystem. Vi erbjuder även Excel-import för en enklare start. Kontakta oss för att diskutera er specifika situation.</p></div>
+        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.5.q">Hvad hvis min virksomhed allerede har et lønsystem?</span> <span class="l-faq-icon">+</span></button>
+        <div class="l-faq-a"><p data-i18n="faq.5.a">Intet problem. Via vores API-integration kobler vi os til de fleste forretningssystemer. Vi tilbyder også Excel-import til enklere løngrundlag.</p></div>
       </div>
     </div>
   </section>
 
   <!-- CTA -->
   <section class="l-cta" id="kontakt">
-    <h2>Redo att förenkla er personalhantering?</h2>
-    <p>Gå med hundratals nordiska företag som redan använder Invoicery Business. Kom igång idag — utan bindningstid.</p>
+    <h2 data-i18n="cta.title">Klar til at forenkle jeres personalehåndtering?</h2>
+    <p data-i18n="cta.sub">Slut jer til hundredvis af nordiske virksomheder, der allerede bruger Invoicery Business. Kom i gang i dag — uden binding.</p>
     <div class="l-cta-actions">
-      <button class="l-cta-btn-w" onclick="openLogin()">Skapa konto gratis</button>
-      <button class="l-cta-btn-o" onclick="openLogin()">Logga in</button>
+      <button class="l-cta-btn-w" onclick="openLogin()" data-i18n="cta.primary">Opret konto gratis</button>
+      <button class="l-cta-btn-o" onclick="openLogin()" data-i18n="nav.login">Log ind</button>
     </div>
   </section>
 
@@ -592,11 +602,11 @@ textarea.inp{resize:vertical;min-height:78px}
           <div style="width:26px;height:26px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#fff">IB</div>
           <span style="font-weight:800;color:#fff;font-size:.9rem">Invoicery Business</span>
         </div>
-        <p style="font-size:.83rem;line-height:1.68;max-width:280px;margin-bottom:1rem">En del av Invoicery Group — Sveriges ledande organisation inom uppdragsbaserad personal och löneadministration i Norden.</p>
+        <p style="font-size:.83rem;line-height:1.68;max-width:280px;margin-bottom:1rem" data-i18n="foot.tagline">En del af Invoicery Group — Nordens førende organisation inden for opgavebaseret personale og lønadministration siden 1999.</p>
         <p style="font-size:.78rem">© 2026 Invoicery Business AB</p>
       </div>
       <div class="l-fcol">
-        <h4>Tjänster</h4>
+        <h4 data-i18n="svc.tag">Ydelser</h4>
         <ul>
           <li><a href="#">SalaryInvoicing</a></li>
           <li><a href="#">Excel-import</a></li>
@@ -605,21 +615,21 @@ textarea.inp{resize:vertical;min-height:78px}
         </ul>
       </div>
       <div class="l-fcol">
-        <h4>Företaget</h4>
+        <h4 data-i18n="foot.company">Virksomheden</h4>
         <ul>
-          <li><a href="#">Om oss</a></li>
-          <li><a href="#">Goda arbetsvillkor</a></li>
-          <li><a href="#">Plattformsbolag</a></li>
-          <li><a href="#">Press</a></li>
+          <li><a href="#" data-i18n="foot.about">Om os</a></li>
+          <li><a href="#" data-i18n="foot.conditions">Gode arbejdsvilkår</a></li>
+          <li><a href="#" data-i18n="foot.platform">Platformsselskab</a></li>
+          <li><a href="#" data-i18n="foot.press">Presse</a></li>
         </ul>
       </div>
       <div class="l-fcol">
-        <h4>Support</h4>
+        <h4 data-i18n="foot.support">Support</h4>
         <ul>
-          <li><a href="#">Frågor & svar</a></li>
-          <li><a href="#">Kontakta oss</a></li>
-          <li><a href="#">Integritetspolicy</a></li>
-          <li><a href="#">Användarvillkor</a></li>
+          <li><a href="#" data-i18n="faq.title">Spørgsmål & svar</a></li>
+          <li><a href="#" data-i18n="foot.contactUs">Kontakt os</a></li>
+          <li><a href="#" data-i18n="foot.privacy">Persondatapolitik</a></li>
+          <li><a href="#" data-i18n="foot.terms">Brugervilkår</a></li>
         </ul>
       </div>
     </div>
@@ -640,25 +650,20 @@ textarea.inp{resize:vertical;min-height:78px}
       </div>
     </div>
     <div class="l-modal-body">
-      <div class="l-modal-title">Välkommen tillbaka</div>
-      <div class="l-modal-sub">Logga in på ditt konto</div>
-      <div class="l-login-err" id="l-err">Felaktig e-postadress eller lösenord.</div>
+      <div class="l-modal-title" data-i18n="login.welcome">Velkommen tilbage</div>
+      <div class="l-modal-sub" data-i18n="login.sub">Log ind på din konto</div>
+      <div class="l-login-err" id="l-err" data-i18n="login.error">Forkert e-mail eller adgangskode.</div>
       <div class="l-inp-g">
-        <label class="l-inp-lbl">E-postadress</label>
-        <input class="l-inp" type="email" id="l-email" placeholder="din@email.se" autocomplete="email">
+        <label class="l-inp-lbl" data-i18n="login.email">E-mail</label>
+        <input class="l-inp" type="email" id="l-email" placeholder="navn@firma.dk" data-i18n-placeholder="login.emailPh" autocomplete="email">
       </div>
       <div class="l-inp-g">
-        <label class="l-inp-lbl">Lösenord</label>
+        <label class="l-inp-lbl" data-i18n="login.password">Adgangskode</label>
         <input class="l-inp" type="password" id="l-pw" placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="l-login-btn" onclick="doLogin()">Logga in</button>
-      <div class="l-demo-box">
-        <div class="l-demo-lbl">Demo-konton</div>
-        <button class="l-demo-btn" onclick="fillDemo('sara@konsult.se','klient123')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Konsult (skapa uppdrag) <em>sara@konsult.se</em></button>
-        <button class="l-demo-btn" onclick="fillDemo('info@foretag.se','kund123')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/></svg></span> Företag (godkänn uppdrag) <em>info@foretag.se</em></button>
-        <button class="l-demo-btn" onclick="fillDemo('admin@invoicerybusiness.se','admin123')"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></span> Superadmin <em>admin@invoicerybusiness.se</em></button>
+      <button class="l-login-btn" onclick="doLogin()" data-i18n="nav.login">Log ind</button>
+      <div class="l-demo-box"><div class="l-demo-lbl" data-i18n="login.demo">Demokonti</div><div id="demo-accounts"></div></div>
       </div>
-    </div>
   </div>
 </div>
 
@@ -672,47 +677,47 @@ textarea.inp{resize:vertical;min-height:78px}
     <div class="sb-logo-mark">IB</div>
     <div class="sb-logo-text">
       <div class="sb-logo-name">Invoicery Business</div>
-      <div class="sb-logo-sub">Portal</div>
+      <div class="sb-logo-sub" id="sb-market">—</div>
     </div>
   </a>
-  <!-- KONSULT nav -->
-  <div id="nav-konsult" class="hidden">
-    <div class="sb-section">Mitt konto</div>
+  <!-- CONSULTANT nav -->
+  <div id="nav-consultant" class="hidden">
+    <div class="sb-section" data-i18n="sb.myAccount">Min konto</div>
     <ul class="sb-nav">
-      <li><button onclick="go('k-dash')" data-v="k-dash"><span class="lci"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Översikt</button></li>
-      <li><button onclick="go('k-new')" data-v="k-new"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span> Skapa uppdrag</button></li>
-      <li><button onclick="go('k-uppdrag')" data-v="k-uppdrag"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Mina uppdrag <span class="sb-badge" id="badge-k">0</span></button></li>
+      <li><button onclick="go('c-dash')" data-v="c-dash"><span class="lci"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> <span data-i18n="nav.c.dash">Oversigt</span></button></li>
+      <li><button onclick="go('c-new')" data-v="c-new"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span> <span data-i18n="nav.c.new">Opret opgave</span></button></li>
+      <li><button onclick="go('c-list')" data-v="c-list"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> <span data-i18n="nav.c.list">Mine opgaver</span> <span class="sb-badge" id="badge-c">0</span></button></li>
     </ul>
-    <div class="sb-section">Ekonomi</div>
+    <div class="sb-section" data-i18n="sb.finance">Økonomi</div>
     <ul class="sb-nav">
-      <li><button onclick="go('k-lon')" data-v="k-lon"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Lönespec</button></li>
-      <li><button onclick="go('k-intyg')" data-v="k-intyg"><span class="lci"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span> Arbetsgivarintyg</button></li>
+      <li><button onclick="go('c-pay')" data-v="c-pay"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> <span data-i18n="nav.c.pay">Lønsedler</span></button></li>
+      <li><button onclick="go('c-cert')" data-v="c-cert"><span class="lci"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span> <span data-i18n="nav.c.cert">Ansættelsesbevis</span></button></li>
     </ul>
-    <div class="sb-section">Konto</div>
+    <div class="sb-section" data-i18n="sb.account">Konto</div>
     <ul class="sb-nav">
-      <li><button onclick="go('k-profil')" data-v="k-profil"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Profil & inställningar</button></li>
+      <li><button onclick="go('c-profile')" data-v="c-profile"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> <span data-i18n="nav.c.profile">Profil</span></button></li>
     </ul>
   </div>
-  <!-- FÖRETAG nav -->
-  <div id="nav-foretag" class="hidden">
-    <div class="sb-section">Mitt konto</div>
+  <!-- COMPANY nav -->
+  <div id="nav-company" class="hidden">
+    <div class="sb-section" data-i18n="sb.myAccount">Min konto</div>
     <ul class="sb-nav">
-      <li><button onclick="go('f-dash')" data-v="f-dash"><span class="lci"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Översikt</button></li>
-      <li><button onclick="go('f-godkann')" data-v="f-godkann"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Godkänn uppdrag <span class="sb-badge" id="badge-f">0</span></button></li>
-      <li><button onclick="go('f-alla')" data-v="f-alla"><span class="lci"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Alla uppdrag</button></li>
+      <li><button onclick="go('b-dash')" data-v="b-dash"><span class="lci"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> <span data-i18n="nav.b.dash">Oversigt</span></button></li>
+      <li><button onclick="go('b-approve')" data-v="b-approve"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> <span data-i18n="nav.b.approve">Godkend opgaver</span> <span class="sb-badge" id="badge-b">0</span></button></li>
+      <li><button onclick="go('b-all')" data-v="b-all"><span class="lci"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> <span data-i18n="nav.b.all">Alle opgaver</span></button></li>
     </ul>
-    <div class="sb-section">Ekonomi</div>
+    <div class="sb-section" data-i18n="sb.finance">Økonomi</div>
     <ul class="sb-nav">
-      <li><button onclick="go('f-fakturor')" data-v="f-fakturor"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Fakturor</button></li>
+      <li><button onclick="go('b-invoices')" data-v="b-invoices"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> <span data-i18n="nav.b.invoices">Fakturaer</span></button></li>
     </ul>
-    <div class="sb-section">Konto</div>
+    <div class="sb-section" data-i18n="sb.account">Konto</div>
     <ul class="sb-nav">
-      <li><button onclick="go('f-profil')" data-v="f-profil"><span class="lci"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/></svg></span> Företagsprofil</button></li>
+      <li><button onclick="go('b-profile')" data-v="b-profile"><span class="lci"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/></svg></span> <span data-i18n="nav.b.profile">Virksomhedsprofil</span></button></li>
     </ul>
   </div>
   <div class="sb-bot">
     <div class="sb-user"><div class="sb-av" id="sb-av">?</div><div><div class="sb-name" id="sb-nm">—</div><div class="sb-role" id="sb-rl">—</div></div></div>
-    <button class="btn btn-gh btn-sm btn-fw" onclick="logout()">Logga ut</button>
+    <button class="btn btn-gh btn-sm btn-fw" onclick="logout()" data-i18n="shell.logout">Log ud</button>
   </div>
 </aside>
 <div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
@@ -720,91 +725,135 @@ textarea.inp{resize:vertical;min-height:78px}
   <div class="topbar">
     <button class="hamburger" onclick="toggleSidebar()">☰</button>
     <div><div class="tb-title" id="tb-ttl">—</div><div class="tb-sub" id="tb-sub">—</div></div>
-    <div style="font-size:.76rem;color:var(--muted)" id="tb-date"></div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:1rem">
+      <div style="font-size:.76rem;color:var(--muted)" id="tb-date"></div>
+    </div>
   </div>
   <div class="pg" id="pg"></div>
 </div>
 </div>
 </div><!-- /platform -->
 
+<script src="ib-markets.js"></script>
+<script src="ib-i18n.js"></script>
 <script src="ib-core.js"></script>
 <script>
-/* ═══════════════════ DATA ═══════════════════
-   Storage, seed data, payroll math and formatting all live in ib-core.js,
-   which is shared with invoicery-business-admin.html. Do not reimplement
-   any of it here — see CLAUDE.md. */
-const {DB,DBs,getUsers,getUppdrag,getForetag,saveUppdrag,saveUsers,
-       seed,nextUppdragId,calcPayroll,fmt,fmtN,esc,today,STATUS}=IB;
+/* ═══════════════════ BOOT ═══════════════════
+   Storage, seed, payroll and formatting live in ib-core.js; market config in
+   ib-markets.js; copy in ib-i18n.js. Nothing here recomputes money or
+   hardcodes a user-visible string — see CLAUDE.md. */
+const {getUsers,getAssignments,saveAssignments,saveUsers,getSession,saveSession,
+       clearSession,seedAll,nextAssignmentId,invoiceNumber,calcPayroll,
+       calcPayrollBatch,fmt,fmtN,fmtDate,fmtDateLong,esc,today,STATUS,TYPE}=IB;
+const t=IB.t;
+
+/* ═══════════════════ MARKET ═══════════════════ */
+function currentMarket(){return IB.market()}
+
+function marketSwitcherHTML(compact){
+  const cur=currentMarket();
+  return `<div class="mkt-switch${compact?' mkt-compact':''}">
+    ${IBMarkets.list().map(m=>`<button class="mkt-btn${m.code===cur.code?' active':''}"
+      onclick="switchMarket('${m.code}')" title="${esc(m.entity.legalName)}">
+      <span class="mkt-flag">${m.flag}</span><span class="mkt-code">${m.code}</span>
+    </button>`).join('')}
+  </div>`;
+}
+
+window.switchMarket=function(code){
+  if(code===IB.marketCode()) return;
+  // Markets are separate legal entities with separate data. Switching ends
+  // the session rather than carrying a login across books.
+  IB.setMarket(code);
+  clearSession();
+  ME=null;
+  location.reload();
+}
+
+/* Demo credentials differ per market, so the login box is filled at runtime
+   from that market's seeded users rather than hardcoded in the markup. */
+const DEMO_ICON={
+  consultant:'<span class="lci"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>',
+  company:'<span class="lci"><svg viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 0-2 2h-2"/></svg></span>',
+  admin:'<span class="lci"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>'
+};
+function renderDemoAccounts(){
+  const host=document.getElementById('demo-accounts');
+  if(!host) return;
+  const users=getUsers();
+  const pick=['consultant','company','admin']
+    .map(role=>users.find(u=>u.role===role)).filter(Boolean);
+  host.innerHTML=pick.map(u=>`<button class="l-demo-btn" onclick="fillDemo('${esc(u.email)}','${esc(u.password)}')">
+    ${DEMO_ICON[u.role]||''} ${esc(t('login.demo.'+u.role))} <em>${esc(u.email)}</em></button>`).join('');
+}
+
+function applyMarketChrome(){
+  const m=currentMarket();
+  document.documentElement.lang=m.lang;
+  document.title=t('meta.title');
+  IBi18n.applyI18n(document);
+  const host=document.getElementById('market-switch');
+  if(host) host.innerHTML=marketSwitcherHTML();
+  const sbm=document.getElementById('sb-market');
+  if(sbm) sbm.textContent=m.flag+' '+m.name;
+  renderDemoAccounts();
+}
 
 /* ═══════════════════ AUTH ═══════════════════ */
-let ME = null;
+let ME=null;
 
-window.openLogin = function(){
+window.openLogin=function(){
   document.getElementById('login-modal').classList.remove('hidden');
   document.body.style.overflow='hidden';
 }
-window.closeLogin = function(){
+window.closeLogin=function(){
   document.getElementById('login-modal').classList.add('hidden');
   document.body.style.overflow='';
 }
-window.fillDemo = function(e,p){
+window.fillDemo=function(e,p){
   document.getElementById('l-email').value=e;
   document.getElementById('l-pw').value=p;
 }
-window.doLogin = function(){
+window.doLogin=function(){
   const email=document.getElementById('l-email').value.trim();
   const pw=document.getElementById('l-pw').value;
   const user=getUsers().find(u=>u.email===email&&u.password===pw);
   if(!user){document.getElementById('l-err').style.display='block';return}
   document.getElementById('l-err').style.display='none';
-  if(user.role==='admin'){
-    window.location.href='invoicery-business-admin.html';
-    return;
-  }
-  ME=user; DBs('IB_SESSION',user);
+  if(user.role==='admin'){window.location.href='invoicery-business-admin.html';return}
+  ME=user; saveSession(user);
   closeLogin();
   launchPlatform();
 }
-
-document.getElementById('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-document.getElementById('l-email').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin()});
 
 function launchPlatform(){
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('platform').classList.remove('hidden');
   document.querySelector('.sb').classList.remove('hidden');
   document.body.style.background='var(--bg)';
-  const ini=ME.name.split(' ').map(n=>n[0]).join('').slice(0,2);
-  document.getElementById('sb-av').textContent=ini;
+  document.getElementById('sb-av').textContent=ME.name.split(' ').map(n=>n[0]).join('').slice(0,2);
   document.getElementById('sb-nm').textContent=ME.name;
-  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('sv-SE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  if(ME.role==='konsult'){
-    document.getElementById('nav-konsult').classList.remove('hidden');
-    document.getElementById('nav-foretag').classList.add('hidden');
-    document.getElementById('sb-rl').textContent='Konsult';
-    go('k-dash');
-  } else {
-    document.getElementById('nav-konsult').classList.add('hidden');
-    document.getElementById('nav-foretag').classList.remove('hidden');
-    document.getElementById('sb-rl').textContent='Företag';
-    go('f-dash');
-  }
+  document.getElementById('tb-date').textContent=fmtDateLong();
+  const isConsultant=ME.role==='consultant';
+  document.getElementById('nav-consultant').classList.toggle('hidden',!isConsultant);
+  document.getElementById('nav-company').classList.toggle('hidden',isConsultant);
+  document.getElementById('sb-rl').textContent=t(isConsultant?'shell.consultant':'shell.company');
+  applyMarketChrome();
+  go(isConsultant?'c-dash':'b-dash');
   updBadges();
 }
 
 function toggleSidebar(){
   const sb=document.querySelector('.sb');
   const ov=document.getElementById('sb-overlay');
-  const open=sb.classList.toggle('open');
-  ov.classList.toggle('show',open);
+  ov.classList.toggle('show',sb.classList.toggle('open'));
 }
 function closeSidebar(){
   document.querySelector('.sb').classList.remove('open');
   document.getElementById('sb-overlay').classList.remove('show');
 }
 function logout(){
-  ME=null; localStorage.removeItem('IB_SESSION');
+  ME=null; clearSession();
   document.getElementById('platform').classList.add('hidden');
   document.querySelector('.sb').classList.add('hidden');
   document.getElementById('landing').classList.remove('hidden');
@@ -814,561 +863,430 @@ function logout(){
 function backToLanding(){logout()}
 
 function updBadges(){
-  const ups=getUppdrag();
-  const bk=document.getElementById('badge-k');
-  const bf=document.getElementById('badge-f');
-  if(ME&&bk&&ME.role==='konsult') bk.textContent=ups.filter(u=>u.konsultId===ME.id&&u.status==='väntar_godkännande').length;
-  if(ME&&bf&&ME.role==='foretag') bf.textContent=ups.filter(u=>u.foretagId===ME.id&&u.status==='väntar_godkännande').length;
+  if(!ME) return;
+  const list=getAssignments();
+  const bc=document.getElementById('badge-c'), bb=document.getElementById('badge-b');
+  if(bc&&ME.role==='consultant')
+    bc.textContent=list.filter(a=>a.consultantId===ME.id&&a.status===STATUS.PENDING).length;
+  if(bb&&ME.role==='company')
+    bb.textContent=list.filter(a=>a.companyId===ME.id&&a.status===STATUS.PENDING).length;
 }
 
 /* ═══════════════════ ROUTING ═══════════════════ */
-const TITLES={
-  'k-dash':['Översikt','Välkommen till Invoicery Business'],
-  'k-new':['Skapa uppdrag','Registrera ett nytt uppdrag'],
-  'k-uppdrag':['Mina uppdrag','Status och historik för dina uppdrag'],
-  'k-lon':['Lönespecifikationer','Dina lönespec från Invoicery Business'],
-  'k-intyg':['Arbetsgivarintyg','Generera intyg för en period'],
-  'k-profil':['Profil & inställningar','Dina personuppgifter och kontouppgifter'],
-  'f-dash':['Översikt','Välkommen till företagsportalen'],
-  'f-godkann':['Godkänn uppdrag','Granska och godkänn inkomna uppdrag'],
-  'f-alla':['Alla uppdrag','Komplett uppdragshistorik'],
-  'f-fakturor':['Fakturor','Fakturor från Invoicery Business'],
-  'f-profil':['Företagsprofil','Ert företags uppgifter'],
+const VIEWS={
+  'c-dash':cDash,'c-new':cNew,'c-list':cList,'c-pay':cPay,'c-cert':cCert,'c-profile':cProfile,
+  'b-dash':bDash,'b-approve':bApprove,'b-all':bAll,'b-invoices':bInvoices,'b-profile':bProfile
 };
 
 function go(v){
   closeSidebar();
   document.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
-  const t=TITLES[v]||[v,''];
-  document.getElementById('tb-ttl').textContent=t[0];
-  document.getElementById('tb-sub').textContent=t[1];
-  const el=document.getElementById('pg');
-  if(v==='k-dash') el.innerHTML=kDash();
-  else if(v==='k-new') el.innerHTML=kNew();
-  else if(v==='k-uppdrag') el.innerHTML=kUppdrag();
-  else if(v==='k-lon') el.innerHTML=kLon();
-  else if(v==='k-intyg') el.innerHTML=kIntyg();
-  else if(v==='k-profil') el.innerHTML=kProfil();
-  else if(v==='f-dash') el.innerHTML=fDash();
-  else if(v==='f-godkann') el.innerHTML=fGodkann();
-  else if(v==='f-alla') el.innerHTML=fAlla();
-  else if(v==='f-fakturor') el.innerHTML=fFakturor();
-  else if(v==='f-profil') el.innerHTML=fProfil();
+  const suffix=v.replace('-','.');
+  document.getElementById('tb-ttl').textContent=t('title.'+suffix);
+  document.getElementById('tb-sub').textContent=t('sub.'+suffix);
+  const fn=VIEWS[v];
+  document.getElementById('pg').innerHTML=fn?fn():'';
   window.scrollTo(0,0);
 }
 
 /* ═══════════════════ HELPERS ═══════════════════ */
-/* fmt / fmtN come from ib-core.js. statusBadge stays local — the consultant
-   and admin apps intentionally render different badge markup. */
 function statusBadge(s){
-  const map={
-    'godkänt':'<span class="badge b-gn">✓ Godkänt</span>',
-    'väntar_godkännande':'<span class="badge b-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Väntar godkännande</span>',
-    'utbetalt':'<span class="badge b-bl"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Utbetalt</span>',
-    'avvisat':'<span class="badge b-rd">✗ Avvisat</span>',
-    'utkast':'<span class="badge b-gr">● Utkast</span>',
-  };
-  return map[s]||`<span class="badge b-gr">${s}</span>`;
+  const cls={
+    [STATUS.APPROVED]:'b-gn',[STATUS.PENDING]:'b-am',[STATUS.PAID]:'b-bl',
+    [STATUS.REJECTED]:'b-rd',[STATUS.DRAFT]:'b-gr'
+  }[s]||'b-gr';
+  const icon={
+    [STATUS.APPROVED]:'✓ ',
+    [STATUS.PENDING]:'<span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> ',
+    [STATUS.PAID]:'<span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> ',
+    [STATUS.REJECTED]:'✗ ',[STATUS.DRAFT]:'● '
+  }[s]||'';
+  return `<span class="badge ${cls}">${icon}${esc(t('status.'+s))}</span>`;
 }
 
-/* ═══════════════════ KONSULT VIEWS ═══════════════════ */
-function kDash(){
-  const ups=getUppdrag().filter(u=>u.konsultId===ME.id);
-  const aktiva=ups.filter(u=>['väntar_godkännande','godkänt'].includes(u.status));
-  const tot=ups.filter(u=>u.status==='utbetalt').reduce((a,u)=>a+u.belopp,0);
-  const väntar=ups.filter(u=>u.status==='väntar_godkännande').length;
+function empty(icon,titleKey,bodyKey,action){
+  return `<div class="empty"><div class="empty-ico">${icon}</div>
+    <h3>${esc(t(titleKey))}</h3>
+        <p>${esc(t(bodyKey))}</p>${action?'<br>'+action:''}</div>`;
+}
+
+const ICO_DOC='<span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>';
+const ICO_COIN='<span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>';
+const ICO_CHECK='<span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>';
+
+function mine(){return getAssignments().filter(a=>a.consultantId===ME.id)}
+function ours(){return getAssignments().filter(a=>a.companyId===ME.id)}
+
+/* ═══════════════════ CONSULTANT VIEWS ═══════════════════ */
+function cDash(){
+  const list=mine();
+  const active=list.filter(a=>[STATUS.PENDING,STATUS.APPROVED].includes(a.status));
+  const paid=calcPayrollBatch(list.filter(a=>a.status===STATUS.PAID));
+  const pending=list.filter(a=>a.status===STATUS.PENDING).length;
+  const recent=list.slice(0,5);
   return `
   <div class="stats-g">
-    <div class="stat"><div class="stat-ico ico-bl"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></div><div class="stat-lbl">Aktiva uppdrag</div><div class="stat-val">${aktiva.length}</div><div class="stat-d">Pågående</div></div>
-    <div class="stat"><div class="stat-ico ico-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span></div><div class="stat-lbl">Väntar godkännande</div><div class="stat-val">${väntar}</div><div class="stat-d">Hos företaget</div></div>
-    <div class="stat"><div class="stat-ico ico-gn"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div><div class="stat-lbl">Totalt utbetalt</div><div class="stat-val" style="font-size:1.1rem">${fmtN(tot)}</div><div class="stat-d">Alla perioder</div></div>
-    <div class="stat"><div class="stat-ico ico-or"><span class="lci"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span></div><div class="stat-lbl">Avslutade uppdrag</div><div class="stat-val">${ups.filter(u=>u.status==='utbetalt').length}</div><div class="stat-d up">Genomförda</div></div>
+    <div class="stat stat-or"><div class="stat-ico ico-or">${ICO_DOC}</div>
+      <div class="stat-lbl">${esc(t('c.dash.active'))}</div><div class="stat-val">${active.length}</div></div>
+    <div class="stat stat-am"><div class="stat-ico ico-am">${ICO_CHECK}</div>
+      <div class="stat-lbl">${esc(t('c.dash.pending'))}</div><div class="stat-val">${pending}</div></div>
+    <div class="stat stat-gn"><div class="stat-ico ico-gn">${ICO_COIN}</div>
+      <div class="stat-lbl">${esc(t('c.dash.paid'))}</div>
+      <div class="stat-val" style="font-size:1.3rem">${fmtN(paid.net)}</div></div>
   </div>
-  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.1rem">
-    <div class="card">
-      <div class="card-hd"><span class="card-title">Senaste uppdrag</span><button class="btn btn-or btn-sm" onclick="go('k-new')">+ Nytt uppdrag</button></div>
-      <div style="overflow-x:auto">
-        <table class="tbl">
-          <thead><tr><th>Uppdrag</th><th>Företag</th><th>Period</th><th>Belopp</th><th>Status</th></tr></thead>
-          <tbody>
-            ${ups.slice(0,4).map(u=>`
-            <tr>
-              <td><div style="font-weight:700">${esc(u.id)}</div><div style="font-size:.74rem;color:var(--muted)">${esc(u.typ)}</div></td>
-              <td>${esc(u.foretagName)}</td>
-              <td>${esc(u.period)}</td>
-              <td style="font-weight:700">${fmtN(u.belopp)}</td>
-              <td>${statusBadge(u.status)}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-hd"><span class="card-title">Snabbstart</span></div>
-      <div class="card-bd" style="display:flex;flex-direction:column;gap:.75rem">
-        <button class="btn btn-or btn-fw" onclick="go('k-new')"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span> Skapa nytt uppdrag</button>
-        <button class="btn btn-nv btn-fw" onclick="go('k-uppdrag')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Visa alla uppdrag</button>
-        <button class="btn btn-gh btn-fw" onclick="go('k-lon')"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> Mina lönespec</button>
-        <button class="btn btn-gh btn-fw" onclick="go('k-intyg')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Arbetsgivarintyg</button>
-        <div style="margin-top:.5rem;padding:.8rem;background:var(--gbg);border-radius:6px;font-size:.78rem;color:var(--gtxt)">
-          <strong>Avgift:</strong> 6% av fakturerat belopp. Vi sköter allt — skatt, socialavgifter & försäkringar.
-        </div>
-      </div>
-    </div>
+  <div class="card" style="margin-top:1.2rem">
+    <div class="card-hd"><span class="card-title">${esc(t('c.dash.recent'))}</span>
+      <button class="btn btn-or btn-sm" onclick="go('c-new')">${esc(t('act.newAssignmentShort'))}</button></div>
+    ${recent.length?`<div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>${esc(t('lbl.assignment'))}</th><th>${esc(t('lbl.company'))}</th>
+        <th>${esc(t('lbl.period'))}</th><th>${esc(t('lbl.amount'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
+      <tbody>${recent.map(a=>`<tr>
+        <td><div style="font-weight:700">${esc(a.id)}</div>
+          <div style="font-size:.74rem;color:var(--muted)">${esc(a.type)}</div></td>
+        <td>${esc(a.companyName)}</td><td>${esc(a.period)}</td>
+        <td style="font-weight:700">${fmtN(a.amount)}</td>
+        <td>${statusBadge(a.status)}</td></tr>`).join('')}</tbody></table></div>`
+     :`<div class="card-bd"><p style="color:var(--mid);font-size:.88rem">${esc(t('c.dash.empty'))}</p></div>`}
   </div>`;
 }
 
-function kNew(){
+function cNew(){
+  const m=currentMarket();
   return `
-  <div class="card" style="max-width:700px">
-    <div class="card-hd"><span class="card-title">Skapa nytt uppdrag</span></div>
+  <div class="card" style="max-width:720px">
+    <div class="card-hd"><span class="card-title">${esc(t('c.new.h'))}</span></div>
     <div class="card-bd">
-      <div class="alert alert-am">Fyll i uppgifterna nedan. Uppdragsgivaren (företaget) kommer att få en notis och godkänna uppdraget.</div>
+      <div class="ig"><label class="lbl">${esc(t('c.new.companyEmail'))}</label>
+        <input class="inp" id="n-cemail" type="email" placeholder="navn@virksomhed.dk">
+        <div style="font-size:.76rem;color:var(--muted);margin-top:.3rem">${esc(t('c.new.companyEmail.help'))}</div></div>
+      <div class="ig"><label class="lbl">${esc(t('c.new.type'))}</label>
+        <select class="inp sel" id="n-type">
+          ${Object.values(TYPE).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}
+        </select></div>
+      <div class="ig"><label class="lbl">${esc(t('c.new.desc'))}</label>
+        <textarea class="inp" id="n-desc" rows="3" placeholder="${esc(t('c.new.desc.ph'))}"></textarea></div>
       <div class="fg">
-        <div class="ig">
-          <label class="lbl">Uppdragsgivarens e-post *</label>
-          <input class="inp" id="n-femail" type="email" placeholder="info@foretag.se">
-        </div>
-        <div class="ig">
-          <label class="lbl">Typ av tjänst *</label>
-          <select class="inp sel" id="n-typ">
-            <option value="">Välj tjänst...</option>
-            <option value="SalaryInvoicing">SalaryInvoicing</option>
-            <option value="Excel-import">Excel-import</option>
-            <option value="API-integration">API-integration</option>
-            <option value="Workforce Management">Workforce Management</option>
-          </select>
-        </div>
-      </div>
-      <div class="ig fc">
-        <label class="lbl">Uppdragsbeskrivning *</label>
-        <textarea class="inp" id="n-beskr" placeholder="Beskriv uppdraget, arbetsuppgifter och leverabler..."></textarea>
-      </div>
-      <div class="fg-3">
-        <div class="ig">
-          <label class="lbl">Antal timmar *</label>
-          <input class="inp" id="n-timmar" type="number" placeholder="40" oninput="calcBelopp()">
-        </div>
-        <div class="ig">
-          <label class="lbl">Timlön (kr/h) *</label>
-          <input class="inp" id="n-timlön" type="number" placeholder="750" oninput="calcBelopp()">
-        </div>
-        <div class="ig">
-          <label class="lbl">Beräknat belopp</label>
-          <input class="inp" id="n-belopp" readonly placeholder="—" style="background:var(--bg)">
-        </div>
+        <div class="ig"><label class="lbl">${esc(t('c.new.hours'))}</label>
+          <input class="inp" id="n-hours" type="number" min="0" step="0.5" oninput="calcAmount()"></div>
+        <div class="ig"><label class="lbl">${esc(t('c.new.rate'))} (${esc(m.currencySymbol)})</label>
+          <input class="inp" id="n-rate" type="number" min="0" oninput="calcAmount()"></div>
       </div>
       <div class="fg">
-        <div class="ig">
-          <label class="lbl">Period *</label>
-          <input class="inp" id="n-period" placeholder="April 2026">
-        </div>
-        <div class="ig">
-          <label class="lbl">Startdatum</label>
-          <input class="inp" id="n-start" type="date">
-        </div>
+        <div class="ig"><label class="lbl">${esc(t('c.new.period'))}</label>
+          <input class="inp" id="n-period" placeholder="${esc(t('c.new.period.ph'))}"></div>
+        <div class="ig"><label class="lbl">${esc(t('c.new.amount'))}</label>
+          <input class="inp" id="n-amount" value="—" readonly style="background:var(--bg);font-weight:800"></div>
       </div>
-      <div style="margin-top:.5rem;padding:.85rem;background:#f4f7fa;border-radius:7px;font-size:.8rem;color:var(--mid);margin-bottom:1.2rem">
-        <strong style="color:var(--text)">Avgift:</strong> 6% av fakturerat belopp debiteras av Invoicery Business. Vi sköter löneadministration, skatt, socialavgifter och försäkringar.
-      </div>
-      <div style="display:flex;gap:.75rem">
-        <button class="btn btn-or" onclick="submitUppdrag()">✓ Skicka till godkännande</button>
-        <button class="btn btn-gh" onclick="go('k-uppdrag')">Avbryt</button>
-      </div>
+      <button class="btn btn-or" onclick="submitAssignment()">${esc(t('act.send'))}</button>
     </div>
   </div>`;
 }
 
-function calcBelopp(){
-  const t=parseFloat(document.getElementById('n-timmar').value)||0;
-  const p=parseFloat(document.getElementById('n-timlön').value)||0;
-  const b=document.getElementById('n-belopp');
-  if(t&&p) b.value=fmtN(t*p);
-  else b.value='—';
+window.calcAmount=function(){
+  const h=parseFloat(document.getElementById('n-hours').value)||0;
+  const r=parseFloat(document.getElementById('n-rate').value)||0;
+  document.getElementById('n-amount').value=(h&&r)?fmtN(h*r):'—';
 }
 
-function submitUppdrag(){
-  const femail=document.getElementById('n-femail').value.trim();
-  const typ=document.getElementById('n-typ').value;
-  const beskr=document.getElementById('n-beskr').value.trim();
-  const timmar=parseFloat(document.getElementById('n-timmar').value)||0;
-  const timlön=parseFloat(document.getElementById('n-timlön').value)||0;
+window.submitAssignment=function(){
+  const email=document.getElementById('n-cemail').value.trim();
+  const type=document.getElementById('n-type').value;
+  const desc=document.getElementById('n-desc').value.trim();
+  const hours=parseFloat(document.getElementById('n-hours').value)||0;
+  const rate=parseFloat(document.getElementById('n-rate').value)||0;
   const period=document.getElementById('n-period').value.trim();
-  if(!femail||!typ||!beskr||!timmar||!timlön||!period){
-    alert('Fyll i alla obligatoriska fält (*).');return;
-  }
-  const users=getUsers();
-  const foretag=users.find(u=>u.email===femail&&u.role==='foretag');
-  if(!foretag){alert('Hittade inget företagskonto med den e-postadressen.');return;}
-  const ups=getUppdrag();
-  const id=nextUppdragId(ups);
-  ups.unshift({
-    id,konsultId:ME.id,konsultName:ME.name,
-    foretagId:foretag.id,foretagName:foretag.name,
-    typ,beskrivning:beskr,timmar,timlön,belopp:timmar*timlön,
-    period,status:STATUS.VANTAR,
-    skapadDatum:today(),godkändDatum:'',adminNote:''
-  });
-  saveUppdrag(ups);
+  if(!email||!type||!desc||!hours||!rate||!period){alert(t('lbl.required'));return}
+  const company=getUsers().find(u=>u.email===email&&u.role==='company');
+  if(!company){alert(t('c.new.notFound'));return}
+  const list=getAssignments();
+  const id=nextAssignmentId(list);
+  list.unshift({id,consultantId:ME.id,consultantName:ME.name,
+    companyId:company.id,companyName:company.name,
+    type,description:desc,hours,hourlyRate:rate,amount:hours*rate,
+    period,status:STATUS.PENDING,createdDate:today(),approvedDate:'',adminNote:''});
+  saveAssignments(list);
   updBadges();
   document.getElementById('pg').innerHTML=`
-    <div class="card" style="max-width:500px;text-align:center">
-      <div class="card-bd" style="padding:3rem 2rem">
-        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
-        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">Uppdrag skickat!</h2>
-        <p style="color:var(--mid);margin-bottom:1.5rem">${esc(foretag.name)} har fått en notis och kommer att godkänna uppdraget. Du notifieras när det är klart.</p>
-        <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem">Uppdrag-ID: <strong>${esc(id)}</strong></div>
-        <div style="display:flex;gap:.75rem;justify-content:center">
-          <button class="btn btn-or" onclick="go('k-uppdrag')">Visa mina uppdrag</button>
-          <button class="btn btn-gh" onclick="go('k-new')">+ Skapa nytt</button>
+    <div class="card" style="max-width:500px;text-align:center"><div class="card-bd" style="padding:3rem 2rem">
+      <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+      <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">${esc(t('c.new.sent.h'))}</h2>
+      <p style="color:var(--mid);margin-bottom:1.5rem">${esc(company.name)} ${esc(t('c.new.sent.p'))}</p>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem">${esc(t('c.new.sent.id'))} <strong>${esc(id)}</strong></div>
+      <div style="display:flex;gap:.75rem;justify-content:center">
+        <button class="btn btn-or" onclick="go('c-list')">${esc(t('act.viewMine'))}</button>
+        <button class="btn btn-gh" onclick="go('c-new')">${esc(t('act.createAnother'))}</button>
+      </div></div></div>`;
+}
+
+function cList(){
+  const list=mine();
+  if(!list.length) return empty(ICO_DOC,'c.list.empty.h','c.list.empty.p',
+    `<button class="btn btn-or" onclick="go('c-new')">${esc(t('act.newAssignment'))}</button>`);
+  return `<div class="card"><div class="card-hd"><span class="card-title">${esc(t('nav.c.list'))}</span></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>${esc(t('lbl.assignment'))}</th><th>${esc(t('lbl.company'))}</th>
+        <th>${esc(t('lbl.type'))}</th><th>${esc(t('lbl.period'))}</th>
+        <th>${esc(t('lbl.hours'))}</th><th>${esc(t('lbl.amount'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
+      <tbody>${list.map(a=>`<tr>
+        <td style="font-weight:700;font-size:.75rem">${esc(a.id)}</td>
+        <td>${esc(a.companyName)}</td>
+        <td><span class="badge b-bl">${esc(a.type)}</span></td>
+        <td>${esc(a.period)}</td>
+        <td style="color:var(--mid)">${a.hours}</td>
+        <td style="font-weight:700">${fmtN(a.amount)}</td>
+        <td>${statusBadge(a.status)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function cPay(){
+  const list=mine().filter(a=>a.status===STATUS.PAID);
+  if(!list.length) return empty(ICO_COIN,'c.pay.empty.h','c.pay.empty.p');
+  return `<div class="card"><div class="card-hd"><span class="card-title">${esc(t('c.pay.h'))}</span></div>
+    ${list.map(a=>{
+      const p=calcPayroll(a.amount,{hours:a.hours});
+      return `<div class="card-bd" style="border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem">
+          <div><div style="font-weight:800">${esc(a.period)}</div>
+            <div style="font-size:.76rem;color:var(--muted)">${esc(a.id)} · ${esc(a.companyName)}</div></div>
+          <div style="text-align:right"><div style="font-size:.72rem;color:var(--muted)">${esc(t('line.net'))}</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--green)">${fmtN(p.net)}</div></div>
         </div>
-      </div>
-    </div>`;
+        <div style="display:flex;flex-direction:column;gap:.3rem">
+          ${p.lines.map(l=>`<div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--mid)">${esc(t(l.key))}</span>
+            <strong${l.sign<0?' style="color:var(--red)"':''}>${l.sign<0?'−':''}${fmtN(l.amount)}</strong>
+          </div>`).join('')}
+        </div></div>`;
+    }).join('')}</div>`;
 }
 
-function kUppdrag(){
-  const ups=getUppdrag().filter(u=>u.konsultId===ME.id);
-  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></div><h3>Inga uppdrag ännu</h3><p>Skapa ditt första uppdrag för att komma igång.</p><br><button class="btn btn-or" onclick="go('k-new')">+ Skapa uppdrag</button></div>`;
-  return `
-  <div class="card">
-    <div class="card-hd"><span class="card-title">Mina uppdrag (${ups.length})</span><button class="btn btn-or btn-sm" onclick="go('k-new')">+ Nytt uppdrag</button></div>
-    <div style="overflow-x:auto">
-      <table class="tbl">
-        <thead><tr><th>ID</th><th>Företag</th><th>Typ</th><th>Period</th><th>Timmar</th><th>Belopp</th><th>Status</th><th>Datum</th></tr></thead>
-        <tbody>
-          ${ups.map(u=>`
-          <tr>
-            <td style="font-weight:700;font-size:.75rem">${esc(u.id)}</td>
-            <td>${esc(u.foretagName)}</td>
-            <td><span class="badge b-bl">${esc(u.typ)}</span></td>
-            <td>${esc(u.period)}</td>
-            <td>${u.timmar}h</td>
-            <td style="font-weight:700">${fmtN(u.belopp)}</td>
-            <td>${statusBadge(u.status)}</td>
-            <td style="color:var(--muted)">${esc(u.skapadDatum)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>`;
-}
-
-function kLon(){
-  const ups=getUppdrag().filter(u=>u.konsultId===ME.id&&u.status==='utbetalt');
-  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div><h3>Inga lönespec ännu</h3><p>Lönespecifikationer genereras när uppdrag är utbetalda.</p></div>`;
-  return `
-  <div class="card">
-    <div class="card-hd"><span class="card-title">Lönespecifikationer</span></div>
-    <div style="overflow-x:auto">
-      <table class="tbl">
-        <thead><tr><th>Period</th><th>Uppdrag</th><th>Fakturerat</th><th>Avgift (6%)</th><th>Soc.avg (31,42%)</th><th>Bruttolön</th><th>Skatt (~32%)</th><th>Nettolön</th><th>Status</th></tr></thead>
-        <tbody>
-          ${ups.map(u=>{
-            const p=calcPayroll(u.belopp);
-            return `<tr>
-              <td style="font-weight:700">${esc(u.period)}</td>
-              <td>${esc(u.foretagName)}</td>
-              <td>${fmtN(p.fakturabelopp)}</td>
-              <td style="color:var(--mid)">−${fmtN(p.serviceavgift)}</td>
-              <td style="color:var(--mid)">−${fmtN(p.arbetsgivaravgift)}</td>
-              <td>${fmtN(p.bruttolon)}</td>
-              <td style="color:var(--mid)">−${fmtN(p.preliminarskatt)}</td>
-              <td style="font-weight:800;color:var(--green)">${fmtN(p.nettolon)}</td>
-              <td><span class="badge b-gn">✓ Utbetalt</span></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>`;
-}
-
-function kIntyg(){
-  return `
-  <div class="card" style="max-width:600px">
-    <div class="card-hd"><span class="card-title">Generera arbetsgivarintyg</span></div>
+function cCert(){
+  const m=currentMarket();
+  return `<div class="card" style="max-width:600px">
+    <div class="card-hd"><span class="card-title">${esc(t('c.cert.h'))}</span></div>
     <div class="card-bd">
-      <p style="font-size:.87rem;color:var(--mid);margin-bottom:1.25rem">Arbetsgivarintyget visar dina inkomster via Invoicery Business under en vald period. Används t.ex. för låneansokan, hyresansökan eller A-kassa.</p>
+      <p style="font-size:.87rem;color:var(--mid);margin-bottom:1.25rem">${esc(t('c.cert.p'))}</p>
       <div class="fg">
-        <div class="ig">
-          <label class="lbl">Från datum</label>
-          <input class="inp" type="date" value="2026-01-01">
-        </div>
-        <div class="ig">
-          <label class="lbl">Till datum</label>
-          <input class="inp" type="date" value="2026-04-10">
-        </div>
+        <div class="ig"><label class="lbl">${esc(t('c.cert.from'))}</label><input class="inp" type="date" value="2026-01-01"></div>
+        <div class="ig"><label class="lbl">${esc(t('c.cert.to'))}</label><input class="inp" type="date" value="2026-04-10"></div>
       </div>
-      <div class="ig">
-        <label class="lbl">Ändamål</label>
-        <select class="inp sel">
-          <option>Låneansokan</option>
-          <option>Hyresansökan</option>
-          <option>A-kassa / Arbetslöshet</option>
-          <option>Övrigt</option>
-        </select>
-      </div>
-      <button class="btn btn-or"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Generera intyg (PDF)</button>
-    </div>
+      <div class="ig"><label class="lbl">${esc(t('c.cert.purpose'))}</label>
+        <select class="inp sel">${m.certificatePurposes.map(x=>`<option>${esc(x)}</option>`).join('')}</select></div>
+      <button class="btn btn-or">${ICO_DOC} ${esc(t('act.generate'))}</button>
+    </div></div>`;
+}
+
+function cProfile(){
+  const m=currentMarket();
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.1rem">
+    <div class="card"><div class="card-hd"><span class="card-title">${esc(t('c.profile.personal'))}</span>
+      <button class="btn btn-gh btn-sm">${esc(t('act.edit'))}</button></div>
+      <div class="card-bd">
+        <div class="ig"><label class="lbl">${esc(t('lbl.name'))}</label><input class="inp" value="${esc(ME.name)}"></div>
+        <div class="ig"><label class="lbl">${esc(t('lbl.email'))}</label><input class="inp" value="${esc(ME.email)}" readonly style="background:var(--bg)"></div>
+        <div class="ig"><label class="lbl">${esc(t('lbl.phone'))}</label><input class="inp" value="${esc(ME.phone||'')}"></div>
+        <div class="ig"><label class="lbl">${esc(t('lbl.city'))}</label><input class="inp" value="${esc(ME.city||'')}"></div>
+      </div></div>
+    <div class="card"><div class="card-hd"><span class="card-title">${esc(t('c.profile.account'))}</span></div>
+      <div class="card-bd">
+        <div class="ig"><label class="lbl">${esc(t('lbl.personalId'))}</label><input class="inp" value="••••••-••••" readonly style="background:var(--bg)"></div>
+        <div class="ig"><label class="lbl">${esc(t('c.profile.bank'))}</label><input class="inp" value="•••• •••• ••••" readonly style="background:var(--bg)"></div>
+        <div class="ig"><label class="lbl">${esc(t('c.profile.taxCard'))}</label><input class="inp" value="${esc(m.name)}" readonly style="background:var(--bg)"></div>
+        <button class="btn btn-or">${esc(t('act.save'))}</button>
+      </div></div>
   </div>`;
 }
 
-function kProfil(){
+/* ═══════════════════ COMPANY VIEWS ═══════════════════ */
+function bDash(){
+  const list=ours();
+  const pending=list.filter(a=>a.status===STATUS.PENDING);
+  const active=list.filter(a=>[STATUS.PENDING,STATUS.APPROVED].includes(a.status));
+  const spend=calcPayrollBatch(list.filter(a=>[STATUS.APPROVED,STATUS.PAID].includes(a.status)));
+  const consultants=new Set(list.map(a=>a.consultantId)).size;
   return `
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.1rem">
-    <div class="card">
-      <div class="card-hd"><span class="card-title">Personuppgifter</span><button class="btn btn-gh btn-sm">Redigera</button></div>
-      <div class="card-bd">
-        <div class="ig"><label class="lbl">Namn</label><input class="inp" value="${esc(ME.name)}"></div>
-        <div class="ig"><label class="lbl">E-post</label><input class="inp" value="${esc(ME.email)}" readonly style="background:var(--bg)"></div>
-        <div class="ig"><label class="lbl">Telefon</label><input class="inp" placeholder="+46 70 xxx xx xx"></div>
-        <div class="ig"><label class="lbl">Personnummer</label><input class="inp" placeholder="XXXXXX-XXXX"></div>
-        <div class="ig"><label class="lbl">Adress</label><input class="inp" placeholder="Gatuadress"></div>
-        <div class="fg">
-          <div class="ig"><label class="lbl">Postnummer</label><input class="inp" placeholder="XXX XX"></div>
-          <div class="ig"><label class="lbl">Stad</label><input class="inp" placeholder="Stockholm"></div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-hd"><span class="card-title">Bankuppgifter & skatt</span></div>
-      <div class="card-bd">
-        <div class="ig"><label class="lbl">Clearingnummer</label><input class="inp" placeholder="XXXX"></div>
-        <div class="ig"><label class="lbl">Kontonummer</label><input class="inp" placeholder="XXXXXXXXX"></div>
-        <div class="ig"><label class="lbl">Skattenivå (%)</label><input class="inp" type="number" placeholder="32"></div>
-        <div style="padding:.8rem;background:var(--gbg);border-radius:6px;font-size:.78rem;color:var(--gtxt)">
-          ✓ Invoicery Business hanterar skattedeklaration, socialavgifter och alla arbetsgivaruppgifter åt dig.
-        </div>
-        <button class="btn btn-or btn-fw" style="margin-top:1rem">Spara uppgifter</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ═══════════════════ FÖRETAG VIEWS ═══════════════════ */
-function fDash(){
-  const ups=getUppdrag().filter(u=>u.foretagId===ME.id);
-  const väntar=ups.filter(u=>u.status==='väntar_godkännande');
-  const godkända=ups.filter(u=>u.status==='godkänt');
-  const totBelopp=ups.reduce((a,u)=>a+u.belopp,0);
-  return `
-  <div class="stats-g">
-    <div class="stat"><div class="stat-ico ico-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span></div><div class="stat-lbl">Väntar godkännande</div><div class="stat-val">${väntar.length}</div><div class="stat-d">Behöver åtgärd</div></div>
-    <div class="stat"><div class="stat-ico ico-gn"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div><div class="stat-lbl">Godkända uppdrag</div><div class="stat-val">${godkända.length}</div><div class="stat-d">Under perioden</div></div>
-    <div class="stat"><div class="stat-ico ico-bl"><span class="lci"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span></div><div class="stat-lbl">Totalt uppdrag</div><div class="stat-val">${ups.length}</div><div class="stat-d">Alla perioder</div></div>
-    <div class="stat"><div class="stat-ico ico-or"><span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div><div class="stat-lbl">Totalt belopp</div><div class="stat-val" style="font-size:1.1rem">${fmtN(totBelopp)}</div><div class="stat-d">Alla perioder</div></div>
+  <div class="stats-g stats-g-4">
+    <div class="stat stat-am"><div class="stat-ico ico-am">${ICO_CHECK}</div>
+      <div class="stat-lbl">${esc(t('b.dash.pending'))}</div><div class="stat-val">${pending.length}</div></div>
+    <div class="stat stat-or"><div class="stat-ico ico-or">${ICO_DOC}</div>
+      <div class="stat-lbl">${esc(t('b.dash.active'))}</div><div class="stat-val">${active.length}</div></div>
+    <div class="stat stat-bl"><div class="stat-ico ico-bl">${ICO_COIN}</div>
+      <div class="stat-lbl">${esc(t('b.dash.spend'))}</div>
+      <div class="stat-val" style="font-size:1.3rem">${fmtN(spend.invoiceTotal)}</div></div>
+    <div class="stat stat-gn"><div class="stat-ico ico-gn">${ICO_CHECK}</div>
+      <div class="stat-lbl">${esc(t('b.dash.consultants'))}</div><div class="stat-val">${consultants}</div></div>
   </div>
-  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.1rem">
-    <div class="card">
-      <div class="card-hd"><span class="card-title">Väntar på godkännande</span>${väntar.length?`<button class="btn btn-or btn-sm" onclick="go('f-godkann')">Granska alla</button>`:''}</div>
-      ${väntar.length===0?`<div class="card-bd"><div class="alert alert-ok">✓ Inga uppdrag väntar på godkännande just nu.</div></div>`:`
-      <div style="overflow-x:auto"><table class="tbl">
-        <thead><tr><th>Konsult</th><th>Typ</th><th>Period</th><th>Belopp</th><th>Åtgärd</th></tr></thead>
-        <tbody>
-          ${väntar.slice(0,3).map(u=>`<tr>
-            <td style="font-weight:700">${esc(u.konsultName)}</td>
-            <td><span class="badge b-bl">${esc(u.typ)}</span></td>
-            <td>${esc(u.period)}</td>
-            <td style="font-weight:700">${fmtN(u.belopp)}</td>
-            <td><button class="btn btn-ok btn-sm" onclick="godkannUppdrag('${esc(u.id)}')">✓ Godkänn</button></td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>`}
-    </div>
-    <div class="card">
-      <div class="card-hd"><span class="card-title">Snabbåtgärder</span></div>
-      <div class="card-bd" style="display:flex;flex-direction:column;gap:.75rem">
-        <button class="btn btn-or btn-fw" onclick="go('f-godkann')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Godkänn uppdrag</button>
-        <button class="btn btn-nv btn-fw" onclick="go('f-alla')"><span class="lci"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Alla uppdrag</button>
-        <button class="btn btn-gh btn-fw" onclick="go('f-fakturor')"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Fakturor</button>
-        <div style="margin-top:.5rem;padding:.8rem;background:var(--bluebg);border-radius:6px;font-size:.78rem;color:var(--bluetxt)">
-          <strong>Hur det fungerar:</strong> Konsulter skickar uppdrag för er godkännande. Ni godkänner och Invoicery Business fakturerar er + betalar ut lön till konsulten.
-        </div>
-      </div>
-    </div>
-  </div>`;
+  ${pending.length?`<div class="card" style="margin-top:1.2rem">
+    <div class="card-hd"><span class="card-title">${esc(t('nav.b.approve'))}</span>
+      <button class="btn btn-or btn-sm" onclick="go('b-approve')">${esc(t('act.view'))}</button></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>${esc(t('lbl.consultant'))}</th><th>${esc(t('lbl.period'))}</th>
+        <th>${esc(t('lbl.amount'))}</th><th></th></tr></thead>
+      <tbody>${pending.map(a=>`<tr>
+        <td style="font-weight:700">${esc(a.consultantName)}</td><td>${esc(a.period)}</td>
+        <td style="font-weight:700">${fmtN(a.amount)}</td>
+        <td><button class="btn btn-ok btn-sm" onclick="approveAssignment('${esc(a.id)}')">✓ ${esc(t('act.approve'))}</button></td>
+      </tr>`).join('')}</tbody></table></div></div>`:''}`;
 }
 
-function fGodkann(){
-  const ups=getUppdrag().filter(u=>u.foretagId===ME.id&&u.status==='väntar_godkännande');
-  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div><h3>Allt klart!</h3><p>Inga uppdrag väntar på godkännande just nu.</p></div>`;
-  return `
-  <div style="display:flex;flex-direction:column;gap:1rem">
-    ${ups.map(u=>`
-    <div class="card">
+function bApprove(){
+  const list=ours().filter(a=>a.status===STATUS.PENDING);
+  if(!list.length) return empty(ICO_CHECK,'b.approve.empty.h','b.approve.empty.p');
+  return list.map(a=>{
+    const p=calcPayroll(a.amount,{hours:a.hours});
+    return `<div class="card" style="margin-bottom:1.1rem">
       <div class="card-hd">
-        <div>
-          <div class="card-title">${esc(u.konsultName)} — ${esc(u.period)}</div>
-          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem">${esc(u.id)} · Inkommen ${esc(u.skapadDatum)}</div>
-        </div>
-        <span class="badge b-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Väntar godkännande</span>
+        <div><div class="card-title">${esc(a.consultantName)} — ${esc(a.period)}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem">${esc(a.id)} · ${esc(fmtDate(a.createdDate))}</div></div>
+        <span class="badge b-bl">${esc(a.type)}</span>
       </div>
       <div class="card-bd">
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.2rem">
-          <div><div class="lbl">Tjänst</div><div style="font-weight:700">${esc(u.typ)}</div></div>
-          <div><div class="lbl">Timmar</div><div style="font-weight:700">${u.timmar}h</div></div>
-          <div><div class="lbl">Timlön</div><div style="font-weight:700">${fmtN(u.timlön)}/h</div></div>
-          <div><div class="lbl">Totalt</div><div style="font-weight:800;color:var(--navy);font-size:1.1rem">${fmtN(u.belopp)}</div></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:.85rem;background:var(--bg);border-radius:8px;margin-bottom:1.1rem">
+          <div><div class="lbl">${esc(t('lbl.hours'))}</div><div style="font-weight:700">${a.hours}</div></div>
+          <div><div class="lbl">${esc(t('lbl.hourlyRate'))}</div><div style="font-weight:700">${fmtN(a.hourlyRate)}${esc(t('misc.perHour'))}</div></div>
+          <div><div class="lbl">${esc(t('line.invoiceAmount'))}</div><div style="font-weight:800;color:var(--navy)">${fmtN(p.invoiceAmount)}</div></div>
+          <div><div class="lbl">${esc(t('line.invoiceTotal'))}</div><div style="font-weight:800">${fmtN(p.invoiceTotal)}</div></div>
         </div>
-        <div style="padding:.85rem;background:var(--bg);border-radius:6px;font-size:.85rem;color:var(--mid);margin-bottom:1.1rem">
-          <strong style="color:var(--text)">Beskrivning:</strong> ${esc(u.beskrivning)}
+        <div style="font-size:.87rem;color:var(--mid);margin-bottom:1.1rem">
+          <strong style="color:var(--text)">${esc(t('b.approve.desc'))}</strong> ${esc(a.description)}
         </div>
-        <div style="padding:.7rem;background:var(--abg);border-radius:6px;font-size:.78rem;color:var(--atxt);margin-bottom:1.1rem">
-          <span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Ni faktureras <strong>${fmtN(u.belopp)}</strong> + moms av Invoicery Business. Konsulten erhåller lön efter avdrag för avgifter och skatt.
+        <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+          <button class="btn btn-ok" onclick="approveAssignment('${esc(a.id)}')">✓ ${esc(t('act.approveAssignment'))}</button>
+          <button class="btn btn-dn" onclick="rejectAssignment('${esc(a.id)}')">✗ ${esc(t('act.reject'))}</button>
+          <button class="btn btn-gh" onclick="requestChange('${esc(a.id)}')">↩ ${esc(t('act.requestChange'))}</button>
         </div>
-        <div style="display:flex;gap:.75rem">
-          <button class="btn btn-ok" onclick="godkannUppdrag('${esc(u.id)}')">✓ Godkänn uppdrag</button>
-          <button class="btn btn-dn" onclick="avvisaUppdrag('${esc(u.id)}')">✗ Avvisa</button>
-          <button class="btn btn-gh" onclick="begärÄndring('${esc(u.id)}')">↩ Begär ändring</button>
+      </div></div>`;
+  }).join('');
+}
+
+window.approveAssignment=function(id){
+  const list=getAssignments();
+  const a=list.find(x=>x.id===id);
+  if(a){a.status=STATUS.APPROVED;a.approvedDate=today()}
+  saveAssignments(list); updBadges(); go('b-approve');
+}
+window.rejectAssignment=function(id){
+  const list=getAssignments();
+  const a=list.find(x=>x.id===id);
+  if(a) a.status=STATUS.REJECTED;
+  saveAssignments(list); updBadges(); go('b-approve');
+}
+window.requestChange=function(id){
+  const list=getAssignments();
+  const a=list.find(x=>x.id===id);
+  if(a) a.status=STATUS.DRAFT;
+  saveAssignments(list); updBadges(); go('b-approve');
+}
+
+function bAll(){
+  const list=ours();
+  if(!list.length) return empty(ICO_DOC,'c.list.empty.h','b.approve.empty.p');
+  return `<div class="card"><div class="card-hd"><span class="card-title">${esc(t('nav.b.all'))}</span></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>${esc(t('lbl.assignment'))}</th><th>${esc(t('lbl.consultant'))}</th>
+        <th>${esc(t('lbl.type'))}</th><th>${esc(t('lbl.period'))}</th>
+        <th>${esc(t('lbl.amount'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
+      <tbody>${list.map(a=>`<tr>
+        <td style="font-weight:700;font-size:.75rem">${esc(a.id)}</td>
+        <td>${esc(a.consultantName)}</td>
+        <td><span class="badge b-bl">${esc(a.type)}</span></td>
+        <td>${esc(a.period)}</td>
+        <td style="font-weight:700">${fmtN(a.amount)}</td>
+        <td>${statusBadge(a.status)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function bInvoices(){
+  const list=ours().filter(a=>[STATUS.APPROVED,STATUS.PAID].includes(a.status));
+  if(!list.length) return empty(ICO_DOC,'b.invoices.empty.h','b.invoices.empty.p');
+  const batch=calcPayrollBatch(list);
+  return `<div class="card">
+    <div class="card-hd"><span class="card-title">${esc(t('b.invoices.h'))}</span>
+      <div style="font-size:.82rem;color:var(--muted)">${esc(t('b.invoices.total'))}
+        <strong style="color:var(--navy)">${fmtN(batch.invoiceTotal)} ${esc(t('b.invoices.inclVat'))}</strong></div></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>${esc(t('lbl.invoice'))}</th><th>${esc(t('lbl.type'))}</th>
+        <th>${esc(t('lbl.consultant'))}</th><th>${esc(t('lbl.period'))}</th>
+        <th>${esc(t('lbl.vatExcl'))}</th><th>${esc(t('line.vat'))}</th>
+        <th>${esc(t('lbl.total'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
+      <tbody>${list.map((a,i)=>{const p=calcPayroll(a.amount,{hours:a.hours});return `<tr>
+        <td style="font-weight:700">${esc(invoiceNumber(i+1))}</td>
+        <td>${esc(a.type)}</td><td>${esc(a.consultantName)}</td><td>${esc(a.period)}</td>
+        <td>${fmtN(p.invoiceAmount)}</td><td>${fmtN(p.vat)}</td>
+        <td style="font-weight:800">${fmtN(p.invoiceTotal)}</td>
+        <td>${a.status===STATUS.PAID
+          ?`<span class="badge b-gn">✓ ${esc(t('b.invoices.paid'))}</span>`
+          :`<span class="badge b-am">${esc(t('b.invoices.unpaid'))}</span>`}</td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+
+function bProfile(){
+  const m=currentMarket();
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.1rem">
+    <div class="card"><div class="card-hd"><span class="card-title">${esc(t('b.profile.h'))}</span>
+      <button class="btn btn-gh btn-sm">${esc(t('act.edit'))}</button></div>
+      <div class="card-bd">
+        <div class="ig"><label class="lbl">${esc(t('lbl.company'))}</label><input class="inp" value="${esc(ME.name)}"></div>
+        <div class="ig"><label class="lbl">${esc(t('lbl.regNumber'))}</label><input class="inp" value="${esc(ME.regNumber||'—')}"></div>
+        <div class="ig"><label class="lbl">${esc(t('lbl.contact'))}</label><input class="inp" value="${esc(ME.contactName||'')}"></div>
+        <div class="ig"><label class="lbl">${esc(t('lbl.email'))}</label><input class="inp" value="${esc(ME.email)}" readonly style="background:var(--bg)"></div>
+      </div></div>
+    <div class="card"><div class="card-hd"><span class="card-title">${esc(t('b.profile.billing'))}</span></div>
+      <div class="card-bd">
+        <div style="padding:.9rem;background:var(--bg);border-radius:8px;font-size:.83rem;line-height:1.7">
+          <strong>${esc(m.entity.legalName)}</strong><br>
+          ${esc(m.entity.regLabel)} ${esc(m.entity.regNumber)}<br>
+          ${esc(m.entity.vatLabel)} ${esc(m.entity.vatNumber)}<br>
+          ${esc(m.entity.address)}<br>
+          ${esc(m.entity.bankLabel)}: ${esc(m.entity.bankAccount)}
         </div>
-      </div>
-    </div>`).join('')}
+      </div></div>
   </div>`;
 }
 
-function godkannUppdrag(id){
-  const ups=getUppdrag();
-  const u=ups.find(x=>x.id===id);
-  if(u){u.status='godkänt';u.godkändDatum=new Date().toISOString().slice(0,10);}
-  saveUppdrag(ups);
-  updBadges();
-  go('f-godkann');
-}
-function avvisaUppdrag(id){
-  if(!confirm('Är du säker på att du vill avvisa uppdraget?')) return;
-  const ups=getUppdrag();
-  const u=ups.find(x=>x.id===id);
-  if(u) u.status='avvisat';
-  saveUppdrag(ups);
-  updBadges();
-  go('f-godkann');
-}
-function begärÄndring(id){
-  alert('Funktion: Skicka meddelande till konsulten om önskad ändring. (Implementeras med notifikationssystem.)');
-}
-
-function fAlla(){
-  const ups=getUppdrag().filter(u=>u.foretagId===ME.id);
-  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span></div><h3>Inga uppdrag ännu</h3><p>Uppdrag från konsulter visas här.</p></div>`;
-  return `
-  <div class="card">
-    <div class="card-hd"><span class="card-title">Alla uppdrag (${ups.length})</span></div>
-    <div style="overflow-x:auto">
-      <table class="tbl">
-        <thead><tr><th>ID</th><th>Konsult</th><th>Typ</th><th>Period</th><th>Timmar</th><th>Belopp</th><th>Status</th><th>Datum</th></tr></thead>
-        <tbody>
-          ${ups.map(u=>`<tr>
-            <td style="font-weight:700;font-size:.75rem">${esc(u.id)}</td>
-            <td>${esc(u.konsultName)}</td>
-            <td><span class="badge b-bl">${esc(u.typ)}</span></td>
-            <td>${esc(u.period)}</td>
-            <td>${u.timmar}h</td>
-            <td style="font-weight:700">${fmtN(u.belopp)}</td>
-            <td>${statusBadge(u.status)}</td>
-            <td style="color:var(--muted)">${esc(u.skapadDatum)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>`;
-}
-
-function fFakturor(){
-  const ups=getUppdrag().filter(u=>u.foretagId===ME.id&&['godkänt','utbetalt'].includes(u.status));
-  if(!ups.length) return `<div class="empty"><div class="empty-ico"><span class="lci"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span></div><h3>Inga fakturor ännu</h3><p>Fakturor skapas när uppdrag godkänts.</p></div>`;
-  const batch=IB.calcPayrollBatch(ups);
-  return `
-  <div class="card">
-    <div class="card-hd">
-      <span class="card-title">Fakturor från Invoicery Business</span>
-      <div style="font-size:.82rem;color:var(--muted)">Totalt: <strong style="color:var(--navy)">${fmtN(batch.fakturatotal)} inkl. moms</strong></div>
-    </div>
-    <div style="overflow-x:auto">
-      <table class="tbl">
-        <thead><tr><th>Faktura</th><th>Avser</th><th>Konsult</th><th>Period</th><th>Belopp ex moms</th><th>Moms</th><th>Totalt</th><th>Status</th></tr></thead>
-        <tbody>
-          ${ups.map((u,i)=>{const p=calcPayroll(u.belopp);return `<tr>
-            <td style="font-weight:700">IBFAKT-2026-${(i+1).toString().padStart(3,'0')}</td>
-            <td>${esc(u.typ)}</td>
-            <td>${esc(u.konsultName)}</td>
-            <td>${esc(u.period)}</td>
-            <td>${fmtN(p.fakturabelopp)}</td>
-            <td>${fmtN(p.moms)}</td>
-            <td style="font-weight:800">${fmtN(p.fakturatotal)}</td>
-            <td>${u.status==='utbetalt'?'<span class="badge b-gn">✓ Betald</span>':'<span class="badge b-am"><span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Obetald</span>'}</td>
-          </tr>`}).join('')}
-        </tbody>
-      </table>
-    </div>
-  </div>`;
-}
-
-function fProfil(){
-  return `
-  <div class="card" style="max-width:600px">
-    <div class="card-hd"><span class="card-title">Företagsprofil</span><button class="btn btn-gh btn-sm">Redigera</button></div>
-    <div class="card-bd">
-      <div class="ig"><label class="lbl">Företagsnamn</label><input class="inp" value="${esc(ME.name)}"></div>
-      <div class="fg">
-        <div class="ig"><label class="lbl">Organisationsnummer</label><input class="inp" value="${esc(ME.orgNr||'—')}"></div>
-        <div class="ig"><label class="lbl">Kontaktperson</label><input class="inp" value="${esc(ME.contactName||'')}"></div>
-      </div>
-      <div class="ig"><label class="lbl">E-post</label><input class="inp" value="${esc(ME.email)}" readonly style="background:var(--bg)"></div>
-      <div class="ig"><label class="lbl">Telefon</label><input class="inp" placeholder="+46 8 xxx xx xx"></div>
-      <div class="ig"><label class="lbl">Fakturaadress</label><input class="inp" placeholder="Gatuadress"></div>
-      <div class="fg">
-        <div class="ig"><label class="lbl">Postnummer</label><input class="inp" placeholder="XXX XX"></div>
-        <div class="ig"><label class="lbl">Stad</label><input class="inp" placeholder="Stockholm"></div>
-      </div>
-      <button class="btn btn-or">Spara uppgifter</button>
-    </div>
-  </div>`;
-}
-
-/* ═══════════════════ LANDING SCRIPTS ═══════════════════ */
-// Navbar scroll
+/* ═══════════════════ LANDING ═══════════════════ */
 window.addEventListener('scroll',()=>{
-  document.getElementById('l-nav').classList.toggle('scrolled',window.scrollY>20);
+  const n=document.querySelector('.l-nav');
+  if(n) n.classList.toggle('scrolled',window.scrollY>20);
 });
 
-// FAQ toggle
 window.toggleFaq=function(btn){
-  const a=btn.nextElementSibling;
+  const item=btn.parentElement;
+  const open=item.classList.toggle('open');
   const icon=btn.querySelector('.l-faq-icon');
-  a.classList.toggle('open');
-  icon.textContent=a.classList.contains('open')?'−':'+';
+  if(icon) icon.textContent=open?'−':'+';
 }
 
-// Calculator
 window.calcLon=function(){
   const inv=parseFloat(document.getElementById('calc-inv').value)||0;
-  const tax=parseFloat(document.getElementById('calc-tax').value)||32;
-  if(!inv){document.getElementById('calc-res').style.display='none';document.getElementById('calc-bd').innerHTML='';return;}
-  const p=calcPayroll(inv,{preliminarskatt:tax/100});
-  document.getElementById('calc-bd').innerHTML=`
-    <div class="l-bdown">
-      <div class="l-brow"><span>Fakturerat belopp</span><span class="lbv">${fmtN(p.fakturabelopp)}</span></div>
-      <div class="l-brow"><span>Invoicery Business-avgift (6%)</span><span class="lbv red">−${fmtN(p.serviceavgift)}</span></div>
-      <div class="l-brow"><span>Lönebas</span><span class="lbv">${fmtN(p.lonebas)}</span></div>
-      <div class="l-brow"><span>Socialavgifter (31,42%)</span><span class="lbv red">−${fmtN(p.arbetsgivaravgift)}</span></div>
-      <div class="l-brow"><span>Bruttolön</span><span class="lbv">${fmtN(p.bruttolon)}</span></div>
-      <div class="l-brow"><span>Skatt (${tax}%)</span><span class="lbv red">−${fmtN(p.preliminarskatt)}</span></div>
-    </div>`;
+  const taxPct=parseFloat(document.getElementById('calc-tax').value);
+  if(!inv){
+    document.getElementById('calc-res').style.display='none';
+    document.getElementById('calc-bd').innerHTML='';
+    return;
+  }
+  const opts=isNaN(taxPct)?{}:{withholding:taxPct/100};
+  const p=calcPayroll(inv,opts);
+  document.getElementById('calc-bd').innerHTML=`<div class="l-bdown">
+    ${p.lines.filter(l=>l.key!=='line.net').map(l=>`<div class="l-brow">
+      <span>${esc(t(l.key))}</span>
+      <span class="lbv${l.sign<0?' red':''}">${l.sign<0?'−':''}${fmtN(l.amount)}</span>
+    </div>`).join('')}
+  </div>`;
   document.getElementById('calc-res').style.display='block';
-  document.getElementById('calc-net').textContent=fmtN(p.nettolon);
+  document.getElementById('calc-net').textContent=fmtN(p.net);
 }
 
 /* ═══════════════════ INIT ═══════════════════ */
-seed();
-// Auto-login if session exists
-(function(){
-  const s=DB('IB_SESSION');
-  if(s){
-    if(s.role==='admin'){return;} // admin goes to separate page
-    ME=s;
-    launchPlatform();
-  }
-})();
+seedAll();
+IB.syncLang();
+applyMarketChrome();
+
+document.getElementById('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('l-email').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin()});
+
+// Restore a session if one exists for this market.
+const sess=getSession();
+if(sess&&sess.role!=='admin'){ME=sess;launchPlatform()}
+
 </script>
 </body>
 </html>

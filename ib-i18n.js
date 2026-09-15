@@ -1,0 +1,940 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ib-i18n.js — Danish and Norwegian bokmål copy for Invoicery Business
+
+   Two locales, no fallback chain: every key must exist in both. A missing
+   key renders as ⟦key⟧ so it is impossible to miss in review rather than
+   silently falling back to the other language.
+
+   Static markup is translated by `data-i18n` attributes and applyI18n().
+   View templates call t('key') directly.
+
+   Terminology is NOT a word-for-word mapping between the two. Norwegian
+   "oppdrag" and Danish "opgave" are the domain terms each market's
+   customers actually use; likewise bedrift/virksomhed and
+   lønnsslipp/lønseddel. Do not unify them.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function (global) {
+  'use strict';
+
+  var STRINGS = {
+
+  /* ══════════════════════════════════════════════════════════════════════
+     DANISH
+     ══════════════════════════════════════════════════════════════════════ */
+  da: {
+    /* ── chrome ── */
+    'brand.sub': 'Løn & personale',
+    'nav.services': 'Ydelser',
+    'nav.how': 'Sådan fungerer det',
+    'nav.pricing': 'Priser',
+    'nav.cases': 'Kundecases',
+    'nav.faq': 'FAQ',
+    'nav.login': 'Log ind',
+    'nav.contact': 'Kontakt',
+    'market.switch': 'Marked',
+
+    /* ── hero ── */
+    'hero.badge': 'Fuldt arbejdsgiveransvar i Norden',
+    'hero.title.1': 'Løn- og personale­administration',
+    'hero.title.2': 'uden besværet',
+    'hero.sub': 'Vi hjælper virksomheder med at håndtere fleksibel arbejdskraft gennem trygge, smidige og omkostningseffektive løsninger — alt med fuldt arbejdsgiveransvar.',
+    'hero.check.1': 'Fuldt arbejdsgiveransvar — vi klarer det hele',
+    'hero.check.2': 'Lønhåndtering, skat & forsikringer inkluderet',
+    'hero.check.3': 'Nordisk compliance i alle lande',
+    'hero.cta': 'Kom gratis i gang',
+    'hero.ghost': 'Sådan fungerer det →',
+    'hero.stat.1': 'Konsulenter',
+    'hero.stat.2': 'Virksomheder',
+    'hero.stat.3': 'Udbetalt',
+    'hero.mock.title': 'Aktive opgaver',
+    'hero.mock.total': 'I alt denne periode',
+    'hero.pill.1': 'Opgave godkendt',
+    'hero.pill.2': 'Løn udbetalt',
+
+    /* ── trust bar ── */
+    'trust.1': 'Trygt & bæredygtigt',
+    'trust.2': 'Enkelt & smidigt',
+    'trust.3': 'Fleksibelt & skalerbart',
+    'trust.4': 'Ingen skjulte gebyrer',
+    'trust.5': 'Nordisk compliance',
+    'trust.6': 'Fuldt arbejdsgiveransvar',
+
+    /* ── services ── */
+    'svc.tag': 'Ydelser',
+    'svc.title': 'Alt hvad I har brug for til <br>fleksibel personalehåndtering',
+    'svc.sub': 'Vi tilbyder tilpassede løsninger til virksomheder i alle størrelser — fra enkel lønadministration til fuld automatisering.',
+    'svc.popular': 'Mest populær',
+    'svc.1.h': 'SalaryInvoicing',
+    'svc.1.p': 'Nordens førende samarbejdsportal for virksomheder og konsulenter. En komplet platform til løn- og personaleadministration, hvor konsulenten fakturerer gennem os, og vi bærer hele arbejdsgiveransvaret.',
+    'svc.2.h': 'Excel-import',
+    'svc.2.p': 'Intuitiv skabelonløsning til løngrundlag. Upload en Excel-fil med timeløn, honorarer og tillæg — vi klarer resten. Tilpasset nordiske krav og bygget til enkelhed.',
+    'svc.3.h': 'API-integration',
+    'svc.3.p': 'Automatiseret administrationsløsning til virksomheder, der vil effektivisere deres personale- og lønhåndtering, uanset hvilket forretningssystem I bruger. Sømløs integration med jeres eksisterende system.',
+    'svc.4.h': 'Workforce Management',
+    'svc.4.p': 'Helhedsløsning med fuldt arbejdsgiveransvar. Vi håndterer rekruttering, ansættelse, løn og afvikling — I fokuserer på jeres kerneforretning.',
+
+    /* ── how it works ── */
+    'how.tag': 'Sådan fungerer det',
+    'how.title': 'Tre enkle trin',
+    'how.sub': 'Kom i gang på minutter. Ingen komplicerede aftaler eller lange processer — vi gør det nemt for jer.',
+    'how.1.h': 'Registrér opgaven',
+    'how.1.p': 'Konsulenten opretter en opgave i portalen med oplysninger om virksomheden, antal timer, honorar og periode. Det tager under et minut.',
+    'how.2.h': 'Virksomheden godkender',
+    'how.2.p': 'Virksomheden logger ind og godkender opgaven med ét klik. Vi sender fakturaen direkte til virksomheden med tydelig specifikation.',
+    'how.3.h': 'Lønnen udbetales',
+    'how.3.p': 'Når virksomheden har betalt fakturaen, beregner og udbetaler vi lønnen til konsulenten med korrekt A-skat, AM-bidrag, ATP og forsikringer.',
+
+    /* ── pricing ── */
+    'price.tag': 'Priser',
+    'price.title': 'Enkel, gennemsigtig prissætning',
+    'price.sub': 'Ét fast gebyr. Ingen skjulte omkostninger. Intet opstartsgebyr.',
+    'price.rate': '6%',
+    'price.rate.of': 'af det fakturerede beløb',
+    'price.incl': 'Inkluderet i prisen',
+    'price.incl.1': 'Lønadministration og udbetaling',
+    'price.incl.2': 'A-skat, AM-bidrag og ATP',
+    'price.incl.3': 'Arbejdsskade- og erhvervsforsikring',
+    'price.incl.4': 'Feriegodtgørelse',
+    'price.incl.5': 'Fakturering og rykkerhåndtering',
+    'price.incl.6': 'Support på dansk',
+    'price.calc.h': 'Beregn din løn',
+    'price.calc.invoice': 'Fakturabeløb (kr.)',
+    'price.calc.tax': 'Din trækprocent (%)',
+    'price.calc.result': 'Din nettoløn efter skat',
+    'price.calc.note': 'Vejledende beregning. Din faktiske løn afhænger af dit skattekort og dine fradrag.',
+
+    /* ── cases ── */
+    'case.tag': 'Kundecases',
+    'case.title': 'Virksomheder der stoler på os',
+    'case.1.q': '"Invoicery Business har gjort det muligt for os at skalere op med ekstra personale uden bureaukratiske forhindringer. Alt håndteres smidigt, og vi slipper for at bekymre os om arbejdsgiveransvar."',
+    'case.1.n': 'Maria Lide',
+    'case.1.r': 'Event & logistik',
+    'case.2.q': '"Som kommunikationsbureau har vi svingende behov for specialister. Invoicery Business gør det nemt at hente den rigtige kompetence ind, når vi har brug for den — uden bøvl."',
+    'case.2.n': 'Jonas Svensson',
+    'case.2.r': 'Kommunikation & PR',
+    'case.3.q': '"Vi har brug for hurtigt at kunne tage personale ind til korte opgaver. Med Invoicery Business løser vi det på minutter, og konsulenterne er tilfredse med, hvor smidigt det hele fungerer."',
+    'case.3.n': 'Anne Holm',
+    'case.3.r': 'Vikar & rekruttering',
+    'case.4.q': '"Prisjakt bruger Invoicery Business til at håndtere eksterne IT-konsulenter. Platformen er intuitiv, og vi sparer massevis af tid på administration hver måned."',
+    'case.4.n': 'Peter Lund',
+    'case.4.r': 'E-handel & tech',
+
+    /* ── faq ── */
+    'faq.tag': 'Ofte stillede spørgsmål',
+    'faq.title': 'Spørgsmål & svar',
+    'faq.1.q': 'Hvad betyder fuldt arbejdsgiveransvar?',
+    'faq.1.a': 'Det betyder, at Invoicery Business formelt er arbejdsgiver for konsulenten. Vi håndterer alle arbejdsgiverforpligtelser — ansættelseskontrakt, lønudbetaling, A-skat, AM-bidrag, ATP, forsikringer og arbejdsmiljøansvar.',
+    'faq.2.q': 'Hvordan beregnes gebyret på 6%?',
+    'faq.2.a': 'Gebyret beregnes af det fakturerede beløb. Det er et alt-i-én-gebyr, der dækker lønadministration, arbejdsgiverbidrag, forsikringer og vores platform. Der kommer ingen yderligere omkostninger.',
+    'faq.3.q': 'Hvilke lande i Norden dækker I?',
+    'faq.3.a': 'Vi dækker Danmark, Norge, Sverige og Finland. Vores platform håndterer lokale skatteregler, ansættelsesret og lønadministration i hvert land.',
+    'faq.4.q': 'Hvor hurtigt kan en konsulent komme i gang?',
+    'faq.4.a': 'Registreringen tager under 5 minutter. Konsulenten opretter en konto, udfylder person- og bankoplysninger og kan derefter registrere sin første opgave med det samme.',
+    'faq.5.q': 'Hvad hvis min virksomhed allerede har et lønsystem?',
+    'faq.5.a': 'Intet problem. Via vores API-integration kobler vi os til de fleste forretningssystemer. Vi tilbyder også Excel-import til enklere løngrundlag.',
+    'faq.6.q': 'Er der binding?',
+    'faq.6.a': 'Nej. Ingen binding, intet opstartsgebyr og ingen månedlige omkostninger. I betaler kun når I faktisk bruger tjenesten.',
+
+    /* ── cta + footer ── */
+    'cta.title': 'Klar til at forenkle jeres personalehåndtering?',
+    'cta.sub': 'Slut jer til hundredvis af nordiske virksomheder, der allerede bruger Invoicery Business. Kom i gang i dag — uden binding.',
+    'cta.primary': 'Opret konto gratis',
+    'cta.ghost': 'Book en gennemgang',
+    'foot.tagline': 'En del af Invoicery Group — Nordens førende organisation inden for opgavebaseret personale og lønadministration siden 1999.',
+    'foot.product': 'Produkt',
+    'foot.company': 'Virksomheden',
+    'foot.legal': 'Juridisk',
+    'foot.about': 'Om os',
+    'foot.contact': 'Kontakt',
+    'foot.terms': 'Brugervilkår',
+    'foot.privacy': 'Persondatapolitik',
+    'foot.rights': 'Alle rettigheder forbeholdes.',
+
+    /* ── login ── */
+    'login.title': 'Log ind',
+    'login.sub': 'Log ind på din konto',
+    'login.email': 'E-mail',
+    'login.password': 'Adgangskode',
+    'login.submit': 'Log ind',
+    'login.error': 'Forkert e-mail eller adgangskode.',
+    'login.demo': 'Demokonti',
+    'login.demo.consultant': 'Konsulent',
+    'login.demo.company': 'Virksomhed',
+    'login.demo.admin': 'Administrator',
+    'login.cancel': 'Annullér',
+
+    /* ── shell ── */
+    'shell.consultant': 'Konsulent',
+    'shell.company': 'Virksomhed',
+    'shell.admin': 'Administrator',
+    'shell.logout': 'Log ud',
+    'shell.back': 'Tilbage til forsiden',
+
+    /* ── nav: consultant ── */
+    'nav.c.dash': 'Oversigt',
+    'nav.c.new': 'Opret opgave',
+    'nav.c.list': 'Mine opgaver',
+    'nav.c.pay': 'Lønsedler',
+    'nav.c.cert': 'Ansættelsesbevis',
+    'nav.c.profile': 'Profil',
+
+    /* ── nav: company ── */
+    'nav.b.dash': 'Oversigt',
+    'nav.b.approve': 'Godkend opgaver',
+    'nav.b.all': 'Alle opgaver',
+    'nav.b.invoices': 'Fakturaer',
+    'nav.b.profile': 'Virksomhedsprofil',
+
+    /* ── nav: admin ── */
+    'nav.a.dash': 'Oversigt',
+    'nav.a.activity': 'Aktivitet',
+    'nav.a.approve': 'Godkendelser',
+    'nav.a.all': 'Alle opgaver',
+    'nav.a.consultants': 'Konsulenter',
+    'nav.a.companies': 'Virksomheder',
+    'nav.a.payroll': 'Lønkørsel',
+    'nav.a.invoices': 'Fakturaer',
+    'nav.a.services': 'Ydelser',
+    'nav.a.settings': 'Indstillinger',
+
+    /* ── page titles ── */
+    'title.c.dash': 'Oversigt', 'sub.c.dash': 'Velkommen til Invoicery Business',
+    'title.c.new': 'Opret opgave', 'sub.c.new': 'Registrér en ny opgave',
+    'title.c.list': 'Mine opgaver', 'sub.c.list': 'Status og historik for dine opgaver',
+    'title.c.pay': 'Lønsedler', 'sub.c.pay': 'Dine lønsedler fra Invoicery Business',
+    'title.c.cert': 'Ansættelsesbevis', 'sub.c.cert': 'Generér bevis for en periode',
+    'title.c.profile': 'Profil & indstillinger', 'sub.c.profile': 'Dine personoplysninger og kontooplysninger',
+    'title.b.dash': 'Oversigt', 'sub.b.dash': 'Velkommen til virksomhedsportalen',
+    'title.b.approve': 'Godkend opgaver', 'sub.b.approve': 'Gennemgå og godkend indkomne opgaver',
+    'title.b.all': 'Alle opgaver', 'sub.b.all': 'Komplet opgavehistorik',
+    'title.b.invoices': 'Fakturaer', 'sub.b.invoices': 'Fakturaer fra Invoicery Business',
+    'title.b.profile': 'Virksomhedsprofil', 'sub.b.profile': 'Jeres virksomhedsoplysninger',
+    'title.a.dash': 'Oversigt', 'sub.a.dash': 'Platformsstatus og nøgletal',
+    'title.a.activity': 'Aktivitet', 'sub.a.activity': 'Seneste hændelser på platformen',
+    'title.a.approve': 'Godkendelser', 'sub.a.approve': 'Opgaver der afventer administrativ godkendelse',
+    'title.a.all': 'Alle opgaver', 'sub.a.all': 'Komplet opgaveregister',
+    'title.a.consultants': 'Konsulenter', 'sub.a.consultants': 'Registrerede konsulenter',
+    'title.a.companies': 'Virksomheder', 'sub.a.companies': 'Registrerede kundevirksomheder',
+    'title.a.payroll': 'Lønkørsel', 'sub.a.payroll': 'Kør løn for godkendte opgaver',
+    'title.a.invoices': 'Fakturaer', 'sub.a.invoices': 'Udgående fakturaer',
+    'title.a.services': 'Ydelser', 'sub.a.services': 'Aktive ydelser og integrationer',
+    'title.a.settings': 'Indstillinger', 'sub.a.settings': 'Platformskonfiguration',
+
+    /* ── status ── */
+    'status.draft': 'Kladde',
+    'status.pending': 'Afventer godkendelse',
+    'status.pending.short': 'Afventer',
+    'status.approved': 'Godkendt',
+    'status.paid': 'Udbetalt',
+    'status.rejected': 'Afvist',
+
+    /* ── payroll line labels ── */
+    'line.employerTax': 'Arbejdsgiverafgift (14,1%)',   // NO-model only
+    'line.invoiceAmount': 'Fakturabeløb',
+    'line.serviceFee': 'Invoicery Business-gebyr (6%)',
+    'line.salaryBase': 'Lønbase',
+    'line.holidayPay': 'Feriegodtgørelse (12,5%)',
+    'line.otherEmployer': 'Øvrige arbejdsgiverbidrag',
+    'line.atpEmployer': 'ATP (arbejdsgiver)',
+    'line.gross': 'Bruttoløn',
+    'line.atpEmployee': 'ATP (lønmodtager)',
+    'line.amContribution': 'AM-bidrag (8%)',
+    'line.withholding': 'A-skat',
+    'line.net': 'Nettoløn',
+    'line.vat': 'Moms (25%)',
+    'line.invoiceTotal': 'Total inkl. moms',
+
+    /* ── common labels ── */
+    'lbl.assignment': 'Opgave',
+    'lbl.assignments': 'Opgaver',
+    'lbl.consultant': 'Konsulent',
+    'lbl.company': 'Virksomhed',
+    'lbl.period': 'Periode',
+    'lbl.hours': 'Timer',
+    'lbl.hourlyRate': 'Timeløn',
+    'lbl.amount': 'Beløb',
+    'lbl.status': 'Status',
+    'lbl.type': 'Type',
+    'lbl.description': 'Beskrivelse',
+    'lbl.created': 'Oprettet',
+    'lbl.approved': 'Godkendt',
+    'lbl.name': 'Navn',
+    'lbl.email': 'E-mail',
+    'lbl.phone': 'Telefon',
+    'lbl.city': 'By',
+    'lbl.address': 'Adresse',
+    'lbl.contact': 'Kontaktperson',
+    'lbl.joined': 'Tilmeldt',
+    'lbl.invoice': 'Faktura',
+    'lbl.total': 'I alt',
+    'lbl.fee': 'Gebyr',
+    'lbl.net': 'Nettoløn',
+    'lbl.gross': 'Bruttoløn',
+    'lbl.vatExcl': 'Beløb ekskl. moms',
+    'lbl.regNumber': 'CVR-nummer',
+    'lbl.personalId': 'CPR-nummer',
+    'lbl.all': 'Alle',
+    'lbl.allPeriods': 'Alle perioder',
+    'lbl.search': 'Søg…',
+    'lbl.required': 'Udfyld alle obligatoriske felter (*).',
+
+    /* ── actions ── */
+    'act.approve': 'Godkend',
+    'act.approveAssignment': 'Godkend opgave',
+    'act.reject': 'Afvis',
+    'act.requestChange': 'Anmod om ændring',
+    'act.save': 'Gem',
+    'act.cancel': 'Annullér',
+    'act.edit': 'Redigér',
+    'act.new': 'Ny',
+    'act.newAssignment': '+ Opret opgave',
+    'act.newAssignmentShort': '+ Ny opgave',
+    'act.createAnother': '+ Opret endnu en',
+    'act.send': 'Send opgave',
+    'act.view': 'Vis',
+    'act.viewMine': 'Vis mine opgaver',
+    'act.runPayroll': 'Kør løn',
+    'act.runAll': 'Kør alle lønninger',
+    'act.generate': 'Generér bevis (PDF)',
+    'act.configure': 'Konfigurér',
+    'act.viewLogs': 'Vis logfiler',
+    'act.newKey': 'Ny nøgle',
+    'act.newConsultant': 'Ny konsulent',
+    'act.saveSettings': 'Gem indstillinger',
+    'act.saveConsultant': 'Gem konsulent',
+
+    /* ── consultant: dashboard ── */
+    'c.dash.active': 'Aktive opgaver',
+    'c.dash.pending': 'Afventer godkendelse',
+    'c.dash.paid': 'Udbetalt i alt',
+    'c.dash.recent': 'Seneste opgaver',
+    'c.dash.empty': 'Du har ingen opgaver endnu.',
+
+    /* ── consultant: new ── */
+    'c.new.h': 'Ny opgave',
+    'c.new.companyEmail': 'Virksomhedens e-mail *',
+    'c.new.companyEmail.help': 'E-mailen til den virksomhed, der skal godkende opgaven.',
+    'c.new.type': 'Ydelse *',
+    'c.new.desc': 'Beskrivelse *',
+    'c.new.desc.ph': 'Beskriv kort det udførte arbejde…',
+    'c.new.hours': 'Antal timer *',
+    'c.new.rate': 'Timeløn *',
+    'c.new.period': 'Periode *',
+    'c.new.period.ph': 'fx April 2026',
+    'c.new.amount': 'Fakturabeløb',
+    'c.new.notFound': 'Fandt ingen virksomhedskonto med den e-mailadresse.',
+    'c.new.sent.h': 'Opgave sendt!',
+    'c.new.sent.p': 'har fået besked og godkender opgaven. Du får besked når den er klar.',
+    'c.new.sent.id': 'Opgave-ID:',
+
+    /* ── consultant: list / payslips / certificate ── */
+    'c.list.empty.h': 'Ingen opgaver endnu',
+    'c.list.empty.p': 'Opret din første opgave for at komme i gang.',
+    'c.pay.h': 'Lønsedler',
+    'c.pay.empty.h': 'Ingen lønsedler endnu',
+    'c.pay.empty.p': 'Lønsedler genereres når opgaver er udbetalt.',
+    'c.cert.h': 'Generér ansættelsesbevis',
+    'c.cert.p': 'Ansættelsesbeviset viser din indkomst via Invoicery Business i en valgt periode. Bruges fx til låneansøgning, boligansøgning eller a-kasse.',
+    'c.cert.from': 'Fra dato',
+    'c.cert.to': 'Til dato',
+    'c.cert.purpose': 'Formål',
+    'c.profile.personal': 'Personoplysninger',
+    'c.profile.account': 'Kontooplysninger',
+    'c.profile.bank': 'Bankkonto',
+    'c.profile.taxCard': 'Skattekort',
+
+    /* ── company ── */
+    'b.dash.pending': 'Afventer jeres godkendelse',
+    'b.dash.active': 'Aktive opgaver',
+    'b.dash.spend': 'Faktureret i alt',
+    'b.dash.consultants': 'Tilknyttede konsulenter',
+    'b.approve.empty.h': 'Ingen opgaver at godkende',
+    'b.approve.empty.p': 'Alle indkomne opgaver er behandlet.',
+    'b.approve.desc': 'Beskrivelse:',
+    'b.invoices.empty.h': 'Ingen fakturaer endnu',
+    'b.invoices.empty.p': 'Fakturaer oprettes når opgaver er godkendt.',
+    'b.invoices.h': 'Fakturaer fra Invoicery Business',
+    'b.invoices.total': 'I alt:',
+    'b.invoices.inclVat': 'inkl. moms',
+    'b.invoices.paid': 'Betalt',
+    'b.invoices.unpaid': 'Ubetalt',
+    'b.profile.h': 'Virksomhedsoplysninger',
+    'b.profile.billing': 'Faktureringsoplysninger',
+
+    /* ── admin ── */
+    'a.dash.totalAssignments': 'Opgaver i alt',
+    'a.dash.pending': 'Afventer godkendelse',
+    'a.dash.volume': 'Faktureret volumen',
+    'a.dash.revenue': 'Gebyrindtægt',
+    'a.dash.consultants': 'Konsulenter',
+    'a.dash.companies': 'Virksomheder',
+    'a.activity.h': 'Seneste aktivitet',
+    'a.approve.empty': 'Ingen opgaver afventer administrativ godkendelse.',
+    'a.payroll.toRun': 'Klar til lønkørsel',
+    'a.payroll.toRun.d': 'Godkendte opgaver',
+    'a.payroll.netToPay': 'Nettoløn at udbetale',
+    'a.payroll.netToPay.d': 'Efter skat & bidrag',
+    'a.payroll.revenue': 'Indtægt denne kørsel',
+    'a.payroll.revenue.d': '6% servicegebyr',
+    'a.payroll.ready.h': 'Opgaver klar til lønkørsel',
+    'a.payroll.ready.p': 'Godkendte og klar til udbetaling',
+    'a.payroll.none': 'Ingen lønninger at køre lige nu. Alle godkendte opgaver er udbetalt.',
+    'a.payroll.summary': 'Beregningsoversigt',
+    'a.payroll.note': 'Skatteberegningen er vejledende. Individuel A-skat afregnes efter den enkelte konsulents skattekort.',
+    'a.payroll.confirmOne': 'Gennemfør lønkørsel for denne opgave?',
+    'a.payroll.confirmAll': 'Gennemfør lønkørsel for alle godkendte opgaver?',
+    'a.payroll.ranOn': 'Lønkørt',
+    'a.invoices.h': 'Udgående fakturaer',
+    'a.services.h': 'Ydelser',
+    'a.services.users': 'Aktive brugere',
+    'a.services.uptime': 'Oppetid',
+    'a.services.active': 'Aktiv',
+    'a.services.keys': 'API-nøgler',
+    'a.services.keys.p': 'Håndtér eksterne integrationer',
+    'a.settings.general': 'Generelle indstillinger',
+    'a.settings.platformName': 'Platformsnavn',
+    'a.settings.serviceFee': 'Servicegebyr (%)',
+    'a.settings.taxRate': 'Standardtrækprocent (%)',
+    'a.settings.currency': 'Fakturavaluta',
+    'a.settings.vat': 'Moms (%)',
+    'a.settings.notifications': 'Notifikationer',
+    'a.settings.market': 'Marked',
+    'a.settings.entity': 'Juridisk enhed',
+    'a.settings.rateWarning': 'Satserne for dette marked er endnu ikke verificeret mod gældende lovgivning. Bekræft dem med jeres lønafdeling før de bruges over for kunder.',
+
+    /* ── misc ── */
+    'misc.noResults': 'Ingen resultater.',
+    'misc.of': 'af',
+    'misc.perHour': '/t',
+    'nav.cta': 'Kom i gang',
+    'hero.h1': 'Løn- & personale&shy;administration <span>i Norden</span>',
+    'hero.check.4': 'Enkelt for konsulenten, smidigt for virksomheden',
+    'hero.stat.1.n': '6%',
+    'hero.stat.1.l': 'Fast gebyr',
+    'hero.stat.2.n': '+500',
+    'hero.stat.2.l': 'Virksomheder',
+    'hero.stat.3.n': 'Norden',
+    'hero.stat.3.l': 'Dækning',
+    'mock.title': 'Aktive opgaver — april 2026',
+    'mock.total': 'I alt denne periode',
+    'mock.approved': 'Godkendt',
+    'mock.pending': 'Afventer',
+    'mock.new': 'Ny',
+    'price.allin': 'Alt-i-én-løsning til lønhåndtering og personaleadministration',
+    'case.sub': 'Fra eventbranchen til tech — vi håndterer fleksibel arbejdskraft for virksomheder i hele Norden.',
+    'foot.conditions': 'Gode arbejdsvilkår',
+    'foot.platform': 'Platformsselskab',
+    'foot.press': 'Presse',
+    'foot.support': 'Support',
+    'foot.contactUs': 'Kontakt os',
+    'login.welcome': 'Velkommen tilbage',
+    'meta.title': 'Invoicery Business — Løn- & personaleadministration i Norden',
+    'sb.myAccount': 'Min konto',
+    'sb.finance': 'Økonomi',
+    'sb.account': 'Konto',
+    'a.pendingSuffix': 'opgaver afventer',
+    'a.superadmin': 'Superadmin-adgang',
+    'a.superadminRole': 'Superadministrator',
+    'sb.assignments': 'Opgavestyring',
+    'sb.system': 'System',
+    'sb.users': 'Brugere',
+    'a.payroll.employerCost': 'Arbejdsgiveromkostninger',
+    'a.payroll.deductions': 'Lønmodtagerfradrag',
+    'login.emailPh': 'navn@firma.dk',
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     NORWEGIAN BOKMÅL
+     ══════════════════════════════════════════════════════════════════════ */
+  nb: {
+    /* ── chrome ── */
+    'brand.sub': 'Lønn & personal',
+    'nav.services': 'Tjenester',
+    'nav.how': 'Slik fungerer det',
+    'nav.pricing': 'Priser',
+    'nav.cases': 'Kundecaser',
+    'nav.faq': 'FAQ',
+    'nav.login': 'Logg inn',
+    'nav.contact': 'Kontakt',
+    'market.switch': 'Marked',
+
+    /* ── hero ── */
+    'hero.badge': 'Fullt arbeidsgiveransvar i Norden',
+    'hero.title.1': 'Lønns- og personal­administrasjon',
+    'hero.title.2': 'uten styret',
+    'hero.sub': 'Vi hjelper bedrifter med å håndtere fleksibel arbeidskraft gjennom trygge, smidige og kostnadseffektive løsninger — alt med fullt arbeidsgiveransvar.',
+    'hero.check.1': 'Fullt arbeidsgiveransvar — vi ordner alt',
+    'hero.check.2': 'Lønnshåndtering, skatt & forsikringer inkludert',
+    'hero.check.3': 'Nordisk compliance i alle land',
+    'hero.cta': 'Kom i gang gratis',
+    'hero.ghost': 'Slik fungerer det →',
+    'hero.stat.1': 'Konsulenter',
+    'hero.stat.2': 'Bedrifter',
+    'hero.stat.3': 'Utbetalt',
+    'hero.mock.title': 'Aktive oppdrag',
+    'hero.mock.total': 'Totalt denne perioden',
+    'hero.pill.1': 'Oppdrag godkjent',
+    'hero.pill.2': 'Lønn utbetalt',
+
+    /* ── trust bar ── */
+    'trust.1': 'Trygt & bærekraftig',
+    'trust.2': 'Enkelt & smidig',
+    'trust.3': 'Fleksibelt & skalerbart',
+    'trust.4': 'Ingen skjulte gebyrer',
+    'trust.5': 'Nordisk compliance',
+    'trust.6': 'Fullt arbeidsgiveransvar',
+
+    /* ── services ── */
+    'svc.tag': 'Tjenester',
+    'svc.title': 'Alt dere trenger for <br>fleksibel personalhåndtering',
+    'svc.sub': 'Vi tilbyr tilpassede løsninger for bedrifter i alle størrelser — fra enkel lønnsadministrasjon til full automatisering.',
+    'svc.popular': 'Mest populær',
+    'svc.1.h': 'SalaryInvoicing',
+    'svc.1.p': 'Nordens ledende samarbeidsportal for bedrifter og konsulenter. En komplett plattform for lønns- og personaladministrasjon der konsulenten fakturerer gjennom oss, og vi bærer hele arbeidsgiveransvaret.',
+    'svc.2.h': 'Excel-import',
+    'svc.2.p': 'Intuitiv malløsning for lønnsgrunnlag. Last opp en Excel-fil med timelønn, honorarer og tillegg — vi ordner resten. Tilpasset nordiske krav og bygget for enkelhet.',
+    'svc.3.h': 'API-integrasjon',
+    'svc.3.p': 'Automatisert administrasjonsløsning for bedrifter som vil effektivisere personal- og lønnshåndteringen, uansett hvilket forretningssystem dere bruker. Sømløs integrasjon mot deres eksisterende system.',
+    'svc.4.h': 'Workforce Management',
+    'svc.4.p': 'Helhetlig løsning med fullt arbeidsgiveransvar. Vi håndterer rekruttering, ansettelse, lønn og avvikling — dere fokuserer på kjernevirksomheten.',
+
+    /* ── how it works ── */
+    'how.tag': 'Slik fungerer det',
+    'how.title': 'Tre enkle steg',
+    'how.sub': 'Kom i gang på minutter. Ingen kompliserte avtaler eller lange prosesser — vi gjør det enkelt for dere.',
+    'how.1.h': 'Registrer oppdraget',
+    'how.1.p': 'Konsulenten oppretter et oppdrag i portalen med opplysninger om bedriften, antall timer, honorar og periode. Det tar under ett minutt.',
+    'how.2.h': 'Bedriften godkjenner',
+    'how.2.p': 'Oppdragsgiveren logger inn og godkjenner oppdraget med ett klikk. Vi sender fakturaen direkte til bedriften med tydelig spesifikasjon.',
+    'how.3.h': 'Lønnen utbetales',
+    'how.3.p': 'Når bedriften har betalt fakturaen, beregner og utbetaler vi lønnen til konsulenten med korrekt forskuddstrekk, arbeidsgiveravgift og forsikringer.',
+
+    /* ── pricing ── */
+    'price.tag': 'Priser',
+    'price.title': 'Enkel, transparent prising',
+    'price.sub': 'Ett fast gebyr. Ingen skjulte kostnader. Ingen oppstartsgebyr.',
+    'price.rate': '6%',
+    'price.rate.of': 'av fakturert beløp',
+    'price.incl': 'Inkludert i prisen',
+    'price.incl.1': 'Lønnsadministrasjon og utbetaling',
+    'price.incl.2': 'Forskuddstrekk og arbeidsgiveravgift',
+    'price.incl.3': 'Yrkesskade- og ansvarsforsikring',
+    'price.incl.4': 'Feriepenger',
+    'price.incl.5': 'Fakturering og purring',
+    'price.incl.6': 'Support på norsk',
+    'price.calc.h': 'Beregn lønnen din',
+    'price.calc.invoice': 'Fakturabeløp (kr)',
+    'price.calc.tax': 'Din trekkprosent (%)',
+    'price.calc.result': 'Din nettolønn etter skatt',
+    'price.calc.note': 'Veiledende beregning. Faktisk lønn avhenger av skattekortet ditt.',
+
+    /* ── cases ── */
+    'case.tag': 'Kundecaser',
+    'case.title': 'Bedrifter som stoler på oss',
+    'case.1.q': '"Invoicery Business har gjort det mulig for oss å skalere opp med ekstra personell uten byråkratiske hindringer. Alt håndteres smidig, og vi slipper å bekymre oss for arbeidsgiveransvar."',
+    'case.1.n': 'Maria Lide',
+    'case.1.r': 'Arrangement & logistikk',
+    'case.2.q': '"Som kommunikasjonsbyrå har vi varierende behov for spesialister. Invoicery Business gjør det enkelt å hente inn riktig kompetanse når vi trenger det — uten styr."',
+    'case.2.n': 'Jonas Svensson',
+    'case.2.r': 'Kommunikasjon & PR',
+    'case.3.q': '"Vi må raskt kunne hente inn folk til korte oppdrag. Med Invoicery Business løser vi det på minutter, og konsulentene er fornøyde med hvor smidig alt fungerer."',
+    'case.3.n': 'Anne Holm',
+    'case.3.r': 'Bemanning & rekruttering',
+    'case.4.q': '"Prisjakt bruker Invoicery Business til å håndtere eksterne IT-konsulenter. Plattformen er intuitiv, og vi sparer massevis av tid på administrasjon hver måned."',
+    'case.4.n': 'Peter Lund',
+    'case.4.r': 'E-handel & tech',
+
+    /* ── faq ── */
+    'faq.tag': 'Ofte stilte spørsmål',
+    'faq.title': 'Spørsmål & svar',
+    'faq.1.q': 'Hva innebærer fullt arbeidsgiveransvar?',
+    'faq.1.a': 'Det innebærer at Invoicery Business formelt er arbeidsgiver for konsulenten. Vi håndterer alle arbeidsgiverplikter — arbeidsavtale, lønnsutbetaling, forskuddstrekk, arbeidsgiveravgift, forsikringer og HMS-ansvar.',
+    'faq.2.q': 'Hvordan beregnes gebyret på 6%?',
+    'faq.2.a': 'Gebyret beregnes av fakturert beløp. Det er et alt-i-ett-gebyr som dekker lønnsadministrasjon, arbeidsgiveravgift, forsikringer og plattformen vår. Ingen ytterligere kostnader kommer i tillegg.',
+    'faq.3.q': 'Hvilke land i Norden dekker dere?',
+    'faq.3.a': 'Vi dekker Norge, Danmark, Sverige og Finland. Plattformen vår håndterer lokale skatteregler, arbeidsrett og lønnsadministrasjon i hvert land.',
+    'faq.4.q': 'Hvor raskt kan en konsulent komme i gang?',
+    'faq.4.a': 'Registreringen tar under 5 minutter. Konsulenten oppretter en konto, fyller inn person- og bankopplysninger, og kan deretter registrere sitt første oppdrag med en gang.',
+    'faq.5.q': 'Hva hvis bedriften min allerede har et lønnssystem?',
+    'faq.5.a': 'Ikke noe problem. Via API-integrasjonen vår kobler vi oss mot de fleste forretningssystemer. Vi tilbyr også Excel-import for enklere lønnsgrunnlag.',
+    'faq.6.q': 'Er det binding?',
+    'faq.6.a': 'Nei. Ingen binding, ingen oppstartsgebyr og ingen månedlige kostnader. Dere betaler kun når dere faktisk bruker tjenesten.',
+
+    /* ── cta + footer ── */
+    'cta.title': 'Klar for å forenkle personalhåndteringen deres?',
+    'cta.sub': 'Bli med hundrevis av nordiske bedrifter som allerede bruker Invoicery Business. Kom i gang i dag — uten bindingstid.',
+    'cta.primary': 'Opprett konto gratis',
+    'cta.ghost': 'Book en gjennomgang',
+    'foot.tagline': 'En del av Invoicery Group — Nordens ledende organisasjon innen oppdragsbasert personell og lønnsadministrasjon siden 1999.',
+    'foot.product': 'Produkt',
+    'foot.company': 'Selskapet',
+    'foot.legal': 'Juridisk',
+    'foot.about': 'Om oss',
+    'foot.contact': 'Kontakt',
+    'foot.terms': 'Brukervilkår',
+    'foot.privacy': 'Personvernerklæring',
+    'foot.rights': 'Alle rettigheter reservert.',
+
+    /* ── login ── */
+    'login.title': 'Logg inn',
+    'login.sub': 'Logg inn på kontoen din',
+    'login.email': 'E-post',
+    'login.password': 'Passord',
+    'login.submit': 'Logg inn',
+    'login.error': 'Feil e-post eller passord.',
+    'login.demo': 'Demokontoer',
+    'login.demo.consultant': 'Konsulent',
+    'login.demo.company': 'Bedrift',
+    'login.demo.admin': 'Administrator',
+    'login.cancel': 'Avbryt',
+
+    /* ── shell ── */
+    'shell.consultant': 'Konsulent',
+    'shell.company': 'Bedrift',
+    'shell.admin': 'Administrator',
+    'shell.logout': 'Logg ut',
+    'shell.back': 'Tilbake til forsiden',
+
+    /* ── nav: consultant ── */
+    'nav.c.dash': 'Oversikt',
+    'nav.c.new': 'Opprett oppdrag',
+    'nav.c.list': 'Mine oppdrag',
+    'nav.c.pay': 'Lønnsslipper',
+    'nav.c.cert': 'Arbeidsbekreftelse',
+    'nav.c.profile': 'Profil',
+
+    /* ── nav: company ── */
+    'nav.b.dash': 'Oversikt',
+    'nav.b.approve': 'Godkjenn oppdrag',
+    'nav.b.all': 'Alle oppdrag',
+    'nav.b.invoices': 'Fakturaer',
+    'nav.b.profile': 'Bedriftsprofil',
+
+    /* ── nav: admin ── */
+    'nav.a.dash': 'Oversikt',
+    'nav.a.activity': 'Aktivitet',
+    'nav.a.approve': 'Godkjenninger',
+    'nav.a.all': 'Alle oppdrag',
+    'nav.a.consultants': 'Konsulenter',
+    'nav.a.companies': 'Bedrifter',
+    'nav.a.payroll': 'Lønnskjøring',
+    'nav.a.invoices': 'Fakturaer',
+    'nav.a.services': 'Tjenester',
+    'nav.a.settings': 'Innstillinger',
+
+    /* ── page titles ── */
+    'title.c.dash': 'Oversikt', 'sub.c.dash': 'Velkommen til Invoicery Business',
+    'title.c.new': 'Opprett oppdrag', 'sub.c.new': 'Registrer et nytt oppdrag',
+    'title.c.list': 'Mine oppdrag', 'sub.c.list': 'Status og historikk for oppdragene dine',
+    'title.c.pay': 'Lønnsslipper', 'sub.c.pay': 'Lønnsslippene dine fra Invoicery Business',
+    'title.c.cert': 'Arbeidsbekreftelse', 'sub.c.cert': 'Generer bekreftelse for en periode',
+    'title.c.profile': 'Profil & innstillinger', 'sub.c.profile': 'Personopplysningene og kontoopplysningene dine',
+    'title.b.dash': 'Oversikt', 'sub.b.dash': 'Velkommen til bedriftsportalen',
+    'title.b.approve': 'Godkjenn oppdrag', 'sub.b.approve': 'Gjennomgå og godkjenn innkomne oppdrag',
+    'title.b.all': 'Alle oppdrag', 'sub.b.all': 'Komplett oppdragshistorikk',
+    'title.b.invoices': 'Fakturaer', 'sub.b.invoices': 'Fakturaer fra Invoicery Business',
+    'title.b.profile': 'Bedriftsprofil', 'sub.b.profile': 'Bedriftsopplysningene deres',
+    'title.a.dash': 'Oversikt', 'sub.a.dash': 'Plattformstatus og nøkkeltall',
+    'title.a.activity': 'Aktivitet', 'sub.a.activity': 'Siste hendelser på plattformen',
+    'title.a.approve': 'Godkjenninger', 'sub.a.approve': 'Oppdrag som venter på administrativ godkjenning',
+    'title.a.all': 'Alle oppdrag', 'sub.a.all': 'Komplett oppdragsregister',
+    'title.a.consultants': 'Konsulenter', 'sub.a.consultants': 'Registrerte konsulenter',
+    'title.a.companies': 'Bedrifter', 'sub.a.companies': 'Registrerte kundebedrifter',
+    'title.a.payroll': 'Lønnskjøring', 'sub.a.payroll': 'Kjør lønn for godkjente oppdrag',
+    'title.a.invoices': 'Fakturaer', 'sub.a.invoices': 'Utgående fakturaer',
+    'title.a.services': 'Tjenester', 'sub.a.services': 'Aktive tjenester og integrasjoner',
+    'title.a.settings': 'Innstillinger', 'sub.a.settings': 'Plattformkonfigurasjon',
+
+    /* ── status ── */
+    'status.draft': 'Utkast',
+    'status.pending': 'Venter på godkjenning',
+    'status.pending.short': 'Venter',
+    'status.approved': 'Godkjent',
+    'status.paid': 'Utbetalt',
+    'status.rejected': 'Avvist',
+
+    /* ── payroll line labels ── */
+    'line.otherEmployer': 'Øvrige arbeidsgiveravgifter', // DK-model only
+    'line.atpEmployer': 'ATP (arbeidsgiver)',            // DK-model only
+    'line.atpEmployee': 'ATP (arbeidstaker)',            // DK-model only
+    'line.amContribution': 'AM-bidrag (8%)',             // DK-model only
+    'line.invoiceAmount': 'Fakturabeløp',
+    'line.serviceFee': 'Invoicery Business-gebyr (6%)',
+    'line.salaryBase': 'Lønnsbase',
+    'line.holidayPay': 'Feriepenger (10,2%)',
+    'line.employerTax': 'Arbeidsgiveravgift (14,1%)',
+    'line.gross': 'Bruttolønn',
+    'line.withholding': 'Forskuddstrekk',
+    'line.net': 'Nettolønn',
+    'line.vat': 'Mva (25%)',
+    'line.invoiceTotal': 'Totalt inkl. mva',
+
+    /* ── common labels ── */
+    'lbl.assignment': 'Oppdrag',
+    'lbl.assignments': 'Oppdrag',
+    'lbl.consultant': 'Konsulent',
+    'lbl.company': 'Bedrift',
+    'lbl.period': 'Periode',
+    'lbl.hours': 'Timer',
+    'lbl.hourlyRate': 'Timelønn',
+    'lbl.amount': 'Beløp',
+    'lbl.status': 'Status',
+    'lbl.type': 'Type',
+    'lbl.description': 'Beskrivelse',
+    'lbl.created': 'Opprettet',
+    'lbl.approved': 'Godkjent',
+    'lbl.name': 'Navn',
+    'lbl.email': 'E-post',
+    'lbl.phone': 'Telefon',
+    'lbl.city': 'Sted',
+    'lbl.address': 'Adresse',
+    'lbl.contact': 'Kontaktperson',
+    'lbl.joined': 'Registrert',
+    'lbl.invoice': 'Faktura',
+    'lbl.total': 'Totalt',
+    'lbl.fee': 'Gebyr',
+    'lbl.net': 'Nettolønn',
+    'lbl.gross': 'Bruttolønn',
+    'lbl.vatExcl': 'Beløp eks. mva',
+    'lbl.regNumber': 'Organisasjonsnummer',
+    'lbl.personalId': 'Fødselsnummer',
+    'lbl.all': 'Alle',
+    'lbl.allPeriods': 'Alle perioder',
+    'lbl.search': 'Søk…',
+    'lbl.required': 'Fyll ut alle obligatoriske felt (*).',
+
+    /* ── actions ── */
+    'act.approve': 'Godkjenn',
+    'act.approveAssignment': 'Godkjenn oppdrag',
+    'act.reject': 'Avvis',
+    'act.requestChange': 'Be om endring',
+    'act.save': 'Lagre',
+    'act.cancel': 'Avbryt',
+    'act.edit': 'Rediger',
+    'act.new': 'Ny',
+    'act.newAssignment': '+ Opprett oppdrag',
+    'act.newAssignmentShort': '+ Nytt oppdrag',
+    'act.createAnother': '+ Opprett nytt',
+    'act.send': 'Send oppdrag',
+    'act.view': 'Vis',
+    'act.viewMine': 'Vis mine oppdrag',
+    'act.runPayroll': 'Kjør lønn',
+    'act.runAll': 'Kjør alle lønninger',
+    'act.generate': 'Generer bekreftelse (PDF)',
+    'act.configure': 'Konfigurer',
+    'act.viewLogs': 'Vis logger',
+    'act.newKey': 'Ny nøkkel',
+    'act.newConsultant': 'Ny konsulent',
+    'act.saveSettings': 'Lagre innstillinger',
+    'act.saveConsultant': 'Lagre konsulent',
+
+    /* ── consultant: dashboard ── */
+    'c.dash.active': 'Aktive oppdrag',
+    'c.dash.pending': 'Venter på godkjenning',
+    'c.dash.paid': 'Utbetalt totalt',
+    'c.dash.recent': 'Siste oppdrag',
+    'c.dash.empty': 'Du har ingen oppdrag ennå.',
+
+    /* ── consultant: new ── */
+    'c.new.h': 'Nytt oppdrag',
+    'c.new.companyEmail': 'Bedriftens e-post *',
+    'c.new.companyEmail.help': 'E-posten til bedriften som skal godkjenne oppdraget.',
+    'c.new.type': 'Tjeneste *',
+    'c.new.desc': 'Beskrivelse *',
+    'c.new.desc.ph': 'Beskriv kort arbeidet som er utført…',
+    'c.new.hours': 'Antall timer *',
+    'c.new.rate': 'Timelønn *',
+    'c.new.period': 'Periode *',
+    'c.new.period.ph': 'f.eks. April 2026',
+    'c.new.amount': 'Fakturabeløp',
+    'c.new.notFound': 'Fant ingen bedriftskonto med den e-postadressen.',
+    'c.new.sent.h': 'Oppdrag sendt!',
+    'c.new.sent.p': 'har fått varsel og vil godkjenne oppdraget. Du får beskjed når det er klart.',
+    'c.new.sent.id': 'Oppdrags-ID:',
+
+    /* ── consultant: list / payslips / certificate ── */
+    'c.list.empty.h': 'Ingen oppdrag ennå',
+    'c.list.empty.p': 'Opprett ditt første oppdrag for å komme i gang.',
+    'c.pay.h': 'Lønnsslipper',
+    'c.pay.empty.h': 'Ingen lønnsslipper ennå',
+    'c.pay.empty.p': 'Lønnsslipper genereres når oppdrag er utbetalt.',
+    'c.cert.h': 'Generer arbeidsbekreftelse',
+    'c.cert.p': 'Arbeidsbekreftelsen viser inntekten din via Invoicery Business i en valgt periode. Brukes f.eks. til lånesøknad, boligsøknad eller dagpenger.',
+    'c.cert.from': 'Fra dato',
+    'c.cert.to': 'Til dato',
+    'c.cert.purpose': 'Formål',
+    'c.profile.personal': 'Personopplysninger',
+    'c.profile.account': 'Kontoopplysninger',
+    'c.profile.bank': 'Bankkonto',
+    'c.profile.taxCard': 'Skattekort',
+
+    /* ── company ── */
+    'b.dash.pending': 'Venter på deres godkjenning',
+    'b.dash.active': 'Aktive oppdrag',
+    'b.dash.spend': 'Fakturert totalt',
+    'b.dash.consultants': 'Tilknyttede konsulenter',
+    'b.approve.empty.h': 'Ingen oppdrag å godkjenne',
+    'b.approve.empty.p': 'Alle innkomne oppdrag er behandlet.',
+    'b.approve.desc': 'Beskrivelse:',
+    'b.invoices.empty.h': 'Ingen fakturaer ennå',
+    'b.invoices.empty.p': 'Fakturaer opprettes når oppdrag er godkjent.',
+    'b.invoices.h': 'Fakturaer fra Invoicery Business',
+    'b.invoices.total': 'Totalt:',
+    'b.invoices.inclVat': 'inkl. mva',
+    'b.invoices.paid': 'Betalt',
+    'b.invoices.unpaid': 'Ubetalt',
+    'b.profile.h': 'Bedriftsopplysninger',
+    'b.profile.billing': 'Faktureringsopplysninger',
+
+    /* ── admin ── */
+    'a.dash.totalAssignments': 'Oppdrag totalt',
+    'a.dash.pending': 'Venter på godkjenning',
+    'a.dash.volume': 'Fakturert volum',
+    'a.dash.revenue': 'Gebyrinntekt',
+    'a.dash.consultants': 'Konsulenter',
+    'a.dash.companies': 'Bedrifter',
+    'a.activity.h': 'Siste aktivitet',
+    'a.approve.empty': 'Ingen oppdrag venter på administrativ godkjenning.',
+    'a.payroll.toRun': 'Klar for lønnskjøring',
+    'a.payroll.toRun.d': 'Godkjente oppdrag',
+    'a.payroll.netToPay': 'Nettolønn å utbetale',
+    'a.payroll.netToPay.d': 'Etter skatt & avgifter',
+    'a.payroll.revenue': 'Inntekt denne kjøringen',
+    'a.payroll.revenue.d': '6% servicegebyr',
+    'a.payroll.ready.h': 'Oppdrag klare for lønnskjøring',
+    'a.payroll.ready.p': 'Godkjente og klare for utbetaling',
+    'a.payroll.none': 'Ingen lønninger å kjøre akkurat nå. Alle godkjente oppdrag er utbetalt.',
+    'a.payroll.summary': 'Beregningssammendrag',
+    'a.payroll.note': 'Skatteberegningen er veiledende. Individuelt forskuddstrekk avregnes etter den enkelte konsulents skattekort.',
+    'a.payroll.confirmOne': 'Gjennomfør lønnskjøring for dette oppdraget?',
+    'a.payroll.confirmAll': 'Gjennomfør lønnskjøring for alle godkjente oppdrag?',
+    'a.payroll.ranOn': 'Lønnskjørt',
+    'a.invoices.h': 'Utgående fakturaer',
+    'a.services.h': 'Tjenester',
+    'a.services.users': 'Aktive brukere',
+    'a.services.uptime': 'Oppetid',
+    'a.services.active': 'Aktiv',
+    'a.services.keys': 'API-nøkler',
+    'a.services.keys.p': 'Håndter eksterne integrasjoner',
+    'a.settings.general': 'Generelle innstillinger',
+    'a.settings.platformName': 'Plattformnavn',
+    'a.settings.serviceFee': 'Servicegebyr (%)',
+    'a.settings.taxRate': 'Standard trekkprosent (%)',
+    'a.settings.currency': 'Fakturavaluta',
+    'a.settings.vat': 'Mva (%)',
+    'a.settings.notifications': 'Varsler',
+    'a.settings.market': 'Marked',
+    'a.settings.entity': 'Juridisk enhet',
+    'a.settings.rateWarning': 'Satsene for dette markedet er ennå ikke verifisert mot gjeldende regelverk. Bekreft dem med lønnsavdelingen før de brukes mot kunder.',
+
+    /* ── misc ── */
+    'misc.noResults': 'Ingen resultater.',
+    'misc.of': 'av',
+    'misc.perHour': '/t',
+    'nav.cta': 'Kom i gang',
+    'hero.h1': 'Lønns- & personal&shy;administrasjon <span>i Norden</span>',
+    'hero.check.4': 'Enkelt for konsulenten, smidig for bedriften',
+    'hero.stat.1.n': '6%',
+    'hero.stat.1.l': 'Fast gebyr',
+    'hero.stat.2.n': '+500',
+    'hero.stat.2.l': 'Bedrifter',
+    'hero.stat.3.n': 'Norden',
+    'hero.stat.3.l': 'Dekning',
+    'mock.title': 'Aktive oppdrag — april 2026',
+    'mock.total': 'Totalt denne perioden',
+    'mock.approved': 'Godkjent',
+    'mock.pending': 'Venter',
+    'mock.new': 'Ny',
+    'price.allin': 'Alt-i-ett-løsning for lønnshåndtering og personaladministrasjon',
+    'case.sub': 'Fra arrangementsbransjen til tech — vi håndterer fleksibel arbeidskraft for bedrifter i hele Norden.',
+    'foot.conditions': 'Gode arbeidsvilkår',
+    'foot.platform': 'Plattformselskap',
+    'foot.press': 'Presse',
+    'foot.support': 'Support',
+    'foot.contactUs': 'Kontakt oss',
+    'login.welcome': 'Velkommen tilbake',
+    'meta.title': 'Invoicery Business — Lønns- & personaladministrasjon i Norden',
+    'sb.myAccount': 'Min konto',
+    'sb.finance': 'Økonomi',
+    'sb.account': 'Konto',
+    'a.pendingSuffix': 'oppdrag venter',
+    'a.superadmin': 'Superadmin-tilgang',
+    'a.superadminRole': 'Superadministrator',
+    'sb.assignments': 'Oppdragsstyring',
+    'sb.system': 'System',
+    'sb.users': 'Brukere',
+    'a.payroll.employerCost': 'Arbeidsgiverkostnader',
+    'a.payroll.deductions': 'Arbeidstakertrekk',
+    'login.emailPh': 'navn@firma.no',
+  }
+  };
+
+  var current = 'da';
+
+  function setLang(lang) {
+    if (STRINGS[lang]) { current = lang; return true; }
+    return false;
+  }
+  function getLang() { return current; }
+
+  /* Look up a key. A missing key renders visibly rather than falling back —
+     silent fallback to the other language is how half-translated screens
+     ship. */
+  function t(key, lang) {
+    var dict = STRINGS[lang || current];
+    if (dict && Object.prototype.hasOwnProperty.call(dict, key)) return dict[key];
+    return '⟦' + key + '⟧';
+  }
+
+  /* Every key present in either language, for the coverage check. */
+  function allKeys() {
+    var set = {};
+    Object.keys(STRINGS).forEach(function (l) {
+      Object.keys(STRINGS[l]).forEach(function (k) { set[k] = true; });
+    });
+    return Object.keys(set).sort();
+  }
+
+  function missing(lang) {
+    var dict = STRINGS[lang] || {};
+    return allKeys().filter(function (k) {
+      return !Object.prototype.hasOwnProperty.call(dict, k);
+    });
+  }
+
+  /* Walk the DOM and fill in anything tagged with data-i18n.
+       data-i18n            → textContent
+       data-i18n-html       → innerHTML (only for copy with inline markup)
+       data-i18n-placeholder→ placeholder attribute
+       data-i18n-title      → title attribute                              */
+  function applyI18n(root) {
+    var scope = root || global.document;
+    if (!scope || !scope.querySelectorAll) return;
+    scope.querySelectorAll('[data-i18n]').forEach(function (el) {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    scope.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+      el.innerHTML = t(el.getAttribute('data-i18n-html'));
+    });
+    scope.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    scope.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+      el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+    });
+  }
+
+  var API = {
+    STRINGS: STRINGS,
+    t: t,
+    setLang: setLang,
+    getLang: getLang,
+    allKeys: allKeys,
+    missing: missing,
+    applyI18n: applyI18n
+  };
+
+  global.IBi18n = API;
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+
+})(typeof window !== 'undefined' ? window : globalThis);
