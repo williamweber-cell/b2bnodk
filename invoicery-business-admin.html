@@ -215,6 +215,21 @@ textarea.inp{resize:vertical;min-height:72px}
 .mkt-btn.active{background:var(--orange);color:#fff}
 .mkt-flag{font-size:1rem;line-height:1}
 .alert-warn{background:var(--abg);color:var(--atxt);border:1px solid #fde68a}
+
+/* ── excel import ── */
+.drop{border:2px dashed var(--border);border-radius:10px;padding:2.2rem 1.5rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--bg)}
+.drop:hover,.drop.over{border-color:var(--orange);background:#fff7ed}
+.drop-ico{color:var(--navy);margin-bottom:.6rem}
+.drop-main{font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.drop-sub{font-size:.78rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:.25rem .7rem;font-size:.78rem;color:var(--mid)}
+.chip strong{color:var(--text)}
+.chip-gn{background:var(--gbg);border-color:#bbf7d0;color:var(--gtxt)}
+.chip-am{background:var(--abg);border-color:#fde68a;color:var(--atxt)}
+.chip-rd{background:var(--rbg);border-color:#fecaca;color:var(--rtxt)}
+tr.row-err{background:rgba(220,38,38,.045)}
+tr.row-warn{background:rgba(217,119,6,.045)}
+.alert-err{background:var(--rbg);color:var(--rtxt);border:1px solid #fecaca}
 </style>
 </head>
 <body>
@@ -257,6 +272,10 @@ textarea.inp{resize:vertical;min-height:72px}
     <li><button onclick="go('a-all')" data-v="a-all">
       <span class="sb-ni"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
       <span data-i18n="nav.a.all">Alle opgaver</span>
+    </button></li>
+    <li><button onclick="go('a-import')" data-v="a-import">
+      <span class="sb-ni"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+      <span data-i18n="nav.a.import">Importér løngrundlag</span>
     </button></li>
   </ul>
 
@@ -345,6 +364,8 @@ textarea.inp{resize:vertical;min-height:72px}
 <script src="ib-markets.js"></script>
 <script src="ib-i18n.js"></script>
 <script src="ib-core.js"></script>
+<script src="ib-xlsx.js"></script>
+<script src="ib-import.js"></script>
 <script>
 /* ═══════════════════ BOOT ═══════════════════
    Storage, seed, payroll and formatting live in ib-core.js; market config in
@@ -418,7 +439,7 @@ const ICO={
 
 /* ═══════════════════ ROUTING ═══════════════════ */
 const VIEWS={
-  'a-dash':aDash,'a-activity':aActivity,'a-approve':aApprove,'a-all':aAll,
+  'a-dash':aDash,'a-activity':aActivity,'a-approve':aApprove,'a-all':aAll,'a-import':importView,
   'a-consultants':aConsultants,'a-companies':aCompanies,'a-payroll':aPayroll,
   'a-invoices':aInvoices,'a-services':aServices,'a-settings':aSettings
 };
@@ -759,7 +780,8 @@ function aPayroll(){
         </div>
       </div>
     </div>
-  </div>`;
+  </div>
+  ${jeevesPanel()}`;
 }
 
 window.runPayrollOne=function(id){
@@ -885,6 +907,281 @@ function aSettings(){
     </div>
   </div>`;
 }
+
+function aImport(){return importView()}
+const IMPORT_SCOPE='admin';
+/* ═══════════════════ EXCEL IMPORT (shared by both apps) ═══════════════════
+   Upload → parse → validate → preview → commit. Nothing is written until the
+   user confirms, and error rows are skipped rather than coerced.
+
+   `IMPORT_SCOPE` is set per app: 'company' in the portal, 'admin' in the
+   back-office. The scope decides whether the file must name a company. */
+
+let IMPORT_STATE = null;   // { fileName, table, validated } between steps
+
+function importView(){
+  const scope=IMPORT_SCOPE;
+  const titleKey=scope==='admin'?'nav.a.import':'nav.b.import';
+  return `
+  <div class="card" style="max-width:940px">
+    <div class="card-hd">
+      <div><span class="card-title">${esc(t(titleKey))}</span></div>
+      <button class="btn btn-gh btn-sm" onclick="downloadTemplate()">
+        ${ICO_DL} ${esc(t('import.template'))}</button>
+    </div>
+    <div class="card-bd">
+      <p style="font-size:.85rem;color:var(--mid);margin-bottom:1rem">${esc(t('import.templateHelp'))}</p>
+      <div class="drop" id="drop"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault();this.classList.add('over')"
+           ondragleave="this.classList.remove('over')"
+           ondrop="handleDrop(event)">
+        <div class="drop-ico">${ICO_UP}</div>
+        <div class="drop-main">${esc(t('import.drop'))}</div>
+        <div class="drop-sub">${esc(t('import.formats'))}</div>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx,.csv,.tsv,.txt" style="display:none"
+             onchange="handleFile(this.files[0])">
+      <div id="import-out" style="margin-top:1.2rem"></div>
+    </div>
+  </div>`;
+}
+
+window.handleDrop=function(e){
+  e.preventDefault();
+  const el=document.getElementById('drop');
+  if(el) el.classList.remove('over');
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f) handleFile(f);
+}
+
+window.handleFile=async function(file){
+  if(!file) return;
+  const out=document.getElementById('import-out');
+  out.innerHTML=`<div style="color:var(--mid);font-size:.88rem">${esc(t('import.reading'))}</div>`;
+  let table;
+  try{
+    table=await IBXlsx.readTable(file);
+  }catch(err){
+    const known=['EMPTY_FILE','NOT_A_WORKBOOK','LEGACY_XLS','NO_SHEETS'];
+    const key=known.indexOf(err.message)!==-1?err.message:'UNSUPPORTED';
+    out.innerHTML=importError(t('import.err.'+key));
+    return;
+  }
+
+  const ctx={
+    scope:IMPORT_SCOPE,
+    users:getUsers(),
+    existing:getAssignments(),
+    company:IMPORT_SCOPE==='company'?ME:null
+  };
+  const validated=IBImport.validate(table,ctx);
+  IMPORT_STATE={fileName:file.name,table,validated};
+
+  if(validated.fatal){
+    const detail=validated.fatal==='MISSING_COLUMNS'
+      ? validated.missing.map(f=>t('import.col.'+f)).join(', ')
+      : (validated.fatalDetail||'');
+    out.innerHTML=importError(t('import.err.'+validated.fatal),detail);
+    return;
+  }
+  out.innerHTML=previewHTML(validated,file.name);
+}
+
+function importError(msg,detail){
+  return `<div class="alert alert-err">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span><strong>${esc(msg)}</strong>${detail?' — '+esc(detail):''}</span></div>`;
+}
+
+function issueText(i){
+  const base=t(i.key);
+  return i.detail?base+': '+i.detail:base;
+}
+
+function previewHTML(v,fileName){
+  const s=v.summary;
+  const creatable=s.ok+s.warning;
+  return `
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-bottom:.9rem">
+    <span class="chip">${esc(t('import.file'))}: <strong>${esc(fileName)}</strong></span>
+    <span class="chip">${esc(t('import.sheet'))}: <strong>${esc(v.sheet)}</strong></span>
+    <span class="chip">${s.total} ${esc(t('import.rowsTotal'))}</span>
+    <span class="chip chip-gn">${s.ok} ${esc(t('import.ok'))}</span>
+    ${s.warning?`<span class="chip chip-am">${s.warning} ${esc(t('import.warning'))}</span>`:''}
+    ${s.error?`<span class="chip chip-rd">${s.error} ${esc(t('import.error'))}</span>`:''}
+    <span class="chip"><strong>${fmtN(s.amount)}</strong></span>
+  </div>
+  ${v.unknown.length?`<div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem">
+    ${esc(t('import.unknownCols'))}: ${esc(v.unknown.join(', '))}</div>`:''}
+  <p style="font-size:.82rem;color:var(--mid);margin-bottom:.7rem">${esc(t('import.previewHelp'))}</p>
+  <div class="tbl-wrap" style="max-height:380px;overflow:auto">
+    <table class="tbl">
+      <thead><tr>
+        <th style="width:52px">${esc(t('import.line'))}</th>
+        <th>${esc(t('lbl.consultant'))}</th>
+        ${IMPORT_SCOPE==='admin'?`<th>${esc(t('lbl.company'))}</th>`:''}
+        <th>${esc(t('lbl.period'))}</th>
+        <th style="text-align:right">${esc(t('lbl.hours'))}</th>
+        <th style="text-align:right">${esc(t('lbl.hourlyRate'))}</th>
+        <th style="text-align:right">${esc(t('lbl.amount'))}</th>
+        <th>${esc(t('import.result'))}</th>
+      </tr></thead>
+      <tbody>
+        ${v.rows.map(r=>{
+          const d=r.data;
+          const cls=r.status==='error'?'row-err':(r.status==='warning'?'row-warn':'');
+          const cells=v.mapping;
+          const rawAt=f=>{
+            const i=cells[f];
+            const src=IMPORT_STATE.table.rows.find(x=>x.line===r.line);
+            return (i===undefined||!src)?'':String(src.cells[i]);
+          };
+          return `<tr class="${cls}">
+            <td style="color:var(--muted);font-weight:700">${r.line}</td>
+            <td>${esc(d?d.consultantName:rawAt('consultantEmail'))}</td>
+            ${IMPORT_SCOPE==='admin'?`<td>${esc(d?d.companyName:rawAt('companyEmail'))}</td>`:''}
+            <td>${esc(d?d.period:rawAt('period'))}</td>
+            <td style="text-align:right">${esc(d?String(d.hours):rawAt('hours'))}</td>
+            <td style="text-align:right">${d?fmtN(d.hourlyRate):esc(rawAt('hourlyRate'))}</td>
+            <td style="text-align:right;font-weight:700">${d?fmtN(d.amount):'—'}</td>
+            <td>${r.issues.length
+              ? r.issues.map(i=>`<span class="badge ${i.level==='error'?'b-rd':'b-am'}">${esc(issueText(i))}</span>`).join(' ')
+              : `<span class="badge b-gn">✓ ${esc(t('import.ok'))}</span>`}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div style="display:flex;gap:.7rem;margin-top:1.1rem;align-items:center;flex-wrap:wrap">
+    ${creatable
+      ? `<button class="btn btn-or" onclick="commitImport()">${esc(t('import.willCreate').replace('{n}',creatable))}</button>`
+      : `<button class="btn btn-gh" disabled>${esc(t('import.willCreateNone'))}</button>`}
+    ${s.error?`<span style="font-size:.8rem;color:var(--mid)">${esc(t('import.skipped').replace('{n}',s.error))}</span>`:''}
+  </div>`;
+}
+
+window.commitImport=function(){
+  if(!IMPORT_STATE||!IMPORT_STATE.validated) return;
+  const res=IBImport.commit(IMPORT_STATE.validated,{});
+  const out=document.getElementById('import-out');
+  out.innerHTML=`
+  <div class="alert alert-ok">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><strong>${esc(t('import.committed'))}</strong> — ${esc(
+      t('import.committedBody').replace('{n}',res.created.length).replace('{b}',res.batchId))}</span>
+  </div>
+  <div style="display:flex;gap:.7rem;margin-top:1rem">
+    <button class="btn btn-or" onclick="${IMPORT_SCOPE==='admin'?"go('a-all')":"go('b-all')"}">${esc(t('import.viewCreated'))}</button>
+    <button class="btn btn-gh" onclick="${IMPORT_SCOPE==='admin'?"go('a-import')":"go('b-import')"}">${esc(t('import.again'))}</button>
+  </div>`;
+  IMPORT_STATE=null;
+  if(typeof updBadges==='function') updBadges();
+}
+
+/* Client-side download. No server round trip, so it works from file:// too. */
+function download(filename,text,mime){
+  const blob=new Blob([text],{type:(mime||'text/plain')+';charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+window.downloadTemplate=function(){
+  const m=currentMarket();
+  const csv=IBImport.templateCSV(IMPORT_SCOPE,m.lang);
+  download('loengrundlag-'+m.code.toLowerCase()+'.csv',csv,'text/csv');
+}
+
+const ICO_UP='<svg viewBox="0 0 24 24" style="width:26px;height:26px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+const ICO_DL='<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+
+/* ═══════════════════ JEEVES EXPORT (admin only) ═══════════════════
+   Builds a payroll batch from paid assignments. The field mapping is a
+   documented default, not a confirmed Jeeves spec — the banner says so and
+   stays until IBImport.JEEVES_CONFIG.verified flips. */
+
+function jeevesPanel(){
+  const cfg=IBImport.JEEVES_CONFIG;
+  const paid=getAssignments().filter(a=>a.status===STATUS.PAID);
+  const m=currentMarket();
+  return `
+  <div class="card" style="margin-top:1.2rem">
+    <div class="card-hd">
+      <div><div class="card-title">${esc(t('jeeves.h'))}</div>
+        <div class="card-sub">${esc(t('jeeves.p'))}</div></div>
+      <span class="badge ${paid.length?'b-gn':'b-gr'}">${paid.length} ${esc(t('jeeves.rows'))}</span>
+    </div>
+    <div class="card-bd">
+      ${!cfg.verified?`<div class="alert alert-warn" style="margin-bottom:1rem">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>${esc(t('jeeves.unverified'))}</span></div>`:''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.1rem;font-size:.82rem">
+        <div>
+          <div class="lbl">${esc(t('jeeves.format'))}</div>
+          <div style="font-weight:700"><code>${esc(cfg.formatVersion)}</code></div>
+        </div>
+        <div>
+          <div class="lbl">${esc(t('jeeves.mapping'))}</div>
+          <div style="font-weight:700;color:${cfg.verified?'var(--green)':'var(--amber)'}">
+            ${cfg.verified?'✓':'⚠'} ${esc(cfg.verified?t('a.services.active'):t('jeeves.unverifiedShort'))}</div>
+        </div>
+        <div>
+          <div class="lbl">${esc(t('jeeves.endpoint'))}</div>
+          <div style="font-weight:700;color:var(--muted)">${esc(cfg.endpoint||t('jeeves.notConfigured'))}</div>
+        </div>
+        <div>
+          <div class="lbl">${esc(t('a.settings.entity'))}</div>
+          <div style="font-weight:700">${esc(m.entity.legalName)} · ${esc(m.currency)}</div>
+        </div>
+      </div>
+      ${paid.length?`
+      <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+        <button class="btn btn-or" onclick="downloadJeeves('csv')">${ICO_DL} ${esc(t('jeeves.download'))}</button>
+        <button class="btn btn-gh" onclick="downloadJeeves('json')">${ICO_DL} ${esc(t('jeeves.downloadJson'))}</button>
+        <button class="btn btn-gh" onclick="pushJeeves()">${esc(t('jeeves.send'))}</button>
+      </div>`
+      :`<div class="alert alert-ok">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>${esc(t('jeeves.nothing'))}</span></div>`}
+      <div id="jeeves-out" style="margin-top:1rem"></div>
+    </div>
+  </div>`;
+}
+
+window.downloadJeeves=function(kind){
+  const m=currentMarket();
+  const paid=getAssignments().filter(a=>a.status===STATUS.PAID);
+  if(!paid.length) return;
+  const stamp=IB.today().replace(/-/g,'');
+  if(kind==='json'){
+    download('jeeves-'+m.code.toLowerCase()+'-'+stamp+'.json',
+             JSON.stringify(IBImport.toJeeves(paid,m),null,2),'application/json');
+  }else{
+    download('jeeves-'+m.code.toLowerCase()+'-'+stamp+'.csv',
+             IBImport.toJeevesCSV(paid,m),'text/csv');
+  }
+}
+
+window.pushJeeves=async function(){
+  const m=currentMarket();
+  const paid=getAssignments().filter(a=>a.status===STATUS.PAID);
+  const res=await IBImport.sendToJeeves(paid,m);
+  const out=document.getElementById('jeeves-out');
+  if(!out) return;
+  const msg=res.reason==='NO_ENDPOINT'?t('jeeves.noEndpoint')
+          : res.reason==='MAPPING_UNVERIFIED'?t('jeeves.unverified')
+          : res.reason==='EMPTY'?t('jeeves.nothing')
+          : t('jeeves.noEndpoint');
+  out.innerHTML=`<div class="alert alert-warn">
+    <svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>${esc(msg)}</span></div>`;
+}
+
 
 function logout(){window.location.href='invoicery-business.html'}
 

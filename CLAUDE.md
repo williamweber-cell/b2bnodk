@@ -15,11 +15,15 @@ dropped; no Swedish copy or SE rate should exist anywhere.
 | `ib-markets.js` | **Market registry.** Legal entity, currency, locale, statutory rates, and the per-market payroll models. Authoritative for all money. |
 | `ib-i18n.js` | **Copy.** Danish and Norwegian bokmål, keyed. Authoritative for all user-visible text. |
 | `ib-core.js` | Storage, seed, market-aware formatting, escaping, status/type constants. |
+| `ib-xlsx.js` | Zero-dependency .xlsx and .csv reader. |
+| `ib-import.js` | Payroll-basis import: column mapping, validation, commit, Jeeves export. |
 | `invoicery-business.html` | Landing page + consultant portal + company portal |
 | `invoicery-business-admin.html` | Back-office: approvals, payroll runs, invoicing, registers |
 | `scripts/payroll-check.cjs` | Golden values, invariants, parity, i18n, homoglyphs. |
 | `scripts/render-smoke.cjs` | Every view, every role, both markets. |
+| `scripts/import-check.cjs` | Reader, mapping, validation, commit, Jeeves. |
 | `scripts/serve.cjs` | Zero-dependency local dev server. |
+| `fixtures/` | Real .xlsx test files; regenerate with `make-fixtures.py`. |
 
 No build step, no dependencies, no framework. The HTML files open directly
 from disk — that's what makes sales demos trivial. Scripts load in order:
@@ -41,6 +45,44 @@ prints a LAN address for that.
 Every text response carries an explicit `charset=utf-8`. Without it a browser
 may sniff latin-1 and render `lønkørsel` as `lÃ¸nkÃ¸rsel`, which tends to
 surface first in front of a Danish customer.
+
+## Excel import
+
+Both a client company and superadmin can upload a payroll basis. Company
+scope imports for the logged-in company; admin scope requires a company column
+and routes each row.
+
+```
+file → IBXlsx.readTable → IBImport.mapColumns → validate → preview → commit
+```
+
+`validate()` is pure and writes nothing. The preview shows a verdict per row
+and error rows are skipped on commit, never coerced. Re-importing the same
+file flags every row as a duplicate rather than doubling the data.
+
+**The .xlsx reader has no dependencies.** An .xlsx is a ZIP of XML, and both
+halves are native: `DecompressionStream('deflate-raw')` for inflate, and a
+small hand-rolled scanner rather than `DOMParser` (which does not exist in
+Node, so one code path serves the browser and the tests). It handles shared
+and inline strings, numbers, booleans, dates including the Excel 1900
+leap-year quirk, and both STORED and DEFLATED entries. It does not handle
+encrypted workbooks or legacy `.xls` — those are reported as such.
+
+Row line numbers come from the sheet's `r=` attribute, so an error on "line 7"
+is line 7 when the user opens the file. Do not renumber after filtering blanks.
+
+### Jeeves
+
+`toJeeves()` builds a payroll batch from paid assignments; `toJeevesCSV()`
+emits the semicolon-separated, BOM-prefixed variant Danish and Norwegian Excel
+expects.
+
+> **The Jeeves field mapping is unverified.** Wage-type codes (lönearter),
+> cost centres and employee-number schemes in `JEEVES_CONFIG` are placeholders
+> and the admin UI says so. `sendToJeeves()` is deliberately a stub: it
+> assembles and checks the payload but refuses to send, because inventing an
+> endpoint contract would be worse than not having one. Fill in
+> `JEEVES_CONFIG` and flip `verified` once the integration spec exists.
 
 ## Markets
 
@@ -170,9 +212,10 @@ Danish A-skat comes from the individual's skattekort).
 ```bash
 node scripts/payroll-check.cjs   # golden values, invariants, parity, i18n, homoglyphs
 node scripts/render-smoke.cjs    # every view × every role × both markets
+node scripts/import-check.cjs    # reader, mapping, validation, commit, Jeeves
 ```
 
-Both must exit 0.
+All three must exit 0.
 
 `render-smoke.cjs` exists because `node --check` cannot catch a view that
 references a variable which no longer exists, or a translation key that was

@@ -22,7 +22,8 @@
       "Bash(git add:*)",
       "WebFetch(domain:www.invoicerybusiness.se)",
       "Bash(node scripts/serve.cjs:*)",
-      "Bash(node scripts/render-smoke.cjs)"
+      "Bash(node scripts/render-smoke.cjs)",
+      "Bash(node scripts/import-check.cjs)"
     ]
   }
 }

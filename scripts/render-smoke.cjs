@@ -20,7 +20,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const LIBS = ['ib-markets.js', 'ib-i18n.js', 'ib-core.js']
+const LIBS = ['ib-markets.js', 'ib-i18n.js', 'ib-core.js', 'ib-xlsx.js', 'ib-import.js']
   .map(f => ({ name: f, src: fs.readFileSync(path.join(ROOT, f), 'utf8') }));
 
 let failures = 0, passes = 0;
@@ -66,7 +66,11 @@ function makeSandbox(marketCode) {
     alert: () => {}, confirm: () => true, prompt: () => null,
     setTimeout, clearTimeout, setInterval, clearInterval,
     Intl, Date, Math, JSON, Number, String, Object, Array, Set, Map,
-    parseFloat, parseInt, isNaN
+    parseFloat, parseInt, isNaN,
+    // web platform globals used by ib-xlsx.js — present in browsers and in
+    // Node 18+, but not injected into a bare vm context
+    TextDecoder, TextEncoder, Uint8Array, ArrayBuffer, DataView,
+    Blob, Response, URL, Promise, Error, RegExp, DecompressionStream
   };
   sandbox.window = sandbox;
   sandbox.globalThis = sandbox;
@@ -119,8 +123,8 @@ function check(label, fn) {
 }
 
 const CONSULTANT_VIEWS = ['cDash','cNew','cList','cPay','cCert','cProfile'];
-const COMPANY_VIEWS    = ['bDash','bApprove','bAll','bInvoices','bProfile'];
-const ADMIN_VIEWS      = ['aDash','aActivity','aApprove','aAll','aConsultants',
+const COMPANY_VIEWS    = ['bDash','bApprove','bAll','bImport','bInvoices','bProfile'];
+const ADMIN_VIEWS      = ['aDash','aActivity','aApprove','aAll','aImport','aConsultants',
                           'aCompanies','aPayroll','aInvoices','aServices','aSettings'];
 
 for (const code of ['DK', 'NO']) {
