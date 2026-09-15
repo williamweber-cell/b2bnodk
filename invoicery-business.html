@@ -16,6 +16,13 @@
   --amber:#d97706; --abg:#fef3c7; --atxt:#78350f;
   --bluebg:#dbeafe; --bluetxt:#1e3a8a;
   --sh:0 2px 12px rgba(0,0,0,.07); --shlg:0 8px 40px rgba(0,0,0,.12);
+
+  /* motion — custom curves; the built-in CSS easings are too weak */
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-in-out:cubic-bezier(.77,0,.175,1);
+  --ease-drawer:cubic-bezier(.32,.72,0,1);
+  --dur-press:140ms; --dur-fast:180ms; --dur-base:220ms; --dur-modal:280ms;
+
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -52,7 +59,7 @@ body{font-family:'Open Sans',sans-serif;color:var(--text);line-height:1.5;min-he
 .l-checks li::before{content:'✓';color:var(--orange);font-weight:700;flex-shrink:0}
 .l-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:3.2rem}
 .l-btn-hero{background:var(--orange);color:#fff;padding:.88rem 2.1rem;border-radius:4px;font-size:.98rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;box-shadow:0 4px 18px rgba(240,160,32,.32);transition:background .2s,transform .2s}
-.l-btn-hero:hover{background:var(--orange-d);transform:translateY(-2px)}
+.l-btn-hero:hover{background:var(--orange-d)}
 .l-btn-ghost{color:rgba(255,255,255,.7);font-size:.92rem;font-weight:600;text-decoration:none;transition:color .2s;cursor:pointer;background:none;border:none;font-family:inherit}
 .l-btn-ghost:hover{color:#fff}
 .l-stats{display:flex;gap:2.5rem}
@@ -84,7 +91,7 @@ body{font-family:'Open Sans',sans-serif;color:var(--text);line-height:1.5;min-he
 .l-pill-2{bottom:80px;left:-25px;animation-delay:1.9s}
 .l-pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .l-pdot-g{background:#16a34a} .l-pdot-o{background:var(--orange)}
-@keyframes lf{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes lf{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 /* TRUST BAR */
 .l-trust{background:var(--darker);border-top:1px solid rgba(255,255,255,.06);padding:1rem 5vw;display:flex;gap:2.5rem;flex-wrap:wrap;justify-content:center}
 .l-ti{display:flex;align-items:center;gap:.5rem;font-size:.8rem;font-weight:600;color:rgba(255,255,255,.62)}
@@ -155,9 +162,9 @@ body{font-family:'Open Sans',sans-serif;color:var(--text);line-height:1.5;min-he
 .l-faq-item{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .l-faq-q{width:100%;padding:1.1rem 1.3rem;text-align:left;font-size:.9rem;font-weight:700;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center;gap:1rem}
 .l-faq-q:hover{background:var(--bg)}
-.l-faq-icon{font-size:1.2rem;color:var(--navy);font-weight:300;transition:transform .2s;flex-shrink:0}
-.l-faq-a{padding:0 1.3rem;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
-.l-faq-a.open{max-height:200px;padding:.3rem 1.3rem 1.1rem}
+.l-faq-icon{font-size:1.2rem;color:var(--navy);font-weight:300;flex-shrink:0}
+
+
 .l-faq-a p{font-size:.87rem;color:var(--mid);line-height:1.68}
 /* CTA */
 .l-cta{background:linear-gradient(135deg,var(--navy) 0%,var(--dark) 100%);padding:5.5rem 5vw;text-align:center;position:relative;overflow:hidden}
@@ -198,9 +205,8 @@ body{font-family:'Open Sans',sans-serif;color:var(--text);line-height:1.5;min-he
 .l-login-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#b91c1c;padding:.58rem .82rem;border-radius:5px;font-size:.8rem;margin-bottom:.9rem;display:none}
 .l-demo-box{background:#f4f7fa;border-radius:7px;padding:.9rem;margin-top:1.2rem}
 .l-demo-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.55rem}
-.l-demo-btn{display:block;width:100%;text-align:left;padding:.48rem .72rem;border-radius:5px;background:#fff;border:1.5px solid var(--border);font-size:.79rem;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:.38rem;transition:border-color .2s;font-family:inherit}
+.l-demo-btn{display:block;width:100%;text-align:left;padding:.48rem .72rem;border-radius:5px;background:#fff;border:1.5px solid var(--border);font-size:.79rem;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:.38rem;font-family:inherit}
 .l-demo-btn:last-child{margin-bottom:0}
-.l-demo-btn:hover{border-color:var(--navy)}
 .l-demo-btn em{font-style:normal;color:var(--muted);font-weight:400}
 /* ══ PLATFORM APP ══ */
 #platform{background:var(--bg);min-height:100vh}
@@ -213,7 +219,7 @@ body{font-family:'Open Sans',sans-serif;color:var(--text);line-height:1.5;min-he
 .sb-logo-sub{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
 .sb-section{padding:.65rem .95rem .18rem;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:rgba(255,255,255,.26)}
 .sb-nav{list-style:none;padding:.32rem 0}
-.sb-nav li button{display:flex;align-items:center;gap:.58rem;width:100%;padding:.6rem 1.15rem;font-size:.83rem;font-weight:600;color:rgba(255,255,255,.58);background:transparent;border:none;cursor:pointer;font-family:inherit;transition:all .18s}
+.sb-nav li button{display:flex;align-items:center;gap:.58rem;width:100%;padding:.6rem 1.15rem;font-size:.83rem;font-weight:600;color:rgba(255,255,255,.58);background:transparent;border:none;cursor:pointer;font-family:inherit;transition:background var(--dur-fast) ease,color var(--dur-fast) ease,border-color var(--dur-fast) ease}
 .sb-nav li button:hover{color:#fff;background:rgba(255,255,255,.07)}
 .sb-nav li button.active{color:#fff;background:rgba(43,95,142,.44);border-right:3px solid var(--orange)}
 .lci{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -237,7 +243,7 @@ body{font-family:'Open Sans',sans-serif;color:var(--text);line-height:1.5;min-he
 .tb-sub{font-size:.74rem;color:var(--muted);margin-top:.04rem}
 .pg{padding:1.65rem 1.85rem;flex:1}
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1.05rem;border-radius:5px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;transition:all .18s;font-family:inherit;text-decoration:none;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1.05rem;border-radius:5px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;transition:background var(--dur-fast) ease,color var(--dur-fast) ease,border-color var(--dur-fast) ease;font-family:inherit;text-decoration:none;white-space:nowrap}
 .btn-or{background:var(--orange);color:#fff;box-shadow:0 2px 10px rgba(240,160,32,.22)}
 .btn-or:hover{background:var(--orange-d);transform:translateY(-1px)}
 .btn-nv{background:var(--navy);color:#fff}
@@ -347,6 +353,149 @@ textarea.inp{resize:vertical;min-height:78px}
 tr.row-err{background:rgba(220,38,38,.045)}
 tr.row-warn{background:rgba(217,119,6,.045)}
 .alert-err{background:var(--rbg);color:var(--rtxt);border:1px solid #fecaca}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOTION & INTERACTION SYSTEM
+
+   Principles applied:
+   - Every pressable element answers the press (scale .97, 140ms).
+   - ease-out for anything entering; never ease-in, which delays the exact
+     moment the user is watching.
+   - Hover effects gated behind (hover:hover) so taps on touch devices do
+     not leave elements stuck in a hover state.
+   - Keyboard focus is visible and deliberate, not the browser default.
+   - prefers-reduced-motion removes movement, keeps opacity and colour.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── press feedback ──────────────────────────────────────────────────── */
+.l-btn-hero,.l-btn-kom,.l-btn-login,.l-btn-ghost,.l-login-btn,.l-demo-btn,
+.l-faq-q,.btn,.sb-nav button,.mkt-btn,.hamburger,.l-nav-links a,.l-logo{
+  transition:transform var(--dur-press) var(--ease-out),
+             background var(--dur-fast) ease,
+             color var(--dur-fast) ease,
+             border-color var(--dur-fast) ease,
+             box-shadow var(--dur-fast) ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.l-btn-hero:active,.l-btn-kom:active,.l-login-btn:active,.btn:active,
+.l-demo-btn:active,.mkt-btn:active{transform:scale(.97)}
+.l-btn-login:active,.l-btn-ghost:active,.sb-nav button:active,
+.hamburger:active,.l-faq-q:active{transform:scale(.985)}
+
+/* The hero button lifts on hover; on press it must come back down, or the
+   press reads as "nothing happened". */
+@media (hover:hover) and (pointer:fine){
+  .l-btn-hero:hover{transform:translateY(-2px)}
+}
+.l-btn-hero:active{transform:translateY(0) scale(.97)}
+
+/* ── hover gating ────────────────────────────────────────────────────── */
+.l-svc,.l-step,.l-case,.l-price-card{
+  transition:transform var(--dur-base) var(--ease-out),
+             box-shadow var(--dur-base) var(--ease-out),
+             border-color var(--dur-base) ease;
+}
+@media (hover:hover) and (pointer:fine){
+  .l-svc:hover,.l-step:hover{transform:translateY(-4px);box-shadow:var(--shlg)}
+  .l-demo-btn:hover{border-color:var(--navy)}
+}
+@media not all and (hover:hover){
+  .l-svc:hover,.l-step:hover{transform:none;box-shadow:var(--sh)}
+}
+
+/* ── keyboard focus ──────────────────────────────────────────────────── */
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px;border-radius:3px}
+.l-nav .l-logo:focus-visible,.l-nav-links a:focus-visible,
+.l-btn-login:focus-visible,.l-btn-kom:focus-visible{outline-color:#fff}
+.inp:focus-visible,.l-inp:focus-visible{outline:none}
+.inp:focus,.l-inp:focus{
+  border-color:var(--navy);
+  box-shadow:0 0 0 3px rgba(43,95,142,.14);
+}
+
+/* ── login modal ─────────────────────────────────────────────────────────
+   Was toggled with display:none, which cannot transition. Now opacity +
+   visibility so it can. The box scales from centre — a modal is not
+   anchored to a trigger, so centre is correct here (unlike a popover). */
+.l-modal-ov{
+  opacity:0;visibility:hidden;
+  transition:opacity var(--dur-modal) var(--ease-out),
+             visibility 0s linear var(--dur-modal);
+}
+.l-modal-ov.open{
+  opacity:1;visibility:visible;
+  transition:opacity var(--dur-modal) var(--ease-out),visibility 0s;
+}
+.l-modal-box{
+  transform:scale(.96) translateY(8px);
+  transition:transform var(--dur-modal) var(--ease-out);
+}
+.l-modal-ov.open .l-modal-box{transform:none}
+
+/* ── faq accordion ───────────────────────────────────────────────────────
+   grid-template-rows 0fr→1fr animates to the content's real height. The
+   previous max-height:200px silently clipped longer Danish answers. */
+.l-faq-a{
+  display:grid;grid-template-rows:0fr;
+  padding:0 1.3rem;overflow:hidden;
+  transition:grid-template-rows var(--dur-base) var(--ease-out),
+             padding var(--dur-base) var(--ease-out);
+}
+.l-faq-a>*{min-height:0}
+.l-faq-item.open .l-faq-a{
+  grid-template-rows:1fr;padding:.3rem 1.3rem 1.1rem;
+}
+.l-faq-icon{
+  display:inline-block;
+  transition:transform var(--dur-base) var(--ease-out);
+}
+.l-faq-item.open .l-faq-icon{transform:rotate(135deg)}
+
+/* ── sidebar drawer (mobile) ─────────────────────────────────────────── */
+.sb{transition:transform 320ms var(--ease-drawer)}
+.sb-overlay{transition:opacity var(--dur-base) var(--ease-out)}
+
+/* ── page content settle ─────────────────────────────────────────────────
+   Views are swapped with innerHTML. Short and opacity-led: this fires on
+   every nav click, so it must never feel like a wait. */
+.pg{animation:pg-in var(--dur-fast) var(--ease-out) both}
+@keyframes pg-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── hero entrance, staggered ────────────────────────────────────────── */
+.l-badge,.l-hero h1,.l-hero-sub,.l-checks,.l-actions,.l-stats{
+  animation:rise 520ms var(--ease-out) both;
+}
+.l-badge{animation-delay:0ms}
+.l-hero h1{animation-delay:60ms}
+.l-hero-sub{animation-delay:120ms}
+.l-checks{animation-delay:170ms}
+.l-actions{animation-delay:220ms}
+.l-stats{animation-delay:270ms}
+.l-hero-visual{animation:rise 620ms var(--ease-out) 180ms both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ── import drop zone ────────────────────────────────────────────────── */
+.drop{transition:border-color var(--dur-fast) ease,background var(--dur-fast) ease,
+                 transform var(--dur-press) var(--ease-out)}
+.drop:active{transform:scale(.995)}
+.drop.over{transform:scale(1.005)}
+
+/* ── reduced motion ──────────────────────────────────────────────────────
+   Fewer and gentler, not zero: opacity and colour still carry meaning. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+  .l-pill{animation:none}
+  .l-svc:hover,.l-step:hover{transform:none}
+  .l-btn-hero:hover{transform:none}
+  .pg,.l-badge,.l-hero h1,.l-hero-sub,.l-checks,.l-actions,.l-stats,
+  .l-hero-visual{animation:none;opacity:1;transform:none}
+  .l-modal-box{transform:none}
+}
 </style>
 </head>
 <body>
@@ -577,23 +726,23 @@ tr.row-warn{background:rgba(217,119,6,.045)}
     <h2 class="l-title" data-i18n="faq.title">Spørgsmål & svar</h2>
     <div class="l-faq">
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.1.q">Hvad betyder fuldt arbejdsgiveransvar?</span> <span class="l-faq-icon">+</span></button>
+        <button class="l-faq-q" aria-expanded="false" onclick="toggleFaq(this)"><span data-i18n="faq.1.q">Hvad betyder fuldt arbejdsgiveransvar?</span> <span class="l-faq-icon">+</span></button>
         <div class="l-faq-a"><p data-i18n="faq.1.a">Det betyder, at Invoicery Business formelt er arbejdsgiver for konsulenten. Vi håndterer alle arbejdsgiverforpligtelser — ansættelseskontrakt, lønudbetaling, A-skat, AM-bidrag, ATP, forsikringer og arbejdsmiljøansvar.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.2.q">Hvordan beregnes gebyret på 6%?</span> <span class="l-faq-icon">+</span></button>
+        <button class="l-faq-q" aria-expanded="false" onclick="toggleFaq(this)"><span data-i18n="faq.2.q">Hvordan beregnes gebyret på 6%?</span> <span class="l-faq-icon">+</span></button>
         <div class="l-faq-a"><p data-i18n="faq.2.a">Gebyret beregnes af det fakturerede beløb. Det er et alt-i-én-gebyr, der dækker lønadministration, arbejdsgiverbidrag, forsikringer og vores platform. Der kommer ingen yderligere omkostninger.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.3.q">Hvilke lande i Norden dækker I?</span> <span class="l-faq-icon">+</span></button>
+        <button class="l-faq-q" aria-expanded="false" onclick="toggleFaq(this)"><span data-i18n="faq.3.q">Hvilke lande i Norden dækker I?</span> <span class="l-faq-icon">+</span></button>
         <div class="l-faq-a"><p data-i18n="faq.3.a">Vi dækker Danmark, Norge, Sverige og Finland. Vores platform håndterer lokale skatteregler, ansættelsesret og lønadministration i hvert land.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.4.q">Hvor hurtigt kan en konsulent komme i gang?</span> <span class="l-faq-icon">+</span></button>
+        <button class="l-faq-q" aria-expanded="false" onclick="toggleFaq(this)"><span data-i18n="faq.4.q">Hvor hurtigt kan en konsulent komme i gang?</span> <span class="l-faq-icon">+</span></button>
         <div class="l-faq-a"><p data-i18n="faq.4.a">Registreringen tager under 5 minutter. Konsulenten opretter en konto, udfylder person- og bankoplysninger og kan derefter registrere sin første opgave med det samme.</p></div>
       </div>
       <div class="l-faq-item">
-        <button class="l-faq-q" onclick="toggleFaq(this)"><span data-i18n="faq.5.q">Hvad hvis min virksomhed allerede har et lønsystem?</span> <span class="l-faq-icon">+</span></button>
+        <button class="l-faq-q" aria-expanded="false" onclick="toggleFaq(this)"><span data-i18n="faq.5.q">Hvad hvis min virksomhed allerede har et lønsystem?</span> <span class="l-faq-icon">+</span></button>
         <div class="l-faq-a"><p data-i18n="faq.5.a">Intet problem. Via vores API-integration kobler vi os til de fleste forretningssystemer. Vi tilbyder også Excel-import til enklere løngrundlag.</p></div>
       </div>
     </div>
@@ -656,7 +805,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 </div><!-- /landing -->
 
 <!-- LOGIN MODAL -->
-<div class="l-modal-ov hidden" id="login-modal" onclick="if(event.target===this)closeLogin()">
+<div class="l-modal-ov" id="login-modal" onclick="if(event.target===this)closeLogin()">
   <div class="l-modal-box">
     <div class="l-modal-top">
       <div class="l-modal-logo">
@@ -821,11 +970,13 @@ function applyMarketChrome(){
 let ME=null;
 
 window.openLogin=function(){
-  document.getElementById('login-modal').classList.remove('hidden');
+  document.getElementById('login-modal').classList.add('open');
   document.body.style.overflow='hidden';
+  const el=document.getElementById('l-email');
+  if(el) setTimeout(()=>el.focus(),60);
 }
 window.closeLogin=function(){
-  document.getElementById('login-modal').classList.add('hidden');
+  document.getElementById('login-modal').classList.remove('open');
   document.body.style.overflow='';
 }
 window.fillDemo=function(e,p){
@@ -1459,8 +1610,7 @@ window.addEventListener('scroll',()=>{
 window.toggleFaq=function(btn){
   const item=btn.parentElement;
   const open=item.classList.toggle('open');
-  const icon=btn.querySelector('.l-faq-icon');
-  if(icon) icon.textContent=open?'−':'+';
+  btn.setAttribute('aria-expanded',open?'true':'false');
 }
 
 window.calcLon=function(){
