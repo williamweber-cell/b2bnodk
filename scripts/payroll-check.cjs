@@ -46,6 +46,10 @@ function fail(l, e, a) {
   console.log(`  ${red('FAIL')} ${l}`);
   if (e !== undefined) { console.log(`       expected ${e}`); console.log(`       actual   ${a}`); }
 }
+function eqSet(l, actual, expected) {
+  const a = JSON.stringify(actual), e = JSON.stringify(expected);
+  if (a === e) ok(l); else fail(l, e, a);
+}
 function near(l, actual, expected, tol) {
   const t = tol === undefined ? 0.01 : tol;
   if (Math.abs(actual - expected) <= t) ok(l, String(IB.round2(actual)));
@@ -281,6 +285,50 @@ console.log(bold('\nI18N — both languages complete'));
     }
   });
   if (!unkeyed) ok('every visible string is keyed for translation');
+}
+
+/* ═══════════════════ 5. DESIGN SYSTEM ═══════════════════ */
+console.log(bold('\nDESIGN SYSTEM — colour comes from ib-design.css'));
+{
+  const ds = fs.readFileSync(path.join(ROOT, 'ib-design.css'), 'utf8');
+  const known = new Set([...ds.matchAll(/#[0-9A-Fa-f]{6}/g)].map(m => m[0].toLowerCase()));
+  ['#fff', '#000', '#ffffff', '#000000'].forEach(h => known.add(h));
+
+  /* Every token the design system defines, so a typo in a var() name is
+     caught rather than silently resolving to nothing. */
+  const defined = new Set([...ds.matchAll(/^\s*(--[\w-]+)\s*:/gm)].map(m => m[1]));
+
+  let strays = 0, unknownVars = 0;
+  ['invoicery-business.html', 'invoicery-business-admin.html'].forEach(f => {
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    const css = src.slice(src.indexOf('<style>'), src.indexOf('</style>'));
+
+    [...css.matchAll(/#[0-9A-Fa-f]{3,6}/g)].forEach(m => {
+      if (!known.has(m[0].toLowerCase())) {
+        strays++;
+        if (strays <= 6) fail(`${f} — colour outside the design system`,
+                              'a token from ib-design.css', m[0]);
+      }
+    });
+
+    [...css.matchAll(/var\((--[\w-]+)/g)].forEach(m => {
+      if (!defined.has(m[1])) {
+        unknownVars++;
+        if (unknownVars <= 6) fail(`${f} — undefined custom property`,
+                                   'a token defined in ib-design.css', m[1]);
+      }
+    });
+  });
+
+  if (!strays) ok('no colour bypasses the design system');
+  if (!unknownVars) ok('every var() resolves to a defined token');
+
+  // The brand values themselves, so a bad edit to the palette is caught.
+  const brand = { '--primary-60': '#04567D', '--orange-60': '#FF8800',
+                  '--green-60': '#0BC980', '--red-80': '#DB1212' };
+  const wrong = Object.entries(brand).filter(([k, v]) =>
+    !new RegExp(k + ':\\s*' + v, 'i').test(ds)).map(([k]) => k);
+  eqSet('brand values intact', wrong, []);
 }
 
 /* ═══════════════════ 5. IDENTIFIERS ═══════════════════ */

@@ -1,0 +1,279 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ib-design.css — the Invoicery design system
+
+   Transcribed from design_system_zip/ (04_Farger, 06_Grid, 08_Spacing,
+   09_Typografi, 11_Knappar). This file is the single source of truth for
+   colour, type, spacing, elevation and the grid.
+
+   ── HOW IT APPLIES TO THE EXISTING CSS ──
+   Both apps carry ~1000 lines of hand-written CSS keyed to legacy variable
+   names (--navy, --orange, --bg …). Rather than rewrite every rule, the
+   LEGACY ALIASES block at the bottom re-points those names at the real brand
+   tokens. Every existing rule therefore picks up the brand palette without
+   being touched, and new work uses the token names directly.
+
+   Do not add a colour here that is not in the design system. If something is
+   missing, it belongs in the Figma file first.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════ COLOUR ═══════════════════
+   Ramps run 10 (background) → 80 (darkest). 60 is the brand step in every
+   ramp; the comments are the design system's own names. */
+:root {
+  /* ── Primary · Invoicery Blue ── */
+  --primary-10: #F7F8FC;   /* background      */
+  --primary-20: #EFF5F8;
+  --primary-30: #CBE3EF;   /* "Is"            */
+  --primary-40: #9ABBCB;   /* disabled        */
+  --primary-50: #196889;   /* hover           */
+  --primary-60: #04567D;   /* Invoicery — brand */
+  --primary-70: #004A68;   /* active          */
+  --primary-80: #003F58;   /* pressed         */
+
+  /* ── Secondary · Orange ── */
+  --orange-10: #FFF3E5;    /* background      */
+  --orange-20: #FFE7CC;
+  --orange-30: #FFCF99;    /* disabled        */
+  --orange-40: #FFB866;
+  --orange-50: #FFA033;
+  --orange-60: #FF8800;    /* Orange — brand  */
+  --orange-70: #CC6D00;    /* hover           */
+  --orange-80: #995100;    /* pressed         */
+
+  /* ── Secondary · Sky / Ocean ── */
+  --sky-10: #F5F9FF;
+  --sky-20: #D7EDF3;
+  --sky-30: #C3E5ED;
+  --sky-40: #84CADB;
+  --sky-50: #5CB7CF;
+  --sky-60: #34A8C5;       /* Ocean           */
+  --sky-70: #4C8AA2;
+  --sky-80: #034262;
+
+  /* ── Accent · Green / Success ── */
+  --green-10: #E6F9F2;
+  --green-20: #CEF4E5;
+  --green-30: #B5EED8;
+  --green-40: #6CDEB2;
+  --green-50: #3BD399;
+  --green-60: #0BC980;     /* Success         */
+  --green-70: #045F3C;
+  --green-80: #4E8A77;     /* Forest          */
+
+  /* ── Accent · Teal / Amazonas ── */
+  --teal-10: #E9F7F5;
+  --teal-20: #C4EFE4;
+  --teal-30: #A6DFD6;
+  --teal-40: #79D0C1;
+  --teal-50: #4DC0AD;
+  --teal-60: #20B098;      /* Amazonas        */
+  --teal-70: #1A8D7A;
+  --teal-80: #0D463D;
+
+  /* ── Accent · Red / Korall ── */
+  --red-10: #FDEDED;
+  --red-20: #FBDFDF;
+  --red-30: #F7BFBF;
+  --red-40: #FD9C9C;
+  --red-50: #F28181;
+  --red-60: #EB6060;       /* Korall          */
+  --red-70: #E43939;
+  --red-80: #DB1212;       /* Error           */
+
+  /* ── Neutral · Gray ── */
+  --gray-10: #FAFAFA;
+  --gray-20: #F5F5F5;      /* disabled        */
+  --gray-30: #EBEBEB;
+  --gray-40: #E2E2E2;      /* active          */
+  --gray-50: #D8D8D8;
+  --gray-60: #CECECE;      /* Aska            */
+  --gray-70: #7C7C7C;      /* Grå             */
+  --gray-80: #525252;
+
+  /* ── Global ── */
+  --black: #000000;
+  --white: #FFFFFF;
+
+  /* ── Semantic ── */
+  --text:        var(--black);
+  --text-muted:  var(--gray-80);
+  --text-subtle: var(--gray-70);
+  --text-invert: var(--white);
+  --surface:     var(--white);
+  --surface-alt: var(--primary-10);
+  --line:        var(--gray-40);
+  --line-strong: var(--gray-60);
+
+  /* ═══════════════════ TYPOGRAPHY ═══════════════════
+     Asap. Regular 400, Medium 500, Semibold 600, Bold 700.
+     Sizes are desktop; the mobile step-down is at the breakpoint below. */
+  --font: 'Asap', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --h1: 46px;        --h1-lh: 56px;
+  --h2: 34px;        --h2-lh: 44px;
+  --h3: 26px;        --h3-lh: 32px;
+  --h4: 20px;        --h4-lh: 28px;
+  --subtitle-1: 18px; --subtitle-1-lh: 28px;
+  --subtitle-2: 16px; --subtitle-2-lh: 24px;
+  --subtitle-3: 14px; --subtitle-3-lh: 20px;
+  --body-1: 18px;    --body-1-lh: 28px;
+  --body-2: 16px;    --body-2-lh: 24px;
+  --body-3: 14px;    --body-3-lh: 20px;
+  --caption: 12px;   --caption-lh: 18px;
+  --overline: 10px;  --overline-lh: 16px;
+  --btn-text: 16px;  --btn-text-lh: 24px;
+
+  /* ═══════════════════ SPACING ═══════════════════
+     8 · 12 · 16 · 24 · 32 · 40 · 48 · 56 · 64 · 72 · 80 · 86 · 96 · 112 · 128 */
+  --sp-2: 2px;   --sp-4: 4px;   --sp-8: 8px;    --sp-12: 12px;
+  --sp-16: 16px; --sp-24: 24px; --sp-32: 32px;  --sp-40: 40px;
+  --sp-48: 48px; --sp-56: 56px; --sp-64: 64px;  --sp-72: 72px;
+  --sp-80: 80px; --sp-86: 86px; --sp-96: 96px;  --sp-112: 112px;
+  --sp-128: 128px;
+
+  /* ═══════════════════ GRID ═══════════════════
+     12 columns · 1280 content · 24 margin · 16 gutter
+     Breakpoints: xsmall 0-479 · small 480-1023 · medium 1024-1439 · large 1440+ */
+  --container: 1280px;
+  --grid-margin: 24px;
+  --grid-gutter: 16px;
+  --pad-x: max(var(--grid-margin), calc((100% - var(--container)) / 2));
+
+  /* ═══════════════════ ELEVATION ═══════════════════
+     Exact values from 11_Knappar. */
+  --shadow:         0 2px 10px rgba(0, 0, 0, .15);
+  --shadow-hover:   0 0 20px rgba(0, 0, 0, .20);
+  --shadow-pressed: 0 8px 15px rgba(0, 0, 0, .20);
+
+  /* ═══════════════════ MOTION ═══════════════════
+     Not specified in the design system; these are the curves and durations
+     the apps already use. Custom curves because the built-in CSS easings
+     are too weak, and ease-out for anything entering. */
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --ease-drawer: cubic-bezier(.32, .72, 0, 1);
+  --dur-press: 140ms;
+  --dur-fast: 180ms;
+  --dur-base: 220ms;
+  --dur-modal: 280ms;
+
+  /* ═══════════════════ RADIUS ═══════════════════
+     Buttons are square in the system; surfaces carry a small radius. */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+}
+
+/* Mobile type step-down, per 09_Typografi. */
+@media (max-width: 1023px) {
+  :root {
+    --h1: 32px; --h1-lh: 40px;
+    --h2: 28px; --h2-lh: 36px;
+    --h3: 24px; --h3-lh: 32px;
+    --h4: 20px; --h4-lh: 28px;
+  }
+}
+@media (max-width: 479px) {
+  :root { --grid-margin: 16px; }
+}
+
+/* ═══════════════════ TYPE CLASSES ═══════════════════ */
+.ds-h1 { font-size: var(--h1); line-height: var(--h1-lh); font-weight: var(--fw-bold); letter-spacing: -.02em; }
+.ds-h2 { font-size: var(--h2); line-height: var(--h2-lh); font-weight: var(--fw-semibold); letter-spacing: -.015em; }
+.ds-h3 { font-size: var(--h3); line-height: var(--h3-lh); font-weight: var(--fw-semibold); }
+.ds-h4 { font-size: var(--h4); line-height: var(--h4-lh); font-weight: var(--fw-semibold); }
+.ds-subtitle-1 { font-size: var(--subtitle-1); line-height: var(--subtitle-1-lh); font-weight: var(--fw-semibold); }
+.ds-subtitle-2 { font-size: var(--subtitle-2); line-height: var(--subtitle-2-lh); font-weight: var(--fw-semibold); }
+.ds-subtitle-3 { font-size: var(--subtitle-3); line-height: var(--subtitle-3-lh); font-weight: var(--fw-semibold); }
+.ds-body-1 { font-size: var(--body-1); line-height: var(--body-1-lh); }
+.ds-body-2 { font-size: var(--body-2); line-height: var(--body-2-lh); }
+.ds-body-3 { font-size: var(--body-3); line-height: var(--body-3-lh); }
+.ds-caption  { font-size: var(--caption);  line-height: var(--caption-lh); }
+.ds-overline { font-size: var(--overline); line-height: var(--overline-lh);
+               font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: .08em; }
+
+/* ═══════════════════ BUTTONS ═══════════════════
+   Square corners. Blue and orange each run default → hover → pressed →
+   disabled through their own ramp, exactly as 11_Knappar specifies. */
+.ds-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-8);
+  font-family: var(--font);
+  font-size: var(--btn-text); line-height: var(--btn-text-lh);
+  font-weight: var(--fw-semibold);
+  padding: var(--sp-12) var(--sp-24);
+  border: 1px solid transparent;
+  border-radius: var(--radius-none);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background-color var(--dur-fast, 180ms) ease,
+              border-color var(--dur-fast, 180ms) ease,
+              color var(--dur-fast, 180ms) ease,
+              box-shadow var(--dur-fast, 180ms) ease,
+              transform var(--dur-press, 140ms) var(--ease-out, ease);
+}
+.ds-btn:active { transform: scale(.97); box-shadow: var(--shadow-pressed); }
+.ds-btn:disabled, .ds-btn[aria-disabled="true"] { cursor: not-allowed; box-shadow: none; }
+
+.ds-btn-primary { background: var(--primary-60); color: var(--white); }
+.ds-btn-secondary { background: var(--orange-60); color: var(--white); }
+.ds-btn-outline { background: transparent; color: var(--primary-60); border-color: var(--primary-60); box-shadow: none; }
+.ds-btn-ghost { background: transparent; color: var(--primary-60); box-shadow: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .ds-btn:hover { box-shadow: var(--shadow-hover); }
+  .ds-btn-primary:hover { background: var(--primary-50); }
+  .ds-btn-secondary:hover { background: var(--orange-70); }
+  .ds-btn-outline:hover { background: var(--primary-60); color: var(--white); }
+  .ds-btn-ghost:hover { background: var(--primary-10); }
+}
+.ds-btn-primary:active { background: var(--primary-80); }
+.ds-btn-secondary:active { background: var(--orange-80); }
+.ds-btn-primary:disabled { background: var(--primary-40); }
+.ds-btn-secondary:disabled { background: var(--orange-30); }
+.ds-btn-outline:disabled { color: var(--primary-40); border-color: var(--primary-40); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LEGACY ALIASES
+
+   The apps' existing CSS is written against these names. Re-pointing them
+   at the brand tokens applies the design system to every existing rule
+   without editing any of them. New work should use the token names above.
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --navy:     var(--primary-60);
+  --dark:     var(--primary-70);
+  --darker:   var(--primary-80);
+  --orange:   var(--orange-60);
+  --orange-d: var(--orange-70);
+
+  --bg:     var(--primary-10);
+  --card:   var(--white);
+  --border: var(--gray-40);
+  --mid:    var(--gray-80);
+  --muted:  var(--gray-70);
+
+  --green: var(--green-60);
+  --gbg:   var(--green-10);
+  --gtxt:  var(--green-70);
+
+  --red:  var(--red-80);
+  --rbg:  var(--red-10);
+  --rtxt: var(--red-80);
+
+  --amber: var(--orange-70);
+  --abg:   var(--orange-10);
+  --atxt:  var(--orange-80);
+
+  --bluebg:  var(--primary-30);
+  --bluetxt: var(--primary-60);
+
+  --sh:   var(--shadow);
+  --shlg: var(--shadow-hover);
+}

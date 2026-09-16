@@ -12,6 +12,7 @@ dropped; no Swedish copy or SE rate should exist anywhere.
 
 | File | What it is |
 |---|---|
+| `ib-design.css` | **Design system.** Colour, type, spacing, elevation, grid. Authoritative for all styling. |
 | `ib-markets.js` | **Market registry.** Legal entity, currency, locale, statutory rates, and the per-market payroll models. Authoritative for all money. |
 | `ib-i18n.js` | **Copy.** Danish and Norwegian bokmål, keyed. Authoritative for all user-visible text. |
 | `ib-core.js` | Storage, seed, market-aware formatting, escaping, status/type constants. |
@@ -87,6 +88,40 @@ expects.
 > assembles and checks the payload but refuses to send, because inventing an
 > endpoint contract would be worse than not having one. Fill in
 > `JEEVES_CONFIG` and flip `verified` once the integration spec exists.
+
+## Design system
+
+`ib-design.css` is transcribed from `design_system_zip/` and is the single
+source of truth for colour, type, spacing, elevation and the grid. Both apps
+link it before their inline `<style>`.
+
+| | |
+|---|---|
+| Typeface | **Asap** — 400 / 500 / 600 / 700 |
+| Primary | Invoicery Blue `#04567D` (ramp 10–80, 60 is brand) |
+| Secondary | Orange `#FF8800` |
+| Accents | Ocean `#34A8C5` · Success `#0BC980` · Amazonas `#20B098` · Korall `#EB6060` · Error `#DB1212` |
+| Type scale | H1 46/56 → Overline 10/16, with a mobile step-down |
+| Spacing | 8 · 12 · 16 · 24 · 32 · 40 · 48 · 56 · 64 · 72 · 80 · 86 · 96 · 112 · 128 |
+| Grid | 12 columns · **1280** content · 24 margin · 16 gutter |
+| Breakpoints | xsmall 0–479 · small 480–1023 · medium 1024–1439 · large 1440+ |
+| Elevation | default `0 2px 10px /15%` · hover `0 0 20px /20%` · pressed `0 8px 15px /20%` |
+
+**Never write a raw colour.** Use a token. `payroll-check.cjs` fails on any
+hex outside the system and on any `var(--x)` that resolves to nothing — the
+latter caught `--purplebg`, which was being used after its definition was
+removed, so those badges were rendering with no background at all.
+
+The system has **no purple**. The Workforce Management and Excel-import
+accents use Ocean, its fourth accent.
+
+### How it reaches the existing CSS
+
+Both apps carry ~1000 lines of CSS keyed to legacy names (`--navy`,
+`--orange`, `--bg`). The LEGACY ALIASES block at the bottom of
+`ib-design.css` re-points those at the real brand tokens, so every existing
+rule picked up the palette without being edited. New work uses the token
+names directly.
 
 ## Employee and payout lists
 
