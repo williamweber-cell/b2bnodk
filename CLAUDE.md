@@ -89,6 +89,34 @@ expects.
 > endpoint contract would be worse than not having one. Fill in
 > `JEEVES_CONFIG` and flip `verified` once the integration spec exists.
 
+## Order approval
+
+A company opens an assignment from the approval list, reads it in full, and
+acts on it: `b-approve` (list) → `b-order` (detail) → approve / reject /
+request change.
+
+**The detail view shows what the company pays, not what the consultant
+earns.** Hours × rate, VAT, total. `calcPayroll` also returns gross, net,
+withholding and holiday pay, so it is one careless line away from putting a
+consultant's salary on a client's screen. `scripts/render-smoke.cjs` asserts
+none of those figures appear in `bOrder()` output.
+
+**Rejecting or asking for a change requires a reason.** Both used to flip the
+status and discard why, so the consultant saw "rejected" with no explanation
+and no way to act on it. The note is now recorded and surfaced under the
+assignment in the consultant's own list.
+
+**Every transition is recorded** in `assignment.history` — `{at, by, action,
+note}`. The only trail before this was a free-text `adminNote`, so an
+approval could not be attributed or dated. Seeded assignments carry their
+creation event, so the history panel reads correctly from a fresh demo.
+
+Access control: `currentOrder()` looks up through `ours()`, which filters on
+`companyId === ME.id`, and `orderApprove` / `orderCommit` re-check ownership
+before writing. A company cannot open or act on another company's order by
+guessing an id. This is still client-side and therefore presentation, not
+security — see Known gaps.
+
 ## Design system
 
 `ib-design.css` is transcribed from `design_system_zip/` and is the single

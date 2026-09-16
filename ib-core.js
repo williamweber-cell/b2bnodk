@@ -54,7 +54,7 @@
     WORKFORCE_MANAGEMENT: 'Workforce Management'
   };
 
-  var SEED_VERSION = '4';
+  var SEED_VERSION = '5';
 
   /* ═══════════════════ MARKET ═══════════════════ */
   function market()        { return Markets.current(); }
@@ -211,7 +211,21 @@
   };
 
   function seedUsers(code)       { return clone(SEED[code || marketCode()].users); }
-  function seedAssignments(code) { return clone(SEED[code || marketCode()].assignments); }
+  function seedAssignments(code) {
+    return clone(SEED[code || marketCode()].assignments).map(function (a) {
+      /* Give every seeded assignment its creation event so the order history
+         reads correctly from the first demo, and backfill the approval where
+         the seed already says approved or paid. */
+      a.history = [{ at: a.createdDate, by: a.consultantName, action: 'created', note: '' }];
+      if (a.approvedDate) {
+        a.history.push({ at: a.approvedDate, by: '', action: 'approved', note: '' });
+      }
+      if (a.status === 'paid') {
+        a.history.push({ at: a.approvedDate || a.createdDate, by: '', action: 'paid', note: '' });
+      }
+      return a;
+    });
+  }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
   /* Seed one market. Called for every market on boot so switching markets

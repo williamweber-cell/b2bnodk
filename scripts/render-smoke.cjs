@@ -124,6 +124,7 @@ function check(label, fn) {
 
 const CONSULTANT_VIEWS = ['cDash','cNew','cList','cPay','cCert','cProfile'];
 const COMPANY_VIEWS    = ['bDash','bApprove','bAll','bImport','bInvoices','bProfile'];
+const ORDER_VIEW       = 'bOrder';
 const ADMIN_VIEWS      = ['aDash','aActivity','aApprove','aAll','aImport','aConsultants',
                           'aCompanies','aPayroll','aInvoices','aServices','aSettings'];
 
@@ -152,6 +153,18 @@ for (const code of ['DK', 'NO']) {
     list[0].status = app.IB.STATUS.PENDING;
     list[0].companyId = users.find(u => u.role === 'company').id;
     app.IB.saveAssignments(list);
+    // the order detail view, opened on a real assignment
+    const firstOwn = app.IB.getAssignments()
+      .find(a => a.companyId === users.find(u => u.role === 'company').id);
+    if (firstOwn) {
+      vm.runInContext('CURRENT_ORDER = ' + JSON.stringify(firstOwn.id) + ';', app,
+                      { filename: 'set-order' });
+      check('bOrder()', () => app.bOrder());
+    }
+    // an unknown id must render the not-found state, not throw
+    vm.runInContext('CURRENT_ORDER = "NOPE-1";', app, { filename: 'set-order' });
+    check('bOrder() with an unknown id', () => app.bOrder());
+
     const html = check('bApprove() with hostile input', () => app.bApprove());
     if (html) {
       if (html.includes('<img src=x onerror=') || html.includes('<script>alert(2)')) {

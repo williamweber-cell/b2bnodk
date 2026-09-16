@@ -1173,7 +1173,7 @@ function updBadges(){
 /* ═══════════════════ ROUTING ═══════════════════ */
 const VIEWS={
   'c-dash':cDash,'c-new':cNew,'c-list':cList,'c-pay':cPay,'c-cert':cCert,'c-profile':cProfile,
-  'b-dash':bDash,'b-approve':bApprove,'b-all':bAll,'b-import':importView,'b-invoices':bInvoices,'b-profile':bProfile
+  'b-dash':bDash,'b-approve':bApprove,'b-order':bOrder,'b-all':bAll,'b-import':importView,'b-invoices':bInvoices,'b-profile':bProfile
 };
 
 function go(v){
@@ -1301,7 +1301,8 @@ window.submitAssignment=function(){
   list.unshift({id,consultantId:ME.id,consultantName:ME.name,
     companyId:company.id,companyName:company.name,
     type,description:desc,hours,hourlyRate:rate,amount:hours*rate,
-    period,status:STATUS.PENDING,createdDate:today(),approvedDate:'',adminNote:''});
+    period,status:STATUS.PENDING,createdDate:today(),approvedDate:'',adminNote:'',
+    history:[{at:today(),by:ME.name,action:'created',note:''}]});
   saveAssignments(list);
   updBadges();
   document.getElementById('pg').innerHTML=`
@@ -1332,7 +1333,25 @@ function cList(){
         <td>${esc(a.period)}</td>
         <td style="color:var(--mid)">${a.hours}</td>
         <td style="font-weight:700">${fmtN(a.amount)}</td>
-        <td>${statusBadge(a.status)}</td></tr>`).join('')}</tbody></table></div></div>`;
+        <td>${statusBadge(a.status)}</td></tr>
+        ${consultantNote(a)}`).join('')}</tbody></table></div></div>`;
+}
+
+/* A rejection with no reason is useless to the consultant — surface the note
+   the company left, directly under the row it belongs to. */
+function consultantNote(a){
+  if(a.status!==STATUS.REJECTED&&a.status!==STATUS.DRAFT) return '';
+  const last=(a.history||[]).slice().reverse()
+    .find(h=>h.action==='rejected'||h.action==='changeRequested');
+  if(!last||!last.note) return '';
+  return `<tr><td colspan="7" style="padding-top:0">
+    <div style="display:flex;gap:var(--sp-8);align-items:flex-start;
+                padding:var(--sp-12);background:var(--orange-10);
+                border-left:3px solid var(--orange-60);border-radius:var(--radius-sm);
+                font-size:var(--body-3)">
+      <strong>${esc(t('order.event.'+last.action))}:</strong>
+      <span style="color:var(--text-muted)">${esc(last.note)}</span>
+    </div></td></tr>`;
 }
 
 function cPay(){
@@ -1422,58 +1441,258 @@ function bDash(){
       <tbody>${pending.map(a=>`<tr>
         <td style="font-weight:700">${esc(a.consultantName)}</td><td>${esc(a.period)}</td>
         <td style="font-weight:700">${fmtN(a.amount)}</td>
-        <td><button class="btn btn-ok btn-sm" onclick="approveAssignment('${esc(a.id)}')">✓ ${esc(t('act.approve'))}</button></td>
+        <td><button class="btn btn-or btn-sm" onclick="openOrder('${esc(a.id)}')">${esc(t('act.review'))}</button></td>
       </tr>`).join('')}</tbody></table></div></div>`:''}`;
 }
 
 function bApprove(){
   const list=ours().filter(a=>a.status===STATUS.PENDING);
   if(!list.length) return empty(ICO_CHECK,'b.approve.empty.h','b.approve.empty.p');
-  return list.map(a=>{
-    const p=calcPayroll(a.amount,{hours:a.hours});
-    return `<div class="card" style="margin-bottom:1.1rem">
-      <div class="card-hd">
-        <div><div class="card-title">${esc(a.consultantName)} — ${esc(a.period)}</div>
-          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem">${esc(a.id)} · ${esc(fmtDate(a.createdDate))}</div></div>
-        <span class="badge b-bl">${esc(a.type)}</span>
-      </div>
-      <div class="card-bd">
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:.85rem;background:var(--bg);border-radius:8px;margin-bottom:1.1rem">
-          <div><div class="lbl">${esc(t('lbl.hours'))}</div><div style="font-weight:700">${a.hours}</div></div>
-          <div><div class="lbl">${esc(t('lbl.hourlyRate'))}</div><div style="font-weight:700">${fmtN(a.hourlyRate)}${esc(t('misc.perHour'))}</div></div>
-          <div><div class="lbl">${esc(t('line.invoiceAmount'))}</div><div style="font-weight:800;color:var(--navy)">${fmtN(p.invoiceAmount)}</div></div>
-          <div><div class="lbl">${esc(t('line.invoiceTotal'))}</div><div style="font-weight:800">${fmtN(p.invoiceTotal)}</div></div>
-        </div>
-        <div style="font-size:.87rem;color:var(--mid);margin-bottom:1.1rem">
-          <strong style="color:var(--text)">${esc(t('b.approve.desc'))}</strong> ${esc(a.description)}
-        </div>
-        <div style="display:flex;gap:.7rem;flex-wrap:wrap">
-          <button class="btn btn-ok" onclick="approveAssignment('${esc(a.id)}')">✓ ${esc(t('act.approveAssignment'))}</button>
-          <button class="btn btn-dn" onclick="rejectAssignment('${esc(a.id)}')">✗ ${esc(t('act.reject'))}</button>
-          <button class="btn btn-gh" onclick="requestChange('${esc(a.id)}')">↩ ${esc(t('act.requestChange'))}</button>
-        </div>
-      </div></div>`;
-  }).join('');
+  return `
+  <p style="font-size:var(--body-3);color:var(--text-muted);margin-bottom:var(--sp-16)">
+    ${esc(t('b.approve.help'))}</p>
+  <div class="card">
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr>
+        <th>${esc(t('lbl.assignment'))}</th><th>${esc(t('lbl.consultant'))}</th>
+        <th>${esc(t('lbl.period'))}</th><th class="num">${esc(t('lbl.hours'))}</th>
+        <th class="num">${esc(t('line.invoiceTotal'))}</th><th></th>
+      </tr></thead>
+      <tbody>${list.map(a=>{
+        const p=calcPayroll(a.amount,{hours:a.hours});
+        return `<tr style="cursor:pointer" onclick="openOrder('${esc(a.id)}')">
+          <td><div style="font-weight:var(--fw-semibold)">${esc(a.id)}</div>
+            <div style="font-size:var(--caption);color:var(--text-subtle)">${esc(a.type)}</div></td>
+          <td>${esc(a.consultantName)}</td>
+          <td>${esc(a.period)}</td>
+          <td class="num">${a.hours}</td>
+          <td class="num" style="font-weight:var(--fw-semibold)">${fmtN(p.invoiceTotal)}</td>
+          <td class="num"><button class="btn btn-or btn-sm"
+            onclick="event.stopPropagation();openOrder('${esc(a.id)}')">
+            ${esc(t('act.review'))}</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>
+  </div>`;
 }
 
-window.approveAssignment=function(id){
-  const list=getAssignments();
-  const a=list.find(x=>x.id===id);
-  if(a){a.status=STATUS.APPROVED;a.approvedDate=today()}
-  saveAssignments(list); updBadges(); go('b-approve');
+/* ═══════════════════ ORDER DETAIL ═══════════════════
+   A company opens one assignment, reads it in full, and acts on it.
+
+   Two things this view is deliberate about:
+
+   1. It shows what the COMPANY PAYS — hours × rate, VAT, total. Not the
+      payroll breakdown. The consultant's gross and net salary are none of
+      the client's business, and calcPayroll returns them, so it would be
+      easy to leak them onto this screen by accident.
+
+   2. Rejecting or asking for a change requires a reason. Previously both
+      flipped the status and discarded why, so the consultant saw "rejected"
+      with no explanation and no way to fix it. */
+
+let CURRENT_ORDER = null;
+
+window.openOrder = function (id) {
+  CURRENT_ORDER = id;
+  go('b-order');
+};
+
+/* ours() filters on companyId === ME.id, so a company cannot open another
+   company's order by guessing an id. Keep the lookup going through it. */
+function currentOrder() {
+  return ours().find(a => a.id === CURRENT_ORDER) || null;
 }
-window.rejectAssignment=function(id){
-  const list=getAssignments();
-  const a=list.find(x=>x.id===id);
-  if(a) a.status=STATUS.REJECTED;
-  saveAssignments(list); updBadges(); go('b-approve');
+
+function orderStatusNote(a) {
+  const last = (a.history || []).slice().reverse()
+    .find(h => h.action === 'rejected' || h.action === 'changeRequested');
+  return last && last.note ? last.note : '';
 }
-window.requestChange=function(id){
-  const list=getAssignments();
-  const a=list.find(x=>x.id===id);
-  if(a) a.status=STATUS.DRAFT;
-  saveAssignments(list); updBadges(); go('b-approve');
+
+function bOrder() {
+  const a = currentOrder();
+  if (!a) return empty(ICO_DOC, 'order.missing.h', 'order.missing.p',
+    `<button class="btn btn-gh" onclick="go('b-approve')">${esc(t('order.back'))}</button>`);
+
+  const p = calcPayroll(a.amount, { hours: a.hours });
+  const pending = a.status === STATUS.PENDING;
+  const note = orderStatusNote(a);
+
+  const fact = (label, value, strong) =>
+    `<div><div class="lbl">${esc(label)}</div>
+      <div style="font-weight:${strong ? 800 : 600};font-size:var(--body-2)">${value}</div></div>`;
+
+  return `
+  <button class="btn btn-gh btn-sm" style="margin-bottom:var(--sp-16)"
+          onclick="go('b-approve')">← ${esc(t('order.back'))}</button>
+
+  <div class="card">
+    <div class="card-hd">
+      <div>
+        <div class="card-title">${esc(a.id)}</div>
+        <div style="font-size:var(--caption);color:var(--text-subtle);margin-top:2px">
+          ${esc(t('lbl.created'))} ${esc(fmtDate(a.createdDate))}</div>
+      </div>
+      <div style="display:flex;gap:var(--sp-8);align-items:center">
+        <span class="badge b-bl">${esc(a.type)}</span>${statusBadge(a.status)}
+      </div>
+    </div>
+
+    <div class="card-bd">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+                  gap:var(--sp-16);padding:var(--sp-16);background:var(--surface-alt);
+                  border-radius:var(--radius-md);margin-bottom:var(--sp-24)">
+        ${fact(t('lbl.consultant'), esc(a.consultantName))}
+        ${fact(t('lbl.period'), esc(a.period))}
+        ${fact(t('lbl.hours'), a.hours)}
+        ${fact(t('lbl.hourlyRate'), fmtN(a.hourlyRate) + esc(t('misc.perHour')))}
+      </div>
+
+      <div class="ds-h4" style="margin-bottom:var(--sp-8)">${esc(t('order.description'))}</div>
+      <p style="font-size:var(--body-2);line-height:var(--body-2-lh);color:var(--text-muted);
+                margin-bottom:var(--sp-32)">${esc(a.description)}</p>
+
+      <div class="ds-h4" style="margin-bottom:var(--sp-8)">${esc(t('order.whatYouPay'))}</div>
+      <p style="font-size:var(--caption);color:var(--text-subtle);margin-bottom:var(--sp-12)">
+        ${esc(t('order.whatYouPay.help'))}</p>
+      <div style="max-width:420px;margin-bottom:var(--sp-32)">
+        ${[[t('line.invoiceAmount'), p.invoiceAmount, false],
+           [t('line.vat'), p.vat, false],
+           [t('line.invoiceTotal'), p.invoiceTotal, true]]
+          .map(([l, v, strong]) => `
+          <div style="display:flex;justify-content:space-between;padding:var(--sp-12) 0;
+                      border-bottom:1px solid var(--line);font-size:var(--body-2)">
+            <span style="color:${strong ? 'var(--text)' : 'var(--text-muted)'}">${esc(l)}</span>
+            <strong style="${strong ? 'color:var(--primary-60);font-size:var(--subtitle-1)' : ''}">
+              ${fmtN(v)}</strong>
+          </div>`).join('')}
+      </div>
+
+      ${note ? `<div class="alert alert-warn" style="margin-bottom:var(--sp-24)">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span><strong>${esc(t('order.yourNote'))}</strong> ${esc(note)}</span></div>` : ''}
+
+      ${pending ? `
+      <div id="order-actions">
+        <div style="display:flex;gap:var(--sp-12);flex-wrap:wrap">
+          <button class="btn btn-ok" onclick="orderApprove('${esc(a.id)}')">
+            ✓ ${esc(t('act.approveAssignment'))}</button>
+          <button class="btn btn-dn" onclick="orderPrompt('${esc(a.id)}','rejected')">
+            ✗ ${esc(t('act.reject'))}</button>
+          <button class="btn btn-gh" onclick="orderPrompt('${esc(a.id)}','changeRequested')">
+            ↩ ${esc(t('act.requestChange'))}</button>
+        </div>
+      </div>` : `
+      <div style="font-size:var(--body-3);color:var(--text-subtle)">
+        ${esc(t('order.noActions'))}</div>`}
+    </div>
+  </div>
+
+  ${orderHistory(a)}`;
 }
+
+/* Every transition is recorded. The only trail before this was a free-text
+   adminNote, which meant an approval could not be attributed or dated. */
+function orderHistory(a) {
+  const events = a.history || [];
+  if (!events.length) return '';
+  return `
+  <div class="card" style="margin-top:var(--sp-24)">
+    <div class="card-hd"><span class="card-title">${esc(t('order.history'))}</span></div>
+    <div class="card-bd">
+      ${events.slice().reverse().map(h => `
+        <div style="display:flex;gap:var(--sp-12);padding:var(--sp-12) 0;
+                    border-bottom:1px solid var(--line)">
+          <div style="min-width:96px;font-size:var(--caption);color:var(--text-subtle)">
+            ${esc(fmtDate(h.at))}</div>
+          <div>
+            <div style="font-size:var(--body-3);font-weight:var(--fw-semibold)">
+              ${esc(t('order.event.' + h.action))}</div>
+            ${h.by ? `<div style="font-size:var(--caption);color:var(--text-subtle)">${esc(h.by)}</div>` : ''}
+            ${h.note ? `<div style="font-size:var(--body-3);color:var(--text-muted);margin-top:2px">
+              ${esc(h.note)}</div>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* Reject and request-change reveal a reason field rather than acting
+   immediately. Approve does not — there is nothing to explain. */
+window.orderPrompt = function (id, action) {
+  const host = document.getElementById('order-actions');
+  if (!host) return;
+  const titleKey = action === 'rejected' ? 'order.reject.title' : 'order.change.title';
+  const helpKey  = action === 'rejected' ? 'order.reject.help'  : 'order.change.help';
+  host.innerHTML = `
+    <div class="ds-h4" style="margin-bottom:var(--sp-4)">${esc(t(titleKey))}</div>
+    <p style="font-size:var(--caption);color:var(--text-subtle);margin-bottom:var(--sp-12)">
+      ${esc(t(helpKey))}</p>
+    <div class="ig" id="reason-field">
+      <label class="lbl">${esc(t('order.reason'))}</label>
+      <textarea class="inp" id="order-reason" rows="3" oninput="clearReasonError()"
+                placeholder="${esc(t('order.reason.ph'))}"></textarea>
+    </div>
+    <div class="ds-field-msg" id="reason-err" style="display:none">
+      ${esc(t('order.reason.required'))}</div>
+    <div style="display:flex;gap:var(--sp-12);flex-wrap:wrap;margin-top:var(--sp-12)">
+      <button class="btn ${action === 'rejected' ? 'btn-dn' : 'btn-or'}"
+              onclick="orderCommit('${esc(id)}','${esc(action)}')">
+        ${esc(t(action === 'rejected' ? 'act.reject' : 'act.requestChange'))}</button>
+      <button class="btn btn-gh" onclick="go('b-order')">${esc(t('act.cancel'))}</button>
+    </div>`;
+  const ta = document.getElementById('order-reason');
+  if (ta) ta.focus();
+};
+
+window.clearReasonError = function () {
+  const err = document.getElementById('reason-err');
+  const field = document.getElementById('reason-field');
+  if (err) err.style.display = 'none';
+  if (field) field.removeAttribute('data-error');
+};
+
+function recordEvent(a, action, note) {
+  a.history = a.history || [];
+  a.history.push({
+    at: today(),
+    by: ME ? ME.name : '',
+    action,
+    note: note || ''
+  });
+}
+
+window.orderApprove = function (id) {
+  const list = getAssignments();
+  const a = list.find(x => x.id === id);
+  if (!a || a.companyId !== ME.id) return;          // not ours, do nothing
+  a.status = STATUS.APPROVED;
+  a.approvedDate = today();
+  recordEvent(a, 'approved', '');
+  saveAssignments(list);
+  updBadges();
+  go('b-order');
+};
+
+window.orderCommit = function (id, action) {
+  const reason = (document.getElementById('order-reason') || {}).value || '';
+  if (!reason.trim()) {
+    const err = document.getElementById('reason-err');
+    const field = document.getElementById('reason-field');
+    if (err) err.style.display = 'block';
+    if (field) field.setAttribute('data-error', '');
+    return;
+  }
+  const list = getAssignments();
+  const a = list.find(x => x.id === id);
+  if (!a || a.companyId !== ME.id) return;
+  a.status = action === 'rejected' ? STATUS.REJECTED : STATUS.DRAFT;
+  recordEvent(a, action, reason.trim());
+  saveAssignments(list);
+  updBadges();
+  go('b-order');
+};
+
 
 function bAll(){
   const list=ours();
@@ -1483,7 +1702,7 @@ function bAll(){
       <thead><tr><th>${esc(t('lbl.assignment'))}</th><th>${esc(t('lbl.consultant'))}</th>
         <th>${esc(t('lbl.type'))}</th><th>${esc(t('lbl.period'))}</th>
         <th>${esc(t('lbl.amount'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
-      <tbody>${list.map(a=>`<tr>
+      <tbody>${list.map(a=>`<tr style="cursor:pointer" onclick="openOrder('${esc(a.id)}')">
         <td style="font-weight:700;font-size:.75rem">${esc(a.id)}</td>
         <td>${esc(a.consultantName)}</td>
         <td><span class="badge b-bl">${esc(a.type)}</span></td>
