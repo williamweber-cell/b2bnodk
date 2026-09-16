@@ -115,6 +115,30 @@ removed, so those badges were rendering with no background at all.
 The system has **no purple**. The Workforce Management and Excel-import
 accents use Ocean, its fourth accent.
 
+### Components
+
+| Class | From | Notes |
+|---|---|---|
+| `.ds-table` / `.tbl` | 20_Tabell | Blue semibold headers on `gray-10`, no vertical rules, `primary-10` zebra |
+| `.ds-icon-btn` | 20_Tabell | Circular blue outline, as the Ändra / Tar bort column |
+| `.ds-field` / `.ig` | 19_Dropdown, 12_Inputfalt | Notched outline — the label sits in a gap in the top border |
+| `.ds-menu` | 19_Dropdown | Open menu is solid `primary-60` with white items, square |
+| `.ds-stepper` | 22_Steg-Indikator | Vertical, three states: upcoming · active · done |
+
+`.tbl` and `.ig` are aliased to the components, so every existing table and
+field picked them up without a markup change. A bare `.inp` (search boxes,
+filters) is styled too — those have no `.ig` wrapper and were briefly
+unstyled when the old rule was removed.
+
+The stepper drives the Excel import, which is genuinely three steps: choose
+a file, review the rows, confirm. `IMPORT_STEP` is display state only; the
+data still lives in `IMPORT_STATE`.
+
+**One deviation from the source.** 19_Dropdown draws the *error* state with a
+blue border, identical to focus. Every other error affordance in the system
+uses Error red, so `.ds-field[data-error]` uses red. Change it if blue was
+the intent.
+
 ### How it reaches the existing CSS
 
 Both apps carry ~1000 lines of CSS keyed to legacy names (`--navy`,

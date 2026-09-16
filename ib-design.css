@@ -239,6 +239,301 @@
 .ds-btn-secondary:disabled { background: var(--orange-30); }
 .ds-btn-outline:disabled { color: var(--primary-40); border-color: var(--primary-40); }
 
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TABLE — 20_Tabell
+
+   Header sits on a light ground with the label in Invoicery blue, semibold.
+   No vertical rules. Rows zebra-stripe in primary-10. Row actions are
+   circular blue outlines.
+   ═══════════════════════════════════════════════════════════════════════ */
+.ds-table { width: 100%; border-collapse: collapse; font-size: var(--body-3); }
+.ds-table thead th {
+  background: var(--gray-10);
+  color: var(--primary-60);
+  font-size: var(--subtitle-3);
+  font-weight: var(--fw-semibold);
+  text-align: left;
+  padding: var(--sp-16) var(--sp-24);
+  border: none;
+  white-space: nowrap;
+}
+.ds-table tbody td {
+  padding: var(--sp-16) var(--sp-24);
+  border: none;
+  vertical-align: middle;
+  color: var(--text);
+}
+.ds-table tbody tr:nth-child(even) { background: var(--primary-10); }
+@media (hover: hover) and (pointer: fine) {
+  .ds-table tbody tr:hover { background: var(--primary-20); }
+}
+.ds-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Circular outline action, per the Ändra / Tar bort column. */
+.ds-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--primary-60); border-radius: var(--radius-pill);
+  background: transparent; color: var(--primary-60);
+  cursor: pointer; padding: 0;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease,
+              transform var(--dur-press) var(--ease-out);
+}
+.ds-icon-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+.ds-icon-btn:active { transform: scale(.92); }
+@media (hover: hover) and (pointer: fine) {
+  .ds-icon-btn:hover { background: var(--primary-60); color: var(--white); }
+}
+.ds-icon-btn-danger { border-color: var(--red-80); color: var(--red-80); }
+@media (hover: hover) and (pointer: fine) {
+  .ds-icon-btn-danger:hover { background: var(--red-80); color: var(--white); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FIELDS & DROPDOWN — 19_Dropdown, 12_Inputfalt
+
+   Notched outline: the label sits in a gap in the top border. Achieved by
+   absolutely positioning the label over the border with the surface colour
+   behind it, so no markup change is needed.
+
+   States: rest (gray outline) · focus (Invoicery blue) · error (Error red)
+   · disabled (gray fill).
+
+   NOTE: the system's Error example is drawn with a blue border, which is
+   almost certainly a slip in the source file — every other error affordance
+   uses the Error red. Red is used here; change it if the intent was blue.
+   ═══════════════════════════════════════════════════════════════════════ */
+.ds-field { position: relative; margin-bottom: var(--sp-24); }
+.ds-field > label {
+  position: absolute; top: -8px; left: 10px; z-index: 1;
+  padding: 0 var(--sp-4);
+  background: var(--surface);
+  font-size: var(--caption); line-height: var(--caption-lh);
+  color: var(--text-subtle);
+  pointer-events: none;
+  transition: color var(--dur-fast) ease;
+}
+.ds-field > input, .ds-field > select, .ds-field > textarea {
+  width: 100%;
+  padding: var(--sp-16) var(--sp-12);
+  font-family: var(--font);
+  font-size: var(--body-2); line-height: var(--body-2-lh);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--gray-60);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.ds-field > input:focus,
+.ds-field > select:focus,
+.ds-field > textarea:focus {
+  outline: none;
+  border-color: var(--primary-60);
+  box-shadow: inset 0 0 0 1px var(--primary-60);   /* reads as a 2px stroke */
+}
+.ds-field:focus-within > label { color: var(--primary-60); }
+
+.ds-field[data-error] > input,
+.ds-field[data-error] > select,
+.ds-field[data-error] > textarea {
+  border-color: var(--red-80);
+  box-shadow: inset 0 0 0 1px var(--red-80);
+}
+.ds-field[data-error] > label { color: var(--red-80); }
+.ds-field-msg { margin-top: var(--sp-4); font-size: var(--caption); color: var(--red-80); }
+
+.ds-field > input:disabled,
+.ds-field > select:disabled,
+.ds-field > textarea:disabled {
+  background: var(--gray-20);
+  border-color: var(--gray-50);
+  color: var(--text-subtle);
+  cursor: not-allowed;
+}
+
+/* Open menu: solid Invoicery blue, white items, square. */
+.ds-menu {
+  background: var(--primary-60);
+  border-radius: var(--radius-none);
+  padding: var(--sp-8) 0;
+  box-shadow: var(--shadow-hover);
+  min-width: 180px;
+}
+.ds-menu-item {
+  display: block; width: 100%; text-align: left;
+  padding: var(--sp-12) var(--sp-24);
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font); font-size: var(--body-2); line-height: var(--body-2-lh);
+  color: var(--white);
+  transition: background var(--dur-fast) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ds-menu-item:hover { background: var(--primary-50); }
+}
+.ds-menu-item[aria-selected="true"] { background: var(--primary-70); font-weight: var(--fw-semibold); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STEP INDICATOR — 22_Steg-Indikator
+
+   Vertical stepper. Three states:
+     upcoming  gray circle, gray title, on a light ground
+     active    "Is" filled circle, blue title, white ground, content shown
+     done      outlined circle, black title, light ground, check on the right
+
+   A connector line runs between the circles.
+   ═══════════════════════════════════════════════════════════════════════ */
+.ds-stepper { display: flex; flex-direction: column; }
+.ds-step { position: relative; padding-left: var(--sp-56); }
+
+/* connector — stops at the last step */
+.ds-step::before {
+  content: ''; position: absolute;
+  left: 15px; top: 32px; bottom: -8px;
+  width: 2px; background: var(--gray-50);
+}
+.ds-step:last-child::before { display: none; }
+
+.ds-step-head {
+  display: flex; align-items: center; gap: var(--sp-12);
+  padding: var(--sp-16) var(--sp-24) var(--sp-16) var(--sp-56);
+  margin-left: calc(var(--sp-56) * -1);
+  background: var(--gray-10);
+  border: none; width: 100%; text-align: left;
+  font-family: var(--font);
+}
+.ds-step-num {
+  position: absolute; left: 0; top: 24px;
+  width: 32px; height: 32px; border-radius: var(--radius-pill);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--body-3); font-weight: var(--fw-semibold);
+  background: var(--white); border: 1.5px solid var(--gray-50);
+  color: var(--text-subtle);
+  z-index: 1;
+  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease,
+              color var(--dur-fast) ease;
+}
+.ds-step-title {
+  font-size: var(--subtitle-1); line-height: var(--subtitle-1-lh);
+  font-weight: var(--fw-semibold); color: var(--text-subtle);
+}
+.ds-step-check { margin-left: auto; color: var(--text); display: none; }
+.ds-step-check svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; }
+.ds-step-body { padding: var(--sp-24) var(--sp-24) var(--sp-32) 0; display: none; }
+
+/* ── active ── */
+.ds-step[data-state="active"] > .ds-step-head { background: transparent; }
+.ds-step[data-state="active"] .ds-step-num {
+  background: var(--primary-30); border-color: var(--primary-30); color: var(--primary-60);
+}
+.ds-step[data-state="active"] .ds-step-title { color: var(--primary-60); }
+.ds-step[data-state="active"] > .ds-step-body { display: block; }
+
+/* ── done ── */
+.ds-step[data-state="done"] .ds-step-title { color: var(--text); }
+.ds-step[data-state="done"] .ds-step-check { display: block; }
+.ds-step[data-state="done"]::before { background: var(--primary-40); }
+
+@media (max-width: 479px) {
+  .ds-step { padding-left: var(--sp-40); }
+  .ds-step-head { margin-left: calc(var(--sp-40) * -1); padding-left: var(--sp-40); }
+  .ds-step-num { width: 28px; height: 28px; }
+  .ds-step::before { left: 13px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COMPONENT ALIASES
+
+   The apps' markup uses .tbl for tables and .ig / .lbl / .inp for fields.
+   Aliasing here applies the design-system components to every existing call
+   site without touching the markup — the same approach as LEGACY ALIASES
+   below, but for structure rather than colour.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── tables ── */
+.tbl { width: 100%; border-collapse: collapse; font-size: var(--body-3); }
+.tbl thead th {
+  background: var(--gray-10);
+  color: var(--primary-60);
+  font-size: var(--subtitle-3);
+  font-weight: var(--fw-semibold);
+  text-transform: none;
+  letter-spacing: 0;
+  text-align: left;
+  padding: var(--sp-16) var(--sp-24);
+  border: none;
+  white-space: nowrap;
+}
+.tbl tbody td {
+  padding: var(--sp-16) var(--sp-24);
+  border: none;
+  font-size: var(--body-3);
+  vertical-align: middle;
+  color: var(--text);
+}
+.tbl tbody tr:nth-child(even) { background: var(--primary-10); }
+@media (hover: hover) and (pointer: fine) {
+  .tbl tbody tr:hover { background: var(--primary-20); }
+}
+
+/* ── fields: notched outline ── */
+.ig { position: relative; margin-bottom: var(--sp-24); }
+.ig > .lbl {
+  position: absolute; top: -8px; left: 10px; z-index: 1;
+  display: inline-block;
+  margin: 0; padding: 0 var(--sp-4);
+  background: var(--surface);
+  font-size: var(--caption); line-height: var(--caption-lh);
+  font-weight: var(--fw-regular);
+  color: var(--text-subtle);
+  text-transform: none; letter-spacing: 0;
+  pointer-events: none;
+  transition: color var(--dur-fast) ease;
+}
+/* Base field. Applies whether or not the input sits in an .ig wrapper —
+   filters and search boxes are used bare, and stripping the old .inp rule
+   left those unstyled. */
+.inp {
+  width: 100%;
+  padding: var(--sp-12) var(--sp-12);
+  font-family: var(--font);
+  font-size: var(--body-2); line-height: var(--body-2-lh);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--gray-60);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.inp::placeholder { color: var(--text-subtle); }
+.inp:focus {
+  outline: none;
+  border-color: var(--primary-60);
+  box-shadow: inset 0 0 0 1px var(--primary-60);
+}
+.inp:disabled, .inp[readonly] {
+  background: var(--gray-20);
+  border-color: var(--gray-50);
+  color: var(--text-subtle);
+}
+textarea.inp { min-height: 96px; resize: vertical; }
+
+/* Inside a labelled group the field grows to make room for the notch. */
+.ig > .inp { padding: var(--sp-16) var(--sp-12); }
+.ig:focus-within > .lbl { color: var(--primary-60); }
+
+/* select chevron, replacing the old one */
+.ig > select.inp, .sel {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23000' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--sp-16) center;
+  padding-right: var(--sp-40);
+}
+
+/* field grid gap on the system scale */
+.fg { gap: var(--sp-16); }
+
 /* ═══════════════════════════════════════════════════════════════════════
    LEGACY ALIASES
 

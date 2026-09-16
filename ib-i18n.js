@@ -523,6 +523,9 @@
     'case.2.co': 'Butterfly Effect',
     'case.3.co': 'Nordisk Bemanding',
     'case.4.co': 'Prisjakt Danmark',
+    'import.step.choose': 'Vælg fil',
+    'import.step.review': 'Gennemgå rækker',
+    'import.step.confirm': 'Bekræft og opret',
   },
 
   /* ══════════════════════════════════════════════════════════════════════
@@ -1030,6 +1033,9 @@
     'case.2.co': 'Butterfly Effect',
     'case.3.co': 'Nordisk Bemanning',
     'case.4.co': 'Prisjakt Norge',
+    'import.step.choose': 'Velg fil',
+    'import.step.review': 'Gjennomgå rader',
+    'import.step.confirm': 'Bekreft og opprett',
   }
   };
 
