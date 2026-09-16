@@ -54,7 +54,7 @@
     WORKFORCE_MANAGEMENT: 'Workforce Management'
   };
 
-  var SEED_VERSION = '3';
+  var SEED_VERSION = '4';
 
   /* ═══════════════════ MARKET ═══════════════════ */
   function market()        { return Markets.current(); }
@@ -114,10 +114,18 @@
         { id: 'U1', email: 'admin@invoicerybusiness.dk', password: 'admin123',
           role: 'admin', name: 'Anne Lindström' },
         { id: 'U2', email: 'sara@konsulent.dk', password: 'klient123', role: 'consultant',
-          name: 'Sara Bergström', phone: '+45 20 12 34 56', city: 'København',
+          name: 'Sara Bergström', phone: '+45 20 12 34 56',
+          street: 'Nørrebrogade 42, 3. th', zip: '2200', city: 'København',
+          country: 'Danmark', personalId: '150390-9999',
+          bankAccount: '1234-0009999999', employmentType: 'hourly',
+          taxCard: 'hovedkort', taxRate: 38,
           status: 'active', joined: '2025-11-15' },
         { id: 'U3', email: 'erik@konsulent.dk', password: 'klient123', role: 'consultant',
-          name: 'Erik Johansen', phone: '+45 31 98 76 54', city: 'Aarhus',
+          name: 'Erik Johansen', phone: '+45 31 98 76 54',
+          street: 'Banegårdspladsen 7', zip: '8000', city: 'Aarhus',
+          country: 'Danmark', personalId: '220785-9999',
+          bankAccount: '5678-0009999888', employmentType: 'hourly',
+          taxCard: 'bikort', taxRate: 55,
           status: 'active', joined: '2026-01-08' },
         { id: 'U4', email: 'info@virksomhed.dk', password: 'kund123', role: 'company',
           name: 'Lides Event A/S', contactName: 'Maria Lide', regNumber: '12345678',
@@ -156,10 +164,18 @@
         { id: 'U1', email: 'admin@invoicerybusiness.no', password: 'admin123',
           role: 'admin', name: 'Anne Lindström' },
         { id: 'U2', email: 'sara@konsulent.no', password: 'klient123', role: 'consultant',
-          name: 'Sara Bergström', phone: '+47 400 12 345', city: 'Oslo',
+          name: 'Sara Bergström', phone: '+47 400 12 345',
+          street: 'Storgata 18B', zip: '0184', city: 'Oslo',
+          country: 'Norge', personalId: '15039099999',
+          bankAccount: '12345699999', employmentType: 'hourly',
+          taxCard: 'tabelltrekk', taxTable: '7100', taxMunicipality: 'Oslo',
           status: 'active', joined: '2025-11-15' },
         { id: 'U3', email: 'erik@konsulent.no', password: 'klient123', role: 'consultant',
-          name: 'Erik Johansen', phone: '+47 900 98 765', city: 'Bergen',
+          name: 'Erik Johansen', phone: '+47 900 98 765',
+          street: 'Bryggen 11', zip: '5003', city: 'Bergen',
+          country: 'Norge', personalId: '22078599999',
+          bankAccount: '98765499999', employmentType: 'hourly',
+          taxCard: 'prosenttrekk', taxRate: 32, taxMunicipality: 'Bergen',
           status: 'active', joined: '2026-01-08' },
         { id: 'U4', email: 'info@bedrift.no', password: 'kund123', role: 'company',
           name: 'Lides Event AS', contactName: 'Maria Lide', regNumber: '912 345 678',

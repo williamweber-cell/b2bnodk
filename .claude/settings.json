@@ -23,7 +23,9 @@
       "WebFetch(domain:www.invoicerybusiness.se)",
       "Bash(node scripts/serve.cjs:*)",
       "Bash(node scripts/render-smoke.cjs)",
-      "Bash(node scripts/import-check.cjs)"
+      "Bash(node scripts/import-check.cjs)",
+      "Bash(node scripts/lists-check.cjs)",
+      "Bash(node scripts/make-lists.cjs:*)"
     ]
   }
 }

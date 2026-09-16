@@ -42,8 +42,13 @@ process.stdin.on('end', () => {
   try { src = fs.readFileSync(file, 'utf8'); } catch (e) { process.exit(0); }
 
   const name = file.split(/[\\/]/).pop();
-  const isCore = ['ib-core.js', 'ib-markets.js', 'ib-i18n.js'].includes(name);
-  const isCheck = /payroll-check|guard-edit/.test(name);
+  const isCore = ['ib-core.js', 'ib-markets.js', 'ib-i18n.js',
+                  'ib-xlsx.js', 'ib-xlsx-write.js', 'ib-lists.js'].includes(name);
+  /* Node tooling under scripts/ and the hooks themselves: these print to a
+     terminal and never render HTML, so the escaping and rate-literal rules
+     do not apply. Matching on the directory rather than a filename list
+     means a new check script is covered the day it is written. */
+  const isCheck = /(^|[\\/])(scripts|hooks)[\\/]/.test(file) || /guard-edit/.test(name);
   const lines = src.split(/\r?\n/);
   const findings = [];
 

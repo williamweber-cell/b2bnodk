@@ -385,16 +385,31 @@
                         .filter(r => !isBlank(r.cells));
     if (!indexed.length) throw new Error('EMPTY_FILE');
 
-    const headerRow = indexed[0];
+    /* Skip a title banner. Payroll templates commonly put a single label in
+       A1 ("Personal data", "Payouts Registration") and the real headers on
+       row 2. Without this the banner is read as a one-column header and every
+       other column is silently dropped.
+
+       Only skip when the first row holds exactly one value and the next row
+       holds at least two — a genuine one-column sheet is then left alone. */
+    let start = 0;
+    if (indexed.length > 1 && !o.keepBanner) {
+      const filled = r => r.cells.filter(c => c !== '' && c !== null && c !== undefined).length;
+      if (filled(indexed[0]) === 1 && filled(indexed[1]) >= 2) start = 1;
+    }
+    const banner = start === 1 ? String(indexed[0].cells.find(c => c !== '') || '') : '';
+
+    const headerRow = indexed[start];
     const headers = headerRow.cells.map(h =>
       String(h === null || h === undefined ? '' : h).trim());
     const width = headers.length;
 
     return {
       sheet: sheetName,
+      banner,
       headerLine: headerRow.line,
       headers,
-      rows: indexed.slice(1).map(r => {
+      rows: indexed.slice(start + 1).map(r => {
         const cells = [];
         for (let c = 0; c < width; c++) {
           const v = r.cells[c];

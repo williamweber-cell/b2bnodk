@@ -17,11 +17,15 @@ dropped; no Swedish copy or SE rate should exist anywhere.
 | `ib-core.js` | Storage, seed, market-aware formatting, escaping, status/type constants. |
 | `ib-xlsx.js` | Zero-dependency .xlsx and .csv reader. |
 | `ib-import.js` | Payroll-basis import: column mapping, validation, commit, Jeeves export. |
+| `ib-xlsx-write.js` | Zero-dependency .xlsx writer. |
+| `ib-lists.js` | Employee and payout list generation: canonical schema + per-system profiles. |
 | `invoicery-business.html` | Landing page + consultant portal + company portal |
 | `invoicery-business-admin.html` | Back-office: approvals, payroll runs, invoicing, registers |
 | `scripts/payroll-check.cjs` | Golden values, invariants, parity, i18n, homoglyphs. |
 | `scripts/render-smoke.cjs` | Every view, every role, both markets. |
 | `scripts/import-check.cjs` | Reader, mapping, validation, commit, Jeeves. |
+| `scripts/lists-check.cjs` | Writer, schema, profiles, gaps, PII redaction. |
+| `scripts/make-lists.cjs` | CLI that generates the lists. |
 | `scripts/serve.cjs` | Zero-dependency local dev server. |
 | `fixtures/` | Real .xlsx test files; regenerate with `make-fixtures.py`. |
 
@@ -83,6 +87,61 @@ expects.
 > assembles and checks the payload but refuses to send, because inventing an
 > endpoint contract would be worse than not having one. Fill in
 > `JEEVES_CONFIG` and flip `verified` once the integration spec exists.
+
+## Employee and payout lists
+
+Two list types onboard a person into a payroll/HR system: an **employee list**
+registers the person, a **payout list** registers what to pay them.
+
+```bash
+node scripts/make-lists.cjs --list-profiles
+node scripts/make-lists.cjs --profile ff-no --market NO --csv
+node scripts/make-lists.cjs --profile payroll --level payroll --redact
+```
+
+Same arrangement as the Jeeves export: a **canonical schema** (23 employee
+fields, 13 payout fields) plus per-system **profiles** that select, order and
+rename columns. Adding a system is a `PROFILES` entry, not a rewrite.
+
+| Profile | Shape |
+|---|---|
+| `general` | every canonical field |
+| `ff-no` / `ff-dk` | the Frilans Finans templates, column for column |
+| `payroll` | identity, employment and tax — what an HR import wants |
+
+Column headers are canonical **English and deliberately not localised**: these
+files are read by other systems, whose mapping breaks the moment a header
+changes language. The UI around the generator is translated; the file is not.
+
+Identity numbers, postal codes and bank accounts are written as **text**, never
+numbers — Excel eats leading zeros and turns long digit strings into scientific
+notation. The writer enforces this via the field's `type`.
+
+`checkEmployee` reports what blocks a registration before the file is sent, at
+two levels: `always` (cannot register at all) and `payroll` (cannot pay yet).
+`make-lists.cjs` exits non-zero when anything is missing, so it can gate a
+handover.
+
+`includeSensitive: false` produces a redacted copy with identity numbers and
+bank details removed, for review or circulation.
+
+### Notes on the Frilans Finans templates
+
+Two things worth deciding before those become the house standard:
+
+- The employee template has **no employment or tax fields** — no start date,
+  employment type, tax card or tax municipality. Every payroll system needs
+  them, so they are in the canonical schema and simply not emitted by `ff-no`.
+- The payout template collapses dates and hours into **one free-text column**,
+  which cannot be validated, summed or reconciled. The canonical schema keeps
+  `dateFrom` / `dateTo` / `hours` separate and composes that column on export.
+
+### Known gap
+
+The supplied templates are legacy `.xls` (OLE2/BIFF). `ib-xlsx.js` reads
+`.xlsx` and `.csv` and rejects `.xls` with a specific message. Generating is
+unaffected — we write `.xlsx`, which Excel opens — but a filled-in `.xls`
+template cannot currently be imported. Re-saving as `.xlsx` works.
 
 ## Markets
 
@@ -213,9 +272,10 @@ Danish A-skat comes from the individual's skattekort).
 node scripts/payroll-check.cjs   # golden values, invariants, parity, i18n, homoglyphs
 node scripts/render-smoke.cjs    # every view × every role × both markets
 node scripts/import-check.cjs    # reader, mapping, validation, commit, Jeeves
+node scripts/lists-check.cjs     # writer, schema, profiles, gaps, PII
 ```
 
-All three must exit 0.
+All four must exit 0.
 
 `render-smoke.cjs` exists because `node --check` cannot catch a view that
 references a variable which no longer exists, or a translation key that was
