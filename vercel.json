@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/invoicery-business.html" },
+    { "source": "/admin", "destination": "/invoicery-business-admin.html" }
+  ]
+}

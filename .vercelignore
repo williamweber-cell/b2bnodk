@@ -1,0 +1,7 @@
+# Internal source material and tooling — not part of the hosted app
+design_system_zip/
+fixtures/
+scripts/
+.claude/
+CLAUDE.md
+out/
