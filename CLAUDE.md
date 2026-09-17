@@ -89,33 +89,98 @@ expects.
 > endpoint contract would be worse than not having one. Fill in
 > `JEEVES_CONFIG` and flip `verified` once the integration spec exists.
 
-## Order approval
+## Invoice approval
 
-A company opens an assignment from the approval list, reads it in full, and
-acts on it: `b-approve` (list) → `b-order` (detail) → approve / reject /
-request change.
+An invoice is reviewed by us before it reaches the client company, and the
+company only sees it if that company asked to see it.
+
+```
+consultant submits        status: pending            (with us)
+  ↓ admin reviews         a-approve → a-invoice
+  ├ company opted in      status: awaitingCustomer   (with the company)
+  │   ↓ company approves  b-approve → b-order
+  │   status: approved    ← invoice number issued here
+  └ company opted out     status: approved           ← issued here instead
+```
+
+**`pending` and `awaitingCustomer` are different queues.** They used to be
+one: `aApprove()` in the admin app and `bApprove()` in the portal both
+filtered `STATUS.PENDING`, so a single assignment sat in both lists at once
+and whoever clicked first decided it. The admin step now owns `pending` and
+hands over to `awaitingCustomer`, which is the only status the company list
+reads. `orderApprove` and `orderCommit` refuse anything else.
+
+**Whether a customer approves at all is a standing instruction**, stored as
+`requiresInvoiceApproval` on the company record and read through
+`IB.requiresInvoiceApproval(companyId)`. A missing value means yes — a
+company that has never been asked should not have invoices sent in its name
+on an assumption. Toggled from the company register (`a-companies`).
+
+**The invoice number is issued when the invoice is**, and is then that
+invoice's identity for good: `invoiceNumber`, `invoiceDate` and `dueDate` are
+stamped together, the due date derived from the customer's own
+`paymentTerms`. Both paths — admin auto-issue and customer approval — must
+stamp all three or the two halves of the register disagree about when an
+invoice came into being. Before this the number was `invoiceNumber(i+1)` off
+the row index of whatever list was being rendered, so one invoice carried a
+different number in two views and changed number when a row above it was
+filtered out.
+
+### The specification
+
+An assignment carries `lines[]`, and a line is **either** hours × rate **or**
+a free amount typed directly — a fixed fee, a deliverable, an agreed price.
+`amount` and `hours` on the assignment are the sums, and `IB.sumLines()` is
+the only thing that computes them.
+
+**Both kinds of line require hours.** Danish ATP is a fixed monthly krone
+amount pro-rated against a full-time month (160,33 h), so a fixed fee
+carrying no hours would be charged a full month of it — `calcDK` falls back
+to `factor = 1` when hours are absent. The line editor enforces it and
+`spec.hoursRequired` says why.
+
+`hourlyRate` stays on the assignment only when the whole invoice really has
+one; a mixed invoice stores `0` so no view prints a rate nothing was billed
+at. Assignments created before the line model are read through `orderLines()`
+/ the `lines` fallback rather than special-cased at each call site.
+
+### What the company must not see
 
 **The detail view shows what the company pays, not what the consultant
 earns.** Hours × rate, VAT, total. `calcPayroll` also returns gross, net,
 withholding and holiday pay, so it is one careless line away from putting a
-consultant's salary on a client's screen. `scripts/render-smoke.cjs` asserts
-none of those figures appear in `bOrder()` output.
+consultant's salary on a client's screen.
 
-**Rejecting or asking for a change requires a reason.** Both used to flip the
-status and discard why, so the consultant saw "rejected" with no explanation
-and no way to act on it. The note is now recorded and surfaced under the
-assignment in the consultant's own list.
+`scripts/render-smoke.cjs` now asserts this: it computes the payroll for the
+rendered assignment and fails if `gross`, `net`, `withholding` or
+`holidayPay` appear in `bOrder()` output, ignoring any figure that
+legitimately coincides with a displayed one. **This claim was in this file
+before the assertion existed** — the guarantee rested on nobody editing
+`bOrder()`. The admin invoice view (`a-invoice`) is the side of the wall that
+is allowed to show salary and bank details, and says so on screen.
+
+**Rejecting or asking for a change requires a reason**, on both sides, and
+both capture it in the page rather than in `prompt()` — native dialogs block
+the browser-automation tooling this project is tested with.
 
 **Every transition is recorded** in `assignment.history` — `{at, by, action,
-note}`. The only trail before this was a free-text `adminNote`, so an
-approval could not be attributed or dated. Seeded assignments carry their
-creation event, so the history panel reads correctly from a fresh demo.
+note}`. Seeded assignments carry their creation event, so the history panel
+reads correctly from a fresh demo. Note that `approved` appears twice on an
+invoice a customer approved: once by us, once by them, distinguished by `by`.
 
 Access control: `currentOrder()` looks up through `ours()`, which filters on
 `companyId === ME.id`, and `orderApprove` / `orderCommit` re-check ownership
 before writing. A company cannot open or act on another company's order by
 guessing an id. This is still client-side and therefore presentation, not
 security — see Known gaps.
+
+### Not yet built
+
+The Frilans Finans invoice screen this was modelled on also carries
+**traktamente** and **reseersättning**, per-invoice *visa datum* / *visa
+timmar* flags, and a project number. They are deliberately absent: whether an
+allowance is tax-free or taxable changes the whole payroll chain, and that is
+a decision for the payroll people, not a field to add speculatively.
 
 ## Design system
 
@@ -240,6 +305,7 @@ template cannot currently be imported. Re-saving as `.xlsx` works.
 | Assignment | opgave, `OPG-2026-001` | oppdrag, `OPP-2026-001` |
 | Company reg | CVR-nummer | Organisasjonsnummer |
 | Person id | CPR-nummer | Fødselsnummer |
+| Invoice approval | per company, `requiresInvoiceApproval` | same |
 | Storage keys | `IB_DK_*` | `IB_NO_*` |
 
 Switching business swaps currency, rates, legal entity **and dataset**. The two
@@ -424,9 +490,16 @@ leftover Swedish. It is advisory — it never blocks an edit.
 - `localStorage` is prototype storage: not multi-tenant, no audit trail, holds
   payroll data for named individuals in a browser. Replacing it is the main
   task standing between this and a sellable product.
-- `confirm()` is still used on the payroll-run path. Native dialogs block
-  browser-automation tooling; prefer an in-page modal when touching it.
-- No audit trail beyond the free-text `adminNote` string.
+- `confirm()` is still used on the payroll-run path, and `alert()` in one
+  form validation. Native dialogs block browser-automation tooling; prefer an
+  in-page modal when touching it. The approval paths no longer use any.
+- Sending is a status change, not a send. Nothing emails the customer and
+  nothing renders a PDF: `invoiceEmail` is recorded and displayed but never
+  used. The Jeeves stub has the same shape and the same reason.
+- `assignment.history` records every transition, but it is not an audit
+  trail: it lives in the same `localStorage` the app can rewrite, and
+  nothing signs or timestamps it independently. `adminNote` survives as a
+  free-text field alongside it.
 - `statusBadge` is intentionally duplicated between the two apps — they render
   different badge markup. Do not unify it.
 - Landing-page markup carries Danish as its inline fallback text, replaced at

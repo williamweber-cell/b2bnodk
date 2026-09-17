@@ -39,10 +39,17 @@
      Language-neutral keys. These are persisted and compared by equality, so
      they must never carry locale-specific spelling. The display label comes
      from i18n: t('status.' + status). */
+  /* The chain is sequential: a consultant submits, WE review it, and only
+     then does it reach the client company — and only if that company asked
+     to see it. Before this, PENDING meant two different things depending on
+     who was looking: the admin approval list and the company approval list
+     both filtered on it, so the same assignment sat in both queues and
+     either party could approve it first. */
   var STATUS = {
-    DRAFT:    'draft',
-    PENDING:  'pending',
-    APPROVED: 'approved',
+    DRAFT:    'draft',            // with the consultant, not submitted
+    PENDING:  'pending',          // submitted, awaiting OUR review
+    CUSTOMER: 'awaitingCustomer', // we approved it, awaiting the company
+    APPROVED: 'approved',         // fully approved, invoice issued
     PAID:     'paid',
     REJECTED: 'rejected'
   };
@@ -54,7 +61,7 @@
     WORKFORCE_MANAGEMENT: 'Workforce Management'
   };
 
-  var SEED_VERSION = '5';
+  var SEED_VERSION = '6';
 
   /* ═══════════════════ MARKET ═══════════════════ */
   function market()        { return Markets.current(); }
@@ -157,9 +164,15 @@
           status: 'active', joined: '2026-01-08' },
         { id: 'U4', email: 'info@virksomhed.dk', password: 'kund123', role: 'company',
           name: 'Lides Event A/S', contactName: 'Maria Lide', regNumber: '12345678',
+          street: 'Havnegade 23', zip: '1058', city: 'København K',
+          invoiceEmail: 'faktura@lidesevent.dk', paymentTerms: 30,
+          requiresInvoiceApproval: true,
           status: 'active', joined: '2025-10-01' },
         { id: 'U5', email: 'hr@prisjakt.dk', password: 'kund123', role: 'company',
           name: 'Prisjakt Danmark A/S', contactName: 'Jonas Svensson', regNumber: '87654321',
+          street: 'Vesterbrogade 149', zip: '1620', city: 'København V',
+          invoiceEmail: 'ap@prisjakt.dk', paymentTerms: 14,
+          requiresInvoiceApproval: false,
           status: 'active', joined: '2025-12-20' }
       ],
       assignments: [
@@ -177,7 +190,8 @@
           companyId: 'U4', companyName: 'Lides Event A/S', type: 'Excel-import',
           description: 'Teknisk support og rigning',
           hours: 24, hourlyRate: 455, amount: 10920, period: 'April 2026',
-          status: 'pending', createdDate: '2026-04-06', approvedDate: '', adminNote: '' },
+          status: 'awaitingCustomer', createdDate: '2026-04-06', approvedDate: '',
+          adminNote: '' },
         { id: 'OPG-2026-004', consultantId: 'U2', consultantName: 'Sara Bergström',
           companyId: 'U4', companyName: 'Lides Event A/S', type: 'SalaryInvoicing',
           description: 'Projektledelse Q1 2026',
@@ -207,9 +221,15 @@
           status: 'active', joined: '2026-01-08' },
         { id: 'U4', email: 'info@bedrift.no', password: 'kund123', role: 'company',
           name: 'Lides Event AS', contactName: 'Maria Lide', regNumber: '912 345 678',
+          street: 'Karl Johans gate 12', zip: '0154', city: 'Oslo',
+          invoiceEmail: 'faktura@lidesevent.no', paymentTerms: 30,
+          requiresInvoiceApproval: true,
           status: 'active', joined: '2025-10-01' },
         { id: 'U5', email: 'hr@prisjakt.no', password: 'kund123', role: 'company',
           name: 'Prisjakt Norge AS', contactName: 'Jonas Svensson', regNumber: '987 654 321',
+          street: 'Bryggen 5', zip: '5003', city: 'Bergen',
+          invoiceEmail: 'ap@prisjakt.no', paymentTerms: 14,
+          requiresInvoiceApproval: false,
           status: 'active', joined: '2025-12-20' }
       ],
       assignments: [
@@ -227,7 +247,8 @@
           companyId: 'U4', companyName: 'Lides Event AS', type: 'Excel-import',
           description: 'Teknisk støtte og rigging',
           hours: 24, hourlyRate: 680, amount: 16320, period: 'April 2026',
-          status: 'pending', createdDate: '2026-04-06', approvedDate: '', adminNote: '' },
+          status: 'awaitingCustomer', createdDate: '2026-04-06', approvedDate: '',
+          adminNote: '' },
         { id: 'OPP-2026-004', consultantId: 'U2', consultantName: 'Sara Bergström',
           companyId: 'U4', companyName: 'Lides Event AS', type: 'SalaryInvoicing',
           description: 'Prosjektledelse Q1 2026',
@@ -240,7 +261,10 @@
 
   function seedUsers(code)       { return clone(SEED[code || marketCode()].users); }
   function seedAssignments(code) {
-    return clone(SEED[code || marketCode()].assignments).map(function (a) {
+    var c = code || marketCode();
+    var companies = SEED[c].users;
+    var seq = 0;
+    return clone(SEED[c].assignments).map(function (a) {
       /* Give every seeded assignment its creation event so the order history
          reads correctly from the first demo, and backfill the approval where
          the seed already says approved or paid. */
@@ -250,6 +274,31 @@
       }
       if (a.status === 'paid') {
         a.history.push({ at: a.approvedDate || a.createdDate, by: '', action: 'paid', note: '' });
+      }
+
+      /* An assignment is now specified as one or more lines. A line is
+         either hours x rate or a free amount typed directly, and BOTH forms
+         carry hours: Danish ATP pro-rates against a full-time month, so a
+         fixed fee with no hours would be charged a full month of it. The
+         seed predates the line model, so it is migrated to a single line and
+         nothing downstream has to handle its absence. */
+      if (!a.lines) {
+        a.lines = [{ description: a.description, hours: a.hours,
+                     hourlyRate: a.hourlyRate, amount: a.amount }];
+      }
+
+      /* The invoice number is issued when the invoice is, and is then that
+         invoice's identity for good. It used to be derived from the row
+         index of whatever list was being rendered, so one invoice carried a
+         different number in two views and changed number whenever a row
+         above it was filtered out. */
+      if (a.status === 'approved' || a.status === 'paid') {
+        seq += 1;
+        var co = null;
+        companies.forEach(function (u) { if (u.id === a.companyId) co = u; });
+        a.invoiceNumber = invoiceNumber(seq, c, 2026);
+        a.invoiceDate   = a.approvedDate || a.createdDate;
+        a.dueDate       = addDays(a.invoiceDate, (co && co.paymentTerms) || 30);
       }
       return a;
     });
@@ -310,6 +359,62 @@
     var c = code || marketCode();
     var y = year || new Date().getFullYear();
     return 'IB' + c + '-' + y + '-' + String(seq).padStart(3, '0');
+  }
+
+  /* Highest issued number + 1, never the list length: removing or filtering
+     an invoice must not hand its number to the next one issued. */
+  function nextInvoiceNumber(list, code, year) {
+    var c = code || marketCode();
+    var y = year || new Date().getFullYear();
+    var prefix = 'IB' + c + '-' + y + '-';
+    var max = 0;
+    (list || []).forEach(function (a) {
+      if (typeof a.invoiceNumber === 'string' && a.invoiceNumber.indexOf(prefix) === 0) {
+        var n = parseInt(a.invoiceNumber.slice(prefix.length), 10);
+        if (!isNaN(n) && n > max) max = n;
+      }
+    });
+    return invoiceNumber(max + 1, c, y);
+  }
+
+  /* Date arithmetic on the ISO storage format. Parsed as local midnight:
+     '2026-04-03' on its own is parsed as UTC, which lands on the previous
+     day for anyone west of Greenwich and shifts every due date by one. */
+  function addDays(iso, days) {
+    var d = new Date(String(iso) + 'T00:00:00');
+    if (isNaN(d.getTime())) return iso;
+    d.setDate(d.getDate() + (Number(days) || 0));
+    return d.getFullYear() + '-' +
+           String(d.getMonth() + 1).padStart(2, '0') + '-' +
+           String(d.getDate()).padStart(2, '0');
+  }
+
+  /* Specification totals. This is the invoice basis, not payroll: no
+     statutory rate is involved, and the result is what is handed to
+     IB.calcPayroll as the amount. */
+  function sumLines(lines) {
+    var hours = 0, amount = 0;
+    (lines || []).forEach(function (l) {
+      hours  += Number(l.hours)  || 0;
+      amount += Number(l.amount) || 0;
+    });
+    return { hours: hours, amount: amount };
+  }
+
+  function companyById(id) {
+    var found = null;
+    getUsers().forEach(function (u) {
+      if (u.id === id && u.role === 'company') found = u;
+    });
+    return found;
+  }
+
+  /* Whether this company asked to approve each invoice before we send it.
+     Absent means yes: a company that has never been asked should not have
+     invoices sent in its name on an assumption. */
+  function requiresInvoiceApproval(companyId) {
+    var co = companyById(companyId);
+    return !co || co.requiresInvoiceApproval !== false;
   }
 
   /* ═══════════════════ PAYROLL ═══════════════════
@@ -401,6 +506,8 @@
     seedUsers: seedUsers, seedAssignments: seedAssignments,
 
     nextAssignmentId: nextAssignmentId, invoiceNumber: invoiceNumber,
+    nextInvoiceNumber: nextInvoiceNumber, addDays: addDays, sumLines: sumLines,
+    companyById: companyById, requiresInvoiceApproval: requiresInvoiceApproval,
 
     calcPayroll: calcPayroll, calcPayrollBatch: calcPayrollBatch,
 

@@ -83,6 +83,7 @@
       entity: {
         legalName: 'Invoicery Business A/S',
         regLabel: 'CVR-nr.',
+        personIdLabel: 'CPR-nummer',
         regNumber: '00000000',          // ← fill in
         vatLabel: 'SE-nr.',
         vatNumber: 'DK00000000',        // ← fill in
@@ -138,6 +139,7 @@
       entity: {
         legalName: 'Invoicery Business AS',
         regLabel: 'Org.nr.',
+        personIdLabel: 'Fødselsnummer',
         regNumber: '000 000 000',       // ← fill in
         vatLabel: 'MVA-nr.',
         vatNumber: 'NO000000000MVA',    // ← fill in

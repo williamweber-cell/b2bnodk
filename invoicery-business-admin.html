@@ -403,7 +403,8 @@ tr.row-warn{background:rgba(217,119,6,.045)}
    ib-markets.js; copy in ib-i18n.js. Nothing here recomputes money or
    hardcodes a user-visible string — see CLAUDE.md. */
 const {getUsers,getAssignments,saveAssignments,saveUsers,seedAll,calcPayroll,
-       calcPayrollBatch,invoiceNumber,fmt,fmtN,fmtPct,fmtDate,fmtDateLong,
+       calcPayrollBatch,invoiceNumber,nextInvoiceNumber,addDays,sumLines,
+       companyById,requiresInvoiceApproval,fmt,fmtN,fmtPct,fmtDate,fmtDateLong,
        esc,today,STATUS,TYPE}=IB;
 const t=IB.t;
 
@@ -468,9 +469,11 @@ function applyMarketChrome(){
 function statusBadge(s){
   const cls={
     [STATUS.APPROVED]:'b-gn',[STATUS.PENDING]:'b-am',[STATUS.PAID]:'b-bl',
-    [STATUS.REJECTED]:'b-rd',[STATUS.DRAFT]:'b-gr'
+    [STATUS.REJECTED]:'b-rd',[STATUS.DRAFT]:'b-gr',[STATUS.CUSTOMER]:'b-or'
   }[s]||'b-gr';
-  const label=s===STATUS.PENDING?t('status.pending.short'):t('status.'+s);
+  const short={[STATUS.PENDING]:'status.pending.short',
+               [STATUS.CUSTOMER]:'status.awaitingCustomer.short'}[s];
+  const label=short?t(short):t('status.'+s);
   return `<span class="badge ${cls}">${esc(label)}</span>`;
 }
 function typeBadge(x){
@@ -495,7 +498,8 @@ const ICO={
 const VIEWS={
   'a-dash':aDash,'a-activity':aActivity,'a-approve':aApprove,'a-all':aAll,'a-import':importView,
   'a-consultants':aConsultants,'a-companies':aCompanies,'a-payroll':aPayroll,
-  'a-invoices':aInvoices,'a-services':aServices,'a-settings':aSettings
+  'a-invoices':aInvoices,'a-services':aServices,'a-settings':aSettings,
+  'a-invoice':aInvoice
 };
 
 function go(v){
@@ -512,6 +516,8 @@ function updBadges(){
   const list=getAssignments();
   const pending=list.filter(a=>a.status===STATUS.PENDING).length;
   const approved=list.filter(a=>a.status===STATUS.APPROVED).length;
+  /* Assignments sitting with the customer are deliberately NOT in the
+     admin badge: we are not waiting on ourselves for those. */
   const bg=document.getElementById('adm-badge-approve');
   const bl=document.getElementById('adm-badge-payroll');
   if(bg) bg.textContent=pending;
@@ -597,58 +603,262 @@ function aActivity(){
         <td>${statusBadge(a.status)}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
+/* ═══════════════════ INVOICE REVIEW ═══════════════════
+
+   The chain is: consultant submits -> WE review -> the client company
+   approves, but only if that company asked to. A company that has opted out
+   never sees the invoice; approving here issues it and sends it.
+
+   Before this, aApprove() and the portal's bApprove() both filtered on
+   STATUS.PENDING, so one assignment sat in two queues at once and whoever
+   clicked first won. The admin step now owns PENDING and hands over to
+   STATUS.CUSTOMER, which is the only thing the company list reads.
+
+   This view shows salary and bank details. That is correct HERE and wrong
+   on the company side — bOrder() in the portal must never render them, and
+   render-smoke.cjs asserts it does not. */
+
+let CURRENT_INVOICE=null;
+
+window.openInvoice=function(id){CURRENT_INVOICE=id;go('a-invoice')};
+
 function aApprove(){
   const list=getAssignments().filter(a=>a.status===STATUS.PENDING);
   if(!list.length) return `<div class="card"><div class="card-bd">
-    <div class="alert alert-ok">${ICO.check}<span>${esc(t('a.approve.empty'))}</span></div></div></div>`;
-  return `<div style="display:flex;flex-direction:column;gap:1rem">${list.map(a=>{
-    const p=calcPayroll(a.amount,{hours:a.hours});
-    return `<div class="card">
+    <div class="alert alert-ok">${ICO.check}<span>${esc(t('inv.queue.empty'))}</span></div></div></div>`;
+  return `<div class="card">
+    <div class="card-hd"><div><div class="card-title">${esc(t('title.a.approve'))}</div>
+      <div class="card-sub">${list.length}</div></div></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>${esc(t('lbl.assignment'))}</th><th>${esc(t('lbl.consultant'))}</th>
+        <th>${esc(t('inv.customer'))}</th><th>${esc(t('lbl.period'))}</th>
+        <th class="num">${esc(t('lbl.hours'))}</th>
+        <th class="num">${esc(t('line.invoiceTotal'))}</th>
+        <th>${esc(t('co.approval'))}</th><th></th></tr></thead>
+      <tbody>${list.map(a=>{
+        const p=calcPayroll(a.amount,{hours:a.hours});
+        const needs=requiresInvoiceApproval(a.companyId);
+        return `<tr style="cursor:pointer" onclick="openInvoice('${esc(a.id)}')">
+          <td><div style="font-weight:700">${esc(a.id)}</div>
+            <div style="font-size:.72rem;color:var(--muted)">${esc(a.type)}</div></td>
+          <td>${esc(a.consultantName)}</td>
+          <td>${esc(a.companyName)}</td>
+          <td>${esc(a.period)}</td>
+          <td class="num">${a.hours}</td>
+          <td class="num" style="font-weight:800">${fmtN(p.invoiceTotal)}</td>
+          <td><span class="badge ${needs?'b-am':'b-gr'}">${esc(t(needs?'co.approvalOn':'co.approvalOff'))}</span></td>
+          <td class="num"><button class="btn btn-or btn-sm"
+            onclick="event.stopPropagation();openInvoice('${esc(a.id)}')">
+            ${esc(t('act.review'))}</button></td></tr>`;
+      }).join('')}</tbody></table></div></div>`;
+}
+
+function currentInvoice(){
+  return getAssignments().find(a=>a.id===CURRENT_INVOICE)||null;
+}
+
+function invRow(label,value){
+  return `<div style="display:flex;justify-content:space-between;gap:1rem;padding:.3rem 0;font-size:.82rem">
+    <span style="color:var(--mid)">${esc(label)}</span>
+    <strong style="text-align:right">${esc(value)}</strong></div>`;
+}
+
+function aInvoice(){
+  const a=currentInvoice();
+  if(!a) return `<div class="card"><div class="card-bd">
+    <div class="alert alert-am"><span>${esc(t('order.missing.h'))}</span></div>
+    <button class="btn btn-gh" onclick="go('a-approve')">${esc(t('order.back'))}</button>
+    </div></div>`;
+
+  const m=currentMarket();
+  const co=companyById(a.companyId)||{};
+  const con=getUsers().find(u=>u.id===a.consultantId)||{};
+  const p=calcPayroll(a.amount,{hours:a.hours});
+  const needs=requiresInvoiceApproval(a.companyId);
+  const lines=a.lines&&a.lines.length?a.lines
+    :[{description:a.description,hours:a.hours,hourlyRate:a.hourlyRate,amount:a.amount}];
+  const terms=co.paymentTerms||30;
+
+  const banner=a.status===STATUS.PENDING
+    ?`<div class="alert ${needs?'alert-am':'alert-ok'}" style="margin-bottom:1rem">
+        <span>${esc(t(needs?'inv.needsCustomer':'inv.autoSent'))}</span></div>`
+    :a.status===STATUS.CUSTOMER
+    ?`<div class="alert alert-am" style="margin-bottom:1rem">
+        <span>${esc(t('inv.withCustomer'))}</span></div>`:'';
+
+  return `<button class="btn btn-gh btn-sm" style="margin-bottom:1rem"
+      onclick="go('a-approve')">${esc(t('order.back'))}</button>
+    ${banner}
+    <div class="card">
       <div class="card-hd">
-        <div><div class="card-title">${esc(a.consultantName)} → ${esc(a.companyName)}</div>
-          <div class="card-sub">${esc(a.id)} · ${esc(fmtDate(a.createdDate))}</div></div>
+        <div><div class="card-title">${esc(a.id)}</div>
+          <div class="card-sub">${esc(a.consultantName)} &rarr; ${esc(a.companyName)}</div></div>
         <div style="display:flex;align-items:center;gap:.6rem">${typeBadge(a.type)}${statusBadge(a.status)}</div>
       </div>
       <div class="card-bd">
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;padding:.85rem;background:var(--bg);border-radius:8px;margin-bottom:1.1rem">
-          <div><div class="lbl">${esc(t('lbl.period'))}</div><div style="font-weight:700">${esc(a.period)}</div></div>
-          <div><div class="lbl">${esc(t('lbl.hours'))}</div><div style="font-weight:700">${a.hours}</div></div>
-          <div><div class="lbl">${esc(t('lbl.hourlyRate'))}</div><div style="font-weight:700">${fmtN(a.hourlyRate)}${esc(t('misc.perHour'))}</div></div>
-          <div><div class="lbl">${esc(t('line.invoiceAmount'))}</div><div style="font-weight:800;color:var(--navy)">${fmtN(p.invoiceAmount)}</div></div>
-          <div><div class="lbl">${esc(t('line.serviceFee'))}</div><div style="font-weight:700;color:var(--orange)">${fmtN(p.serviceFee)}</div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.1rem">
-          <div style="font-size:.85rem;color:var(--mid)">
-            <strong style="color:var(--text)">${esc(t('lbl.description'))}:</strong> ${esc(a.description)}</div>
-          <div style="display:flex;flex-direction:column;gap:.3rem">
-            ${p.lines.map(l=>`<div style="display:flex;justify-content:space-between;font-size:.78rem">
-              <span style="color:var(--mid)">${esc(t(l.key))}</span>
-              <strong${l.sign<0?' style="color:var(--red)"':''}>${l.sign<0?'−':''}${fmtN(l.amount)}</strong>
-            </div>`).join('')}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-bottom:1.4rem">
+          <div>
+            <div class="lbl" style="margin-bottom:.4rem">${esc(t('inv.customer'))}</div>
+            <div style="font-weight:700">${esc(co.name||a.companyName)}</div>
+            <div style="font-size:.82rem;color:var(--mid)">
+              ${esc(co.street||t('inv.notSet'))}<br>
+              ${esc([co.zip,co.city].filter(Boolean).join(' ')||t('inv.notSet'))}</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:.35rem">
+              ${esc(m.entity.regLabel)} ${esc(co.regNumber||t('inv.notSet'))}</div>
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:.4rem">${esc(t('lbl.invoice'))}</div>
+            ${invRow(t('inv.number'),a.invoiceNumber||t('inv.notIssued'))}
+            ${invRow(t('inv.date'),a.invoiceDate?fmtDate(a.invoiceDate):t('inv.notIssued'))}
+            ${invRow(t('inv.due'),a.dueDate?fmtDate(a.dueDate):t('inv.notIssued'))}
+            ${invRow(t('inv.terms'),terms+' '+t('inv.termsDays'))}
+            ${invRow(t('inv.invoiceEmail'),co.invoiceEmail||t('inv.notSet'))}
           </div>
         </div>
-        <div style="display:flex;gap:.7rem;flex-wrap:wrap">
-          <button class="btn btn-ok" onclick="adminApprove('${esc(a.id)}')">${ICO.check} ${esc(t('act.approve'))}</button>
-          <button class="btn btn-dn" onclick="adminReject('${esc(a.id)}')">${esc(t('act.reject'))}</button>
-          <button class="btn btn-gh" onclick="adminRequestChange('${esc(a.id)}')">${esc(t('act.requestChange'))}</button>
+
+        <div class="lbl" style="margin-bottom:.4rem">${esc(t('inv.spec'))}</div>
+        <div class="tbl-wrap" style="margin-bottom:1.4rem"><table class="tbl">
+          <thead><tr><th>${esc(t('lbl.description'))}</th>
+            <th class="num">${esc(t('lbl.hours'))}</th>
+            <th class="num">${esc(t('lbl.hourlyRate'))}</th>
+            <th class="num">${esc(t('lbl.amount'))}</th></tr></thead>
+          <tbody>${lines.map(l=>`<tr>
+            <td>${esc(l.description||'—')}</td>
+            <td class="num">${Number(l.hours)||0}</td>
+            <td class="num">${Number(l.hourlyRate)>0?fmtN(l.hourlyRate):'—'}</td>
+            <td class="num" style="font-weight:700">${fmtN(Number(l.amount)||0)}</td></tr>`).join('')}
+          </tbody>
+          <tfoot><tr><th colspan="3">${esc(t('spec.total'))}</th>
+            <th class="num">${fmtN(p.invoiceAmount)}</th></tr></tfoot>
+        </table></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-bottom:1.4rem">
+          <div>
+            <div class="lbl" style="margin-bottom:.4rem">${esc(t('inv.amounts'))}</div>
+            ${invRow(t('lbl.vatExcl'),fmtN(p.invoiceAmount))}
+            ${invRow(t('line.vat'),fmtN(p.vat))}
+            ${invRow(t('line.invoiceTotal'),fmtN(p.invoiceTotal))}
+            ${invRow(t('line.serviceFee'),fmtN(p.serviceFee))}
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:.4rem">${esc(t('inv.employee'))}</div>
+            <div style="font-weight:700">${esc(a.consultantName)}</div>
+            <div style="font-size:.78rem;color:var(--muted)">
+              ${esc(m.entity.personIdLabel)} ${esc(con.personalId||t('inv.notSet'))}</div>
+            ${invRow(t('lbl.gross'),fmtN(p.gross))}
+            ${invRow(t('lbl.net'),fmtN(p.net))}
+            <div class="lbl" style="margin:.7rem 0 .3rem">${esc(t('inv.bank'))}</div>
+            <div style="font-size:.82rem">${esc(m.entity.bankLabel)}
+              <strong>${esc(con.bankAccount||t('inv.notSet'))}</strong></div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.5rem">
+              ${esc(t('inv.salaryPrivate'))}</div>
+          </div>
+        </div>
+
+        <div id="inv-actions" style="display:flex;gap:.7rem;flex-wrap:wrap">
+          ${a.status===STATUS.PENDING?`
+            <button class="btn btn-ok" onclick="adminApprove('${esc(a.id)}')">${ICO.check}
+              ${esc(t(needs?'act.approveToCustomer':'act.approveAndIssue'))}</button>
+            <button class="btn btn-dn" onclick="adminPrompt('${esc(a.id)}','rejected')">${esc(t('act.reject'))}</button>
+            <button class="btn btn-gh" onclick="adminPrompt('${esc(a.id)}','changeRequested')">${esc(t('act.requestChange'))}</button>
+          `:`<span style="font-size:.84rem;color:var(--mid)">${esc(t('order.noActions'))}</span>`}
         </div>
       </div></div>`;
-  }).join('')}</div>`;
+}
+
+/* Approving is where the per-customer preference is applied. A company that
+   opted out never sees the invoice: we issue it and send it in the same
+   step. One that opted in gets STATUS.CUSTOMER and the number is withheld
+   until they approve, because an invoice number should belong to an invoice
+   that is actually going out. */
+function adminName(){
+  const admin=getUsers().find(u=>u.role==='admin');
+  return admin?admin.name:'';
+}
+function recordEvent(a,action,note){
+  a.history=a.history||[];
+  a.history.push({at:today(),by:adminName(),action:action,note:note||''});
 }
 
 window.adminApprove=function(id){
   const list=getAssignments(); const a=list.find(x=>x.id===id);
-  if(a){a.status=STATUS.APPROVED;a.approvedDate=today()}
-  saveAssignments(list); updBadges(); go('a-approve');
+  if(a&&a.status===STATUS.PENDING){
+    a.approvedDate=today();
+    recordEvent(a,'approved','');
+    if(requiresInvoiceApproval(a.companyId)){
+      a.status=STATUS.CUSTOMER;
+      recordEvent(a,'sentToCustomer','');
+    }else{
+      issueInvoice(a,list);
+    }
+  }
+  saveAssignments(list); updBadges();
+  go(a&&a.status===STATUS.CUSTOMER?'a-invoice':'a-approve');
 }
-window.adminReject=function(id){
-  const list=getAssignments(); const a=list.find(x=>x.id===id);
-  if(a) a.status=STATUS.REJECTED;
-  saveAssignments(list); updBadges(); go('a-approve');
+
+/* Issuing stamps the number, the date and the due date derived from the
+   customer's own payment terms. Kept in one place so the admin path and the
+   customer-approval path in the portal cannot drift apart. */
+function issueInvoice(a,list){
+  a.status=STATUS.APPROVED;
+  a.invoiceNumber=nextInvoiceNumber(list);
+  a.invoiceDate=today();
+  const co=companyById(a.companyId);
+  a.dueDate=addDays(a.invoiceDate,(co&&co.paymentTerms)||30);
+  recordEvent(a,'invoiceIssued','');
 }
-window.adminRequestChange=function(id){
+
+/* Rejecting or asking for a change requires a reason, and it is captured in
+   the page rather than in a native prompt(): those block the browser
+   automation the project is tested with, and the consultant needs the text
+   anyway — a bare "rejected" tells them nothing they can act on. */
+window.adminPrompt=function(id,action){
+  const host=document.getElementById('inv-actions');
+  if(!host) return;
+  const rejecting=action==='rejected';
+  host.innerHTML=`
+    <div style="width:100%;max-width:520px">
+      <div style="font-weight:700;margin-bottom:.2rem">
+        ${esc(t(rejecting?'order.reject.title':'order.change.title'))}</div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.6rem">
+        ${esc(t(rejecting?'order.reject.help':'order.change.help'))}</p>
+      <div class="ig" id="inv-reason-field">
+        <label class="lbl">${esc(t('order.reason'))}</label>
+        <textarea class="inp" id="inv-reason" rows="3" oninput="clearInvReasonError()"
+                  placeholder="${esc(t('order.reason.ph'))}"></textarea></div>
+      <div class="ds-field-msg" id="inv-reason-err" style="display:none">
+        ${esc(t('order.reason.required'))}</div>
+      <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.7rem">
+        <button class="btn ${rejecting?'btn-dn':'btn-or'}"
+          onclick="adminCommit('${esc(id)}','${esc(action)}')">
+          ${esc(t(rejecting?'act.reject':'act.requestChange'))}</button>
+        <button class="btn btn-gh" onclick="go('a-invoice')">${esc(t('act.cancel'))}</button>
+      </div></div>`;
+  const ta=document.getElementById('inv-reason');
+  if(ta) ta.focus();
+}
+
+window.clearInvReasonError=function(){
+  const err=document.getElementById('inv-reason-err');
+  const field=document.getElementById('inv-reason-field');
+  if(err) err.style.display='none';
+  if(field) field.removeAttribute('data-error');
+}
+
+window.adminCommit=function(id,action){
+  const reason=(document.getElementById('inv-reason')||{}).value||'';
+  if(!reason.trim()){
+    const err=document.getElementById('inv-reason-err');
+    const field=document.getElementById('inv-reason-field');
+    if(err) err.style.display='block';
+    if(field) field.setAttribute('data-error','');
+    return;
+  }
   const list=getAssignments(); const a=list.find(x=>x.id===id);
-  if(a) a.status=STATUS.DRAFT;
+  if(!a||a.status!==STATUS.PENDING) return;
+  a.status=action==='rejected'?STATUS.REJECTED:STATUS.DRAFT;
+  recordEvent(a,action,reason.trim());
   saveAssignments(list); updBadges(); go('a-approve');
 }
 
@@ -752,20 +962,37 @@ function aCompanies(){
       <div class="card-sub">${list.length}</div></div></div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th>${esc(t('lbl.company'))}</th><th>${esc(t('lbl.regNumber'))}</th>
-        <th>${esc(t('lbl.contact'))}</th><th>${esc(t('lbl.email'))}</th>
+        <th>${esc(t('co.billing'))}</th><th>${esc(t('inv.terms'))}</th>
         <th>${esc(t('lbl.assignments'))}</th><th>${esc(t('lbl.total'))}</th>
-        <th>${esc(t('lbl.status'))}</th></tr></thead>
+        <th>${esc(t('co.approval'))}</th></tr></thead>
       <tbody>${list.map(f=>{
         const own=all.filter(a=>a.companyId===f.id);
+        const needs=requiresInvoiceApproval(f.id);
         return `<tr>
-          <td style="font-weight:700">${esc(f.name)}</td>
+          <td><div style="font-weight:700">${esc(f.name)}</div>
+            <div style="font-size:.72rem;color:var(--muted)">${esc(f.contactName||'—')}</div></td>
           <td style="font-size:.76rem;color:var(--muted);font-weight:700">${esc(f.regNumber||'—')}</td>
-          <td>${esc(f.contactName||'—')}</td>
-          <td style="font-size:.8rem">${esc(f.email)}</td>
+          <td style="font-size:.78rem">
+            <div>${esc(f.invoiceEmail||f.email)}</div>
+            <div style="color:var(--muted)">${esc([f.street,f.zip,f.city].filter(Boolean).join(', ')||t('inv.notSet'))}</div></td>
+          <td>${f.paymentTerms||30} ${esc(t('inv.termsDays'))}</td>
           <td style="font-weight:700">${own.length}</td>
           <td style="font-weight:800">${fmtN(calcPayrollBatch(own).invoiceAmount)}</td>
-          <td><span class="badge b-gn">${esc(t('a.services.active'))}</span></td></tr>`;
+          <td><button class="btn btn-sm ${needs?'btn-or':'btn-gh'}"
+            onclick="toggleInvoiceApproval('${esc(f.id)}')"
+            title="${esc(t(needs?'co.approvalOn':'co.approvalOff'))}">
+            ${esc(t(needs?'co.approvalOn':'co.approvalOff'))}</button></td></tr>`;
       }).join('')}</tbody></table></div></div>`;
+}
+
+/* Whether a customer approves its own invoices is a standing instruction
+   from that customer, so it lives on the company record rather than being
+   asked per invoice. */
+window.toggleInvoiceApproval=function(id){
+  const users=getUsers(); const co=users.find(u=>u.id===id&&u.role==='company');
+  if(!co) return;
+  co.requiresInvoiceApproval=!requiresInvoiceApproval(id);
+  saveUsers(users); go('a-companies');
 }
 
 function aPayroll(){
@@ -867,8 +1094,8 @@ function aInvoices(){
         <th>${esc(t('lbl.consultant'))}</th><th>${esc(t('lbl.vatExcl'))}</th>
         <th>${esc(t('line.vat'))}</th><th>${esc(t('lbl.total'))}</th>
         <th>${esc(t('lbl.fee'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
-      <tbody>${list.map((a,i)=>{const p=calcPayroll(a.amount,{hours:a.hours});return `<tr>
-        <td style="font-weight:700">${esc(invoiceNumber(i+1))}</td>
+      <tbody>${list.map(a=>{const p=calcPayroll(a.amount,{hours:a.hours});return `<tr>
+        <td style="font-weight:700">${esc(a.invoiceNumber||t('inv.notIssued'))}</td>
         <td>${esc(a.companyName)}</td>
         <td>${esc(a.consultantName)}</td>
         <td>${fmtN(p.invoiceAmount)}</td>

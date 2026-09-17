@@ -1035,7 +1035,8 @@ tr.row-warn{background:rgba(217,119,6,.045)}
    ib-markets.js; copy in ib-i18n.js. Nothing here recomputes money or
    hardcodes a user-visible string — see CLAUDE.md. */
 const {getUsers,getAssignments,saveAssignments,saveUsers,getSession,saveSession,
-       clearSession,seedAll,nextAssignmentId,invoiceNumber,calcPayroll,
+       clearSession,seedAll,nextAssignmentId,invoiceNumber,nextInvoiceNumber,
+       addDays,sumLines,companyById,calcPayroll,
        calcPayrollBatch,fmt,fmtN,fmtDate,fmtDateLong,esc,today,STATUS,TYPE}=IB;
 const t=IB.t;
 
@@ -1300,10 +1301,11 @@ function go(v){
 function statusBadge(s){
   const cls={
     [STATUS.APPROVED]:'b-gn',[STATUS.PENDING]:'b-am',[STATUS.PAID]:'b-bl',
-    [STATUS.REJECTED]:'b-rd',[STATUS.DRAFT]:'b-gr'
+    [STATUS.REJECTED]:'b-rd',[STATUS.DRAFT]:'b-gr',[STATUS.CUSTOMER]:'b-am'
   }[s]||'b-gr';
   const icon={
     [STATUS.APPROVED]:'✓ ',
+    [STATUS.CUSTOMER]:'<span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> ',
     [STATUS.PENDING]:'<span class="lci"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> ',
     [STATUS.PAID]:'<span class="lci"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> ',
     [STATUS.REJECTED]:'✗ ',[STATUS.DRAFT]:'● '
@@ -1329,7 +1331,7 @@ function cDash(){
   const list=mine();
   const active=list.filter(a=>[STATUS.PENDING,STATUS.APPROVED].includes(a.status));
   const paid=calcPayrollBatch(list.filter(a=>a.status===STATUS.PAID));
-  const pending=list.filter(a=>a.status===STATUS.PENDING).length;
+  const pending=list.filter(a=>a.status===STATUS.CUSTOMER).length;
   const recent=list.slice(0,5);
   return `
   <div class="stats-g">
@@ -1372,44 +1374,133 @@ function cNew(){
         </select></div>
       <div class="ig"><label class="lbl">${esc(t('c.new.desc'))}</label>
         <textarea class="inp" id="n-desc" rows="3" placeholder="${esc(t('c.new.desc.ph'))}"></textarea></div>
-      <div class="fg">
-        <div class="ig"><label class="lbl">${esc(t('c.new.hours'))}</label>
-          <input class="inp" id="n-hours" type="number" min="0" step="0.5" oninput="calcAmount()"></div>
-        <div class="ig"><label class="lbl">${esc(t('c.new.rate'))} (${esc(m.currencySymbol)})</label>
-          <input class="inp" id="n-rate" type="number" min="0" oninput="calcAmount()"></div>
-      </div>
-      <div class="fg">
-        <div class="ig"><label class="lbl">${esc(t('c.new.period'))}</label>
-          <input class="inp" id="n-period" placeholder="${esc(t('c.new.period.ph'))}"></div>
-        <div class="ig"><label class="lbl">${esc(t('c.new.amount'))}</label>
-          <input class="inp" id="n-amount" value="—" readonly style="background:var(--bg);font-weight:800"></div>
-      </div>
+      <div class="ig"><label class="lbl">${esc(t('inv.spec'))}</label>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>${esc(t('lbl.description'))}</th>
+            <th style="width:6.5rem">${esc(t('lbl.hours'))}</th>
+            <th style="width:8rem">${esc(t('lbl.hourlyRate'))}</th>
+            <th style="width:9rem">${esc(t('lbl.amount'))} (${esc(m.currencySymbol)})</th>
+            <th style="width:5rem"></th></tr></thead>
+          <tbody id="nl-rows">${linesHTML()}</tbody>
+          <tfoot><tr><th colspan="3">${esc(t('spec.total'))}</th>
+            <th id="nl-total" style="font-weight:800">—</th><th></th></tr></tfoot>
+        </table></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    gap:var(--sp-12);margin-top:var(--sp-8)">
+          <button class="btn btn-gh btn-sm" onclick="addLine()">+ ${esc(t('spec.add'))}</button>
+        </div>
+        <div style="font-size:.76rem;color:var(--muted);margin-top:.4rem">
+          ${esc(t('spec.fixedHelp'))}</div></div>
+      <div class="ig"><label class="lbl">${esc(t('c.new.period'))}</label>
+        <input class="inp" id="n-period" placeholder="${esc(t('c.new.period.ph'))}"></div>
       <button class="btn btn-or" onclick="submitAssignment()">${esc(t('act.send'))}</button>
     </div>
   </div>`;
 }
 
-window.calcAmount=function(){
-  const h=parseFloat(document.getElementById('n-hours').value)||0;
-  const r=parseFloat(document.getElementById('n-rate').value)||0;
-  document.getElementById('n-amount').value=(h&&r)?fmtN(h*r):'—';
+/* ── SPECIFICATION LINES ──────────────────────────────────────────────────
+   An assignment used to be one description, one hours figure and one rate,
+   so anything that was not billed by the hour could not be invoiced at all.
+   It is now a list of lines, and a line is either hours x rate or a free
+   amount typed directly: a fixed fee, a deliverable, an agreed price.
+
+   Hours are required on BOTH kinds. Danish ATP is a fixed monthly krone
+   amount pro-rated against a full-time month (160,33 h), so a fixed fee
+   carrying no hours would be charged a full month of it. */
+let NEW_LINES=[{description:'',hours:'',hourlyRate:'',amount:''}];
+
+/* The DOM is the source of truth while the form is open — re-rendering on
+   every keystroke would take the caret with it. The array is only
+   resynced when a row is added or removed. */
+function readNewLines(){
+  return NEW_LINES.map(function(_,i){
+    const g=id=>(document.getElementById(id)||{}).value||'';
+    return {description:g('nl-desc-'+i),hours:g('nl-hours-'+i),
+            hourlyRate:g('nl-rate-'+i),amount:g('nl-amount-'+i)};
+  });
 }
+
+function linesHTML(){
+  return NEW_LINES.map((l,i)=>`<tr>
+    <td><input class="inp" id="nl-desc-${i}" value="${esc(l.description)}"
+        placeholder="${esc(t('c.new.desc.ph'))}"></td>
+    <td><input class="inp" id="nl-hours-${i}" type="number" min="0" step="0.5"
+        value="${esc(l.hours)}" oninput="lineInput(${i})"></td>
+    <td><input class="inp" id="nl-rate-${i}" type="number" min="0"
+        value="${esc(l.hourlyRate)}" oninput="lineInput(${i})"></td>
+    <td><input class="inp" id="nl-amount-${i}" type="number" min="0"
+        value="${esc(l.amount)}" oninput="lineTotal()"></td>
+    <td>${NEW_LINES.length>1
+      ?`<button class="btn btn-gh btn-sm" onclick="removeLine(${i})">${esc(t('spec.remove'))}</button>`
+      :''}</td></tr>`).join('');
+}
+
+function paintLines(){
+  const host=document.getElementById('nl-rows');
+  if(!host) return;
+  host.innerHTML=linesHTML();
+  NEW_LINES.forEach((_,i)=>lineInput(i));
+}
+
+window.addLine=function(){
+  NEW_LINES=readNewLines();
+  NEW_LINES.push({description:'',hours:'',hourlyRate:'',amount:''});
+  paintLines();
+};
+window.removeLine=function(i){
+  NEW_LINES=readNewLines();
+  if(NEW_LINES.length>1) NEW_LINES.splice(i,1);
+  paintLines();
+};
+
+/* A rate drives the amount and locks it; no rate hands the amount back so a
+   fixed sum can be typed. */
+window.lineInput=function(i){
+  const h=parseFloat((document.getElementById('nl-hours-'+i)||{}).value)||0;
+  const r=parseFloat((document.getElementById('nl-rate-'+i)||{}).value)||0;
+  const amt=document.getElementById('nl-amount-'+i);
+  if(amt){
+    if(r>0){amt.value=h*r;amt.readOnly=true;amt.style.background='var(--surface-alt)'}
+    else{amt.readOnly=false;amt.style.background=''}
+  }
+  lineTotal();
+};
+
+window.lineTotal=function(){
+  const el=document.getElementById('nl-total');
+  if(!el) return;
+  const sum=readNewLines().reduce((x,l)=>x+(parseFloat(l.amount)||0),0);
+  el.textContent=sum?fmtN(sum):'—';
+};
 
 window.submitAssignment=function(){
   const email=document.getElementById('n-cemail').value.trim();
   const type=document.getElementById('n-type').value;
   const desc=document.getElementById('n-desc').value.trim();
-  const hours=parseFloat(document.getElementById('n-hours').value)||0;
-  const rate=parseFloat(document.getElementById('n-rate').value)||0;
   const period=document.getElementById('n-period').value.trim();
-  if(!email||!type||!desc||!hours||!rate||!period){alert(t('lbl.required'));return}
+
+  const lines=readNewLines()
+    .map(l=>({description:l.description.trim(),
+              hours:parseFloat(l.hours)||0,
+              hourlyRate:parseFloat(l.hourlyRate)||0,
+              amount:parseFloat(l.amount)||0}))
+    .filter(l=>l.description||l.hours||l.amount);
+
+  if(!email||!type||!desc||!period||!lines.length){alert(t('lbl.required'));return}
+  if(lines.some(l=>!l.description||!l.amount)){alert(t('spec.amountRequired'));return}
+  if(lines.some(l=>!l.hours)){alert(t('spec.hoursRequired'));return}
+
   const company=getUsers().find(u=>u.email===email&&u.role==='company');
   if(!company){alert(t('c.new.notFound'));return}
+  const tot=sumLines(lines);
+  /* hourlyRate stays on the assignment only when the whole thing really has
+     one, so nothing downstream prints a rate that no line was billed at. */
+  const oneRate=lines.length===1?lines[0].hourlyRate:0;
   const list=getAssignments();
   const id=nextAssignmentId(list);
   list.unshift({id,consultantId:ME.id,consultantName:ME.name,
     companyId:company.id,companyName:company.name,
-    type,description:desc,hours,hourlyRate:rate,amount:hours*rate,
+    type,description:desc,lines,hours:tot.hours,hourlyRate:oneRate,amount:tot.amount,
     period,status:STATUS.PENDING,createdDate:today(),approvedDate:'',adminNote:'',
     history:[{at:today(),by:ME.name,action:'created',note:''}]});
   saveAssignments(list);
@@ -1418,11 +1509,12 @@ window.submitAssignment=function(){
     <div class="card" style="max-width:500px;text-align:center"><div class="card-bd" style="padding:3rem 2rem">
       <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
       <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">${esc(t('c.new.sent.h'))}</h2>
-      <p style="color:var(--mid);margin-bottom:1.5rem">${esc(company.name)} ${esc(t('c.new.sent.p'))}</p>
+      <p style="color:var(--mid);margin-bottom:1rem">${esc(t('c.new.sent.p'))}</p>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:.4rem">${esc(t('inv.customer'))}: <strong>${esc(company.name)}</strong></div>
       <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem">${esc(t('c.new.sent.id'))} <strong>${esc(id)}</strong></div>
       <div style="display:flex;gap:.75rem;justify-content:center">
         <button class="btn btn-or" onclick="go('c-list')">${esc(t('act.viewMine'))}</button>
-        <button class="btn btn-gh" onclick="go('c-new')">${esc(t('act.createAnother'))}</button>
+        <button class="btn btn-gh" onclick="NEW_LINES=[{description:'',hours:'',hourlyRate:'',amount:''}];go('c-new')">${esc(t('act.createAnother'))}</button>
       </div></div></div>`;
 }
 
@@ -1514,7 +1606,7 @@ function cProfile(){
       </div></div>
     <div class="card"><div class="card-hd"><span class="card-title">${esc(t('c.profile.account'))}</span></div>
       <div class="card-bd">
-        <div class="ig"><label class="lbl">${esc(t('lbl.personalId'))}</label><input class="inp" value="••••••-••••" readonly style="background:var(--bg)"></div>
+        <div class="ig"><label class="lbl">${esc(currentMarket().entity.personIdLabel)}</label><input class="inp" value="••••••-••••" readonly style="background:var(--bg)"></div>
         <div class="ig"><label class="lbl">${esc(t('c.profile.bank'))}</label><input class="inp" value="•••• •••• ••••" readonly style="background:var(--bg)"></div>
         <div class="ig"><label class="lbl">${esc(t('c.profile.taxCard'))}</label><input class="inp" value="${esc(m.name)}" readonly style="background:var(--bg)"></div>
         <button class="btn btn-or">${esc(t('act.save'))}</button>
@@ -1555,7 +1647,11 @@ function bDash(){
 }
 
 function bApprove(){
-  const list=ours().filter(a=>a.status===STATUS.PENDING);
+  /* STATUS.CUSTOMER, not PENDING: an assignment is only the company's to
+     act on once WE have reviewed it and this company asked to approve its
+     own invoices. Both queues used to filter PENDING, so the same
+     assignment sat in the admin list and here at the same time. */
+  const list=ours().filter(a=>a.status===STATUS.CUSTOMER);
   if(!list.length) return empty(ICO_CHECK,'b.approve.empty.h','b.approve.empty.p');
   return `
   <p style="font-size:var(--body-3);color:var(--text-muted);margin-bottom:var(--sp-16)">
@@ -1612,6 +1708,14 @@ function currentOrder() {
   return ours().find(a => a.id === CURRENT_ORDER) || null;
 }
 
+/* Assignments created before the line model have no lines array; they are
+   read as a single line rather than special-cased at every call site. */
+function orderLines(a) {
+  return (a.lines && a.lines.length) ? a.lines
+    : [{ description: a.description, hours: a.hours,
+         hourlyRate: a.hourlyRate, amount: a.amount }];
+}
+
 function orderStatusNote(a) {
   const last = (a.history || []).slice().reverse()
     .find(h => h.action === 'rejected' || h.action === 'changeRequested');
@@ -1624,7 +1728,7 @@ function bOrder() {
     `<button class="btn btn-gh" onclick="go('b-approve')">${esc(t('order.back'))}</button>`);
 
   const p = calcPayroll(a.amount, { hours: a.hours });
-  const pending = a.status === STATUS.PENDING;
+  const pending = a.status === STATUS.CUSTOMER;
   const note = orderStatusNote(a);
 
   const fact = (label, value, strong) =>
@@ -1654,12 +1758,27 @@ function bOrder() {
         ${fact(t('lbl.consultant'), esc(a.consultantName))}
         ${fact(t('lbl.period'), esc(a.period))}
         ${fact(t('lbl.hours'), a.hours)}
-        ${fact(t('lbl.hourlyRate'), fmtN(a.hourlyRate) + esc(t('misc.perHour')))}
+        ${fact(t('inv.terms'), ((companyById(a.companyId)||{}).paymentTerms||30)
+               + ' ' + esc(t('inv.termsDays')))}
       </div>
 
       <div class="ds-h4" style="margin-bottom:var(--sp-8)">${esc(t('order.description'))}</div>
       <p style="font-size:var(--body-2);line-height:var(--body-2-lh);color:var(--text-muted);
-                margin-bottom:var(--sp-32)">${esc(a.description)}</p>
+                margin-bottom:var(--sp-24)">${esc(a.description)}</p>
+
+      <div class="ds-h4" style="margin-bottom:var(--sp-8)">${esc(t('inv.spec'))}</div>
+      <div class="tbl-wrap" style="margin-bottom:var(--sp-32)"><table class="tbl">
+        <thead><tr><th>${esc(t('lbl.description'))}</th>
+          <th class="num">${esc(t('lbl.hours'))}</th>
+          <th class="num">${esc(t('lbl.hourlyRate'))}</th>
+          <th class="num">${esc(t('lbl.amount'))}</th></tr></thead>
+        <tbody>${orderLines(a).map(l=>`<tr>
+          <td>${esc(l.description||'—')}</td>
+          <td class="num">${Number(l.hours)||0}</td>
+          <td class="num">${Number(l.hourlyRate)>0?fmtN(l.hourlyRate):'—'}</td>
+          <td class="num" style="font-weight:var(--fw-semibold)">${fmtN(Number(l.amount)||0)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
 
       <div class="ds-h4" style="margin-bottom:var(--sp-8)">${esc(t('order.whatYouPay'))}</div>
       <p style="font-size:var(--caption);color:var(--text-subtle);margin-bottom:var(--sp-12)">
@@ -1775,9 +1894,21 @@ window.orderApprove = function (id) {
   const list = getAssignments();
   const a = list.find(x => x.id === id);
   if (!a || a.companyId !== ME.id) return;          // not ours, do nothing
+  if (a.status !== STATUS.CUSTOMER) return;         // not theirs to approve
   a.status = STATUS.APPROVED;
   a.approvedDate = today();
   recordEvent(a, 'approved', '');
+
+  /* The invoice number is issued the moment the invoice is actually going
+     out — here, or in the admin app for a company that opted out of
+     approving. Both paths must stamp the same three fields or the two
+     halves of the register disagree about when an invoice came into being. */
+  a.invoiceNumber = nextInvoiceNumber(list);
+  a.invoiceDate   = today();
+  const co = companyById(a.companyId);
+  a.dueDate = addDays(a.invoiceDate, (co && co.paymentTerms) || 30);
+  recordEvent(a, 'invoiceIssued', '');
+
   saveAssignments(list);
   updBadges();
   go('b-order');
@@ -1795,6 +1926,7 @@ window.orderCommit = function (id, action) {
   const list = getAssignments();
   const a = list.find(x => x.id === id);
   if (!a || a.companyId !== ME.id) return;
+  if (a.status !== STATUS.CUSTOMER) return;
   a.status = action === 'rejected' ? STATUS.REJECTED : STATUS.DRAFT;
   recordEvent(a, action, reason.trim());
   saveAssignments(list);
@@ -1833,8 +1965,8 @@ function bInvoices(){
         <th>${esc(t('lbl.consultant'))}</th><th>${esc(t('lbl.period'))}</th>
         <th>${esc(t('lbl.vatExcl'))}</th><th>${esc(t('line.vat'))}</th>
         <th>${esc(t('lbl.total'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
-      <tbody>${list.map((a,i)=>{const p=calcPayroll(a.amount,{hours:a.hours});return `<tr>
-        <td style="font-weight:700">${esc(invoiceNumber(i+1))}</td>
+      <tbody>${list.map(a=>{const p=calcPayroll(a.amount,{hours:a.hours});return `<tr>
+        <td style="font-weight:700">${esc(a.invoiceNumber||t('inv.notIssued'))}</td>
         <td>${esc(a.type)}</td><td>${esc(a.consultantName)}</td><td>${esc(a.period)}</td>
         <td>${fmtN(p.invoiceAmount)}</td><td>${fmtN(p.vat)}</td>
         <td style="font-weight:800">${fmtN(p.invoiceTotal)}</td>

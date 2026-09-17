@@ -127,6 +127,7 @@ const COMPANY_VIEWS    = ['bDash','bApprove','bAll','bImport','bInvoices','bProf
 const ORDER_VIEW       = 'bOrder';
 const ADMIN_VIEWS      = ['aDash','aActivity','aApprove','aAll','aImport','aConsultants',
                           'aCompanies','aPayroll','aInvoices','aServices','aSettings'];
+const INVOICE_VIEW     = 'aInvoice';
 
 for (const code of ['DK', 'NO']) {
   const label = code === 'DK' ? 'Denmark (da-DK, DKK)' : 'Norway (nb-NO, NOK)';
@@ -150,7 +151,7 @@ for (const code of ['DK', 'NO']) {
     const list = app.IB.getAssignments();
     list[0].description = '<img src=x onerror=alert(1)>';
     list[0].consultantName = '<script>alert(2)</script>';
-    list[0].status = app.IB.STATUS.PENDING;
+    list[0].status = app.IB.STATUS.CUSTOMER;   // what bApprove() filters on
     list[0].companyId = users.find(u => u.role === 'company').id;
     app.IB.saveAssignments(list);
     // the order detail view, opened on a real assignment
@@ -159,7 +160,31 @@ for (const code of ['DK', 'NO']) {
     if (firstOwn) {
       vm.runInContext('CURRENT_ORDER = ' + JSON.stringify(firstOwn.id) + ';', app,
                       { filename: 'set-order' });
-      check('bOrder()', () => app.bOrder());
+      const orderHtml = check('bOrder()', () => app.bOrder());
+
+      /* The order detail shows what the company PAYS. calcPayroll also
+         returns what the consultant earns, so putting gross or net on this
+         screen is one careless line away, and the company would never know
+         it was reading someone's salary. */
+      if (orderHtml) {
+        const pay = app.IB.calcPayroll(firstOwn.amount, { hours: firstOwn.hours });
+        const shown = ['invoiceAmount', 'vat', 'invoiceTotal']
+          .map(k => app.IB.fmtN(pay[k]));
+        const secret = ['gross', 'net', 'withholding', 'holidayPay']
+          .map(k => [k, app.IB.fmtN(pay[k])])
+          // a figure that legitimately appears cannot also be a leak
+          .filter(([, v]) => !shown.includes(v));
+        const leaked = secret.filter(([, v]) => orderHtml.includes(v));
+        if (leaked.length) {
+          failures++;
+          console.log(`  ${red('FAIL')} bOrder() leaks consultant salary: ` +
+                      leaked.map(([k, v]) => `${k} ${v}`).join(', '));
+        } else {
+          passes++;
+          console.log(`  ${green('PASS')} bOrder() shows no salary figures ` +
+                      dim(`(${secret.length} checked)`));
+        }
+      }
     }
     // an unknown id must render the not-found state, not throw
     vm.runInContext('CURRENT_ORDER = "NOPE-1";', app, { filename: 'set-order' });
@@ -180,6 +205,36 @@ for (const code of ['DK', 'NO']) {
   {
     const app = loadApp('invoicery-business-admin.html', code);
     ADMIN_VIEWS.forEach(fn => check(fn + '()', () => app[fn]()));
+
+    /* The invoice detail, opened on a real assignment and on a bad id. It
+       renders salary and bank details on purpose — this is the side of the
+       wall that is allowed to. */
+    const anyAsg = app.IB.getAssignments()[0];
+    if (anyAsg) {
+      vm.runInContext('CURRENT_INVOICE = ' + JSON.stringify(anyAsg.id) + ';', app,
+                      { filename: 'set-invoice' });
+      check(INVOICE_VIEW + '()', () => app[INVOICE_VIEW]());
+    }
+    vm.runInContext('CURRENT_INVOICE = "NOPE-1";', app, { filename: 'set-invoice' });
+    check(INVOICE_VIEW + '() with an unknown id', () => app[INVOICE_VIEW]());
+
+    /* Every status the register can hold must render in the queue and the
+       detail, including the handover state the company list reads. */
+    const statuses = Object.values(app.IB.STATUS);
+    const asgList = app.IB.getAssignments();
+    let statusOk = true;
+    for (const st of statuses) {
+      asgList[0].status = st;
+      app.IB.saveAssignments(asgList);
+      vm.runInContext('CURRENT_INVOICE = ' + JSON.stringify(asgList[0].id) + ';', app,
+                      { filename: 'set-invoice' });
+      try {
+        const out = app[INVOICE_VIEW]();
+        if (out.includes('⟦')) { statusOk = false; console.log(`  ${red('FAIL')} ${st}: missing key`); }
+      } catch (e) { statusOk = false; console.log(`  ${red('FAIL')} ${st}: ${e.message}`); }
+    }
+    if (statusOk) { passes++; console.log(`  ${green('PASS')} aInvoice() renders every status ${dim(statuses.join(', '))}`); }
+    else failures++;
 
     console.log(dim('  payroll reconciliation'));
     const approved = app.IB.getAssignments().filter(a => a.status === app.IB.STATUS.APPROVED);
