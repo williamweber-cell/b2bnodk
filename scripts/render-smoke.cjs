@@ -20,8 +20,19 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const LIBS = ['ib-markets.js', 'ib-i18n.js', 'ib-core.js', 'ib-xlsx.js', 'ib-import.js']
-  .map(f => ({ name: f, src: fs.readFileSync(path.join(ROOT, f), 'utf8') }));
+/* Derived from what the apps actually load, in their own order, rather than
+   listed here: a module added to an app and forgotten here used to surface
+   as a ReferenceError inside a view, which reads like a broken view rather
+   than a missing script. The union is safe — the modules are independent,
+   and loading one an app does not use costs nothing. */
+const LIBS = (() => {
+  const seen = new Set();
+  ['invoicery-business.html', 'invoicery-business-admin.html'].forEach(f => {
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    [...src.matchAll(/<script src="([^"]+\.js)"/g)].forEach(m => seen.add(m[1]));
+  });
+  return [...seen].map(f => ({ name: f, src: fs.readFileSync(path.join(ROOT, f), 'utf8') }));
+})();
 
 let failures = 0, passes = 0;
 const red = s => `\x1b[31m${s}\x1b[0m`;
@@ -126,7 +137,8 @@ const CONSULTANT_VIEWS = ['cDash','cNew','cList','cPay','cCert','cProfile'];
 const COMPANY_VIEWS    = ['bDash','bApprove','bAll','bImport','bInvoices','bProfile'];
 const ORDER_VIEW       = 'bOrder';
 const ADMIN_VIEWS      = ['aDash','aActivity','aApprove','aAll','aImport','aConsultants',
-                          'aCompanies','aPayroll','aInvoices','aServices','aSettings'];
+                          'aCompanies','aPayroll','aInvoices','aServices','aSettings',
+                          'aStaff'];
 const INVOICE_VIEW     = 'aInvoice';
 
 for (const code of ['DK', 'NO']) {

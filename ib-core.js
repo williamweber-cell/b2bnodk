@@ -113,6 +113,7 @@
     return {
       users:       key('USERS', code),
       assignments: key('ASSIGNMENTS', code),
+      staff:       key('STAFF', code),
       session:     key('SESSION', code),
       seeded:      key('SEEDED', code)
     };
@@ -129,8 +130,13 @@
 
   function getUsers(code)          { return DB(key('USERS', code)) || []; }
   function getAssignments(code)    { return DB(key('ASSIGNMENTS', code)) || []; }
+  /* The staged personnel register: people uploaded for registration in
+     Dataløn. Separate from USERS on purpose — these have no login, and
+     handing out credentials is not something a spreadsheet upload decides. */
+  function getStaff(code)          { return DB(key('STAFF', code)) || []; }
   function saveUsers(a, code)      { DBs(key('USERS', code), a); }
   function saveAssignments(a, code){ DBs(key('ASSIGNMENTS', code), a); }
+  function saveStaff(a, code)      { DBs(key('STAFF', code), a); }
   function getSession(code)        { return DB(key('SESSION', code)); }
   function saveSession(u, code)    { DBs(key('SESSION', code), u); }
   function clearSession(code) {
@@ -500,6 +506,7 @@
     key: key, keys: keys, DB: DB, DBs: DBs,
     getUsers: getUsers, getAssignments: getAssignments,
     saveUsers: saveUsers, saveAssignments: saveAssignments,
+    getStaff: getStaff, saveStaff: saveStaff,
     getSession: getSession, saveSession: saveSession, clearSession: clearSession,
 
     seed: seed, seedAll: seedAll, resetDemo: resetDemo,

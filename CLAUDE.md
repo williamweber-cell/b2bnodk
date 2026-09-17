@@ -20,12 +20,14 @@ dropped; no Swedish copy or SE rate should exist anywhere.
 | `ib-import.js` | Payroll-basis import: column mapping, validation, commit, Jeeves export. |
 | `ib-xlsx-write.js` | Zero-dependency .xlsx writer. |
 | `ib-lists.js` | Employee and payout list generation: canonical schema + per-system profiles. |
+| `ib-staff.js` | Personnel register import: CSV → canonical employee records → Dataløn. |
 | `invoicery-business.html` | Landing page + consultant portal + company portal |
 | `invoicery-business-admin.html` | Back-office: approvals, payroll runs, invoicing, registers |
 | `scripts/payroll-check.cjs` | Golden values, invariants, parity, i18n, homoglyphs. |
 | `scripts/render-smoke.cjs` | Every view, every role, both markets. |
 | `scripts/import-check.cjs` | Reader, mapping, validation, commit, Jeeves. |
 | `scripts/lists-check.cjs` | Writer, schema, profiles, gaps, PII redaction. |
+| `scripts/staff-check.cjs` | Personnel import: mapping, validation, duplicates, Dataløn. |
 | `scripts/make-lists.cjs` | CLI that generates the lists. |
 | `scripts/serve.cjs` | Zero-dependency local dev server. |
 | `fixtures/` | Real .xlsx test files; regenerate with `make-fixtures.py`. |
@@ -73,6 +75,13 @@ and inline strings, numbers, booleans, dates including the Excel 1900
 leap-year quirk, and both STORED and DEFLATED entries. It does not handle
 encrypted workbooks or legacy `.xls` — those are reported as such.
 
+**`file.bytes` is tested for being a typed array, not for being truthy.**
+Browsers grew `Blob.prototype.bytes()` after this reader was written. It is a
+*method*, so `if (file.bytes)` started matching every `File` picked from a
+dialog and handed the function to `TextDecoder` — every CSV upload threw
+`parameter 1 is not of type 'ArrayBuffer'`. The `.xlsx` path was unaffected,
+which is why it went unnoticed. `import-check.cjs` pins all three shapes.
+
 Row line numbers come from the sheet's `r=` attribute, so an error on "line 7"
 is line 7 when the user opens the file. Do not renumber after filtering blanks.
 
@@ -88,6 +97,52 @@ expects.
 > assembles and checks the payload but refuses to send, because inventing an
 > endpoint contract would be worse than not having one. Fill in
 > `JEEVES_CONFIG` and flip `verified` once the integration spec exists.
+
+## Personnel register
+
+A superadmin uploads a CSV of personnel; the rows are validated and staged,
+and the batch is handed to **Dataløn**, which creates the employee profiles at
+its end.
+
+```
+CSV → IBXlsx.readTable → IBStaff.mapColumns → validate → preview → commit
+    → IBStaff.toDatalonCSV → download, or sendToDatalon()
+```
+
+**This is not the payroll-basis import.** `a-import` imports hours and rates
+for people who already exist; `a-staff` imports the people. Same machinery,
+different schema, different destination, so the modules stay apart.
+
+Rows are mapped onto the **canonical employee schema in `ib-lists.js`** — the
+same 23 fields the list generator writes — so there is one definition of what
+an employee is, whichever direction the data is moving. Headers are matched
+normalised, and Danish, Norwegian and English are all recognised: `Efternavn`,
+`Etternavn` and `Surname` are the same column. Columns we have no use for are
+reported and ignored, because an HR export always carries some.
+
+**Two levels, the ones `checkEmployee` already defines.** Missing an `always`
+field blocks registration outright; missing a `payroll` field only blocks
+being paid. A profile can be created in Dataløn without a tax card; it cannot
+be created without a name. The preview says which, per row, and error rows are
+skipped on commit — never coerced.
+
+**Duplicates are caught on either identity key**, against the existing
+register and within the file itself, compared with punctuation stripped:
+`120488-1234` and `1204881234` are the same person. Re-uploading the same file
+flags every row rather than doubling the register.
+
+**Commit creates no logins.** These people are being registered in Dataløn;
+handing out credentials is a decision nobody made by uploading a spreadsheet.
+The staged register lives in `IB_DK_STAFF` / `IB_NO_STAFF`, per market like
+everything else, and a demo reset clears it.
+
+> **The Dataløn field mapping is unverified.** Column names, the employee
+> number series and the employment-type and tax-card codes in
+> `DATALON_CONFIG` are placeholders, and the admin UI carries a standing
+> warning. `sendToDatalon()` is deliberately a stub: it assembles and checks
+> the payload but refuses to send. Fill in `DATALON_CONFIG` and flip
+> `verified` once Visma's import specification exists. Same position, and the
+> same reasons, as `JEEVES_CONFIG`.
 
 ## Invoice approval
 
@@ -469,9 +524,16 @@ node scripts/payroll-check.cjs   # golden values, invariants, parity, i18n, homo
 node scripts/render-smoke.cjs    # every view × every role × both markets
 node scripts/import-check.cjs    # reader, mapping, validation, commit, Jeeves
 node scripts/lists-check.cjs     # writer, schema, profiles, gaps, PII
+node scripts/staff-check.cjs     # personnel import, duplicates, Dataløn
 ```
 
-All four must exit 0.
+All five must exit 0.
+
+`render-smoke.cjs` discovers the modules to load by reading the `<script
+src>` tags out of both HTML files rather than from a list of its own. That
+list had already drifted once: a module added to an app and not to the script
+surfaced as a `ReferenceError` deep inside a view, which reads like a broken
+view rather than a missing script.
 
 `render-smoke.cjs` exists because `node --check` cannot catch a view that
 references a variable which no longer exists, or a translation key that was

@@ -312,6 +312,9 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 
   <div class="sb-section" data-i18n="sb.users">Brugere</div>
   <ul class="sb-nav">
+    <li><button onclick="go('a-staff')" data-v="a-staff">
+      <span class="lci"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span>
+      <span data-i18n="nav.a.staff">Medarbejderregister</span></button></li>
     <li><button onclick="go('a-consultants')" data-v="a-consultants">
       <span class="sb-ni"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
       <span data-i18n="nav.a.consultants">Konsulenter</span>
@@ -397,6 +400,8 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 <script src="ib-core.js"></script>
 <script src="ib-xlsx.js"></script>
 <script src="ib-import.js"></script>
+<script src="ib-lists.js"></script>
+<script src="ib-staff.js"></script>
 <script>
 /* ═══════════════════ BOOT ═══════════════════
    Storage, seed, payroll and formatting live in ib-core.js; market config in
@@ -499,7 +504,7 @@ const VIEWS={
   'a-dash':aDash,'a-activity':aActivity,'a-approve':aApprove,'a-all':aAll,'a-import':importView,
   'a-consultants':aConsultants,'a-companies':aCompanies,'a-payroll':aPayroll,
   'a-invoices':aInvoices,'a-services':aServices,'a-settings':aSettings,
-  'a-invoice':aInvoice
+  'a-invoice':aInvoice,'a-staff':aStaff
 };
 
 function go(v){
@@ -1105,6 +1110,187 @@ function aInvoices(){
         <td>${a.status===STATUS.PAID
           ?`<span class="badge b-gn">${ICO.check} ${esc(t('b.invoices.paid'))}</span>`
           :`<span class="badge b-am">${esc(t('b.invoices.unpaid'))}</span>`}</td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+
+/* ═══════════════════ PERSONNEL REGISTER ═══════════════════
+
+   A superadmin uploads a CSV of personnel; the rows are validated against
+   the canonical employee schema and staged for Dataløn, which creates the
+   profiles at its end.
+
+   This is not the payroll-basis import (a-import). That one imports hours
+   and rates for people who already exist; this one imports the people.
+
+   IBStaff.validate() is pure — nothing is written until commitStaff(). Error
+   rows are skipped on commit, never coerced, and re-uploading the same file
+   flags every row as a duplicate rather than doubling the register. */
+
+let STAFF_STATE=null;   // { fileName, table, mapping, validated } between steps
+let STAFF_MSG='';
+
+function staffFieldLabel(key){
+  /* What a national identity number is called belongs to the jurisdiction,
+     not to the reader's language — same reasoning as regLabel. */
+  if(key==='personalId') return currentMarket().entity.personIdLabel;
+  const reuse={email:'lbl.email',city:'lbl.city',street:'lbl.address'}[key];
+  return t(reuse||('staff.f.'+key));
+}
+
+function staffProblems(r){
+  const parts=r.errors.map(e=>staffFieldLabel(e.field)+' '+t('staff.e.'+e.code));
+  if(!parts.length&&r.warnings.length)
+    return r.warnings.map(w=>staffFieldLabel(w.field)).join(', ');
+  return parts.join(', ');
+}
+
+function aStaff(){
+  const staged=IB.getStaff();
+  const v=STAFF_STATE&&STAFF_STATE.validated;
+  const map=STAFF_STATE&&STAFF_STATE.mapping;
+
+  const preview=!v?'':`
+    <div style="display:flex;gap:1.4rem;flex-wrap:wrap;padding:.85rem 1.1rem;
+                background:var(--bg);border-radius:8px;margin-bottom:1rem">
+      <div><strong>${v.results.length}</strong> ${esc(t('staff.summary'))}</div>
+      <div style="color:var(--green)"><strong>${v.counts.ok}</strong> ${esc(t('staff.readyToRegister'))}</div>
+      <div style="color:var(--orange)"><strong>${v.counts.warning}</strong> ${esc(t('staff.payrollGaps'))}</div>
+      <div style="color:var(--red)"><strong>${v.counts.error}</strong> ${esc(t('staff.errors'))}</div>
+      <div style="color:var(--muted)"><strong>${v.counts.blank}</strong> ${esc(t('staff.blanks'))}</div>
+    </div>
+    ${STAFF_STATE.missing&&STAFF_STATE.missing.length?`
+      <div class="alert alert-dn" style="margin-bottom:1rem"><span>${esc(t('staff.missingColumns'))}
+        ${esc(STAFF_STATE.missing.map(staffFieldLabel).join(', '))}</span></div>`:''}
+    ${STAFF_STATE.unknown&&STAFF_STATE.unknown.length?`
+      <div style="font-size:.76rem;color:var(--muted);margin-bottom:1rem">
+        ${esc(t('staff.unknownColumns'))} ${esc(STAFF_STATE.unknown.join(', '))}</div>`:''}
+    <div class="tbl-wrap" style="margin-bottom:1rem"><table class="tbl">
+      <thead><tr><th>${esc(t('staff.line'))}</th><th>${esc(t('lbl.name'))}</th>
+        <th>${esc(currentMarket().entity.personIdLabel)}</th>
+        <th>${esc(t('staff.verdict'))}</th><th>${esc(t('staff.problem'))}</th></tr></thead>
+      <tbody>${v.results.filter(r=>r.verdict!=='blank').map(r=>{
+        const badge={ok:'b-gn',warning:'b-am',error:'b-rd'}[r.verdict];
+        return `<tr>
+          <td style="font-weight:700">${r.line}</td>
+          <td>${esc([r.record.firstName,r.record.lastName].filter(Boolean).join(' ')||'—')}</td>
+          <td style="font-size:.78rem;color:var(--muted)">${esc(r.record.personalId||'—')}</td>
+          <td><span class="badge ${badge}">${esc(t('staff.v.'+r.verdict))}</span></td>
+          <td style="font-size:.78rem;color:var(--mid)">${esc(staffProblems(r)||'—')}</td></tr>`;
+      }).join('')}</tbody></table></div>
+    <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+      ${v.importable.length?`<button class="btn btn-ok" onclick="commitStaff()">${ICO.check}
+        ${esc(t('staff.commit'))} ${v.importable.length}</button>`:''}
+      <button class="btn btn-gh" onclick="cancelStaff()">${esc(t('staff.cancel'))}</button>
+    </div>`;
+
+  return `
+  ${DATALON_WARNING()}
+  ${STAFF_MSG?`<div class="alert alert-am" style="margin-bottom:1rem"><span>${esc(STAFF_MSG)}</span></div>`:''}
+  <div class="card" style="max-width:1040px;margin-bottom:1.2rem">
+    <div class="card-hd">
+      <div><span class="card-title">${esc(t('staff.h'))}</span></div>
+      <button class="btn btn-gh btn-sm" onclick="downloadStaffTemplate()">
+        ${esc(t('staff.template'))}</button>
+    </div>
+    <div class="card-bd">
+      ${v?preview:`
+        <p style="font-size:.84rem;color:var(--mid);margin-bottom:1rem">
+          ${esc(t('staff.templateHelp'))}</p>
+        <div class="drop" id="staff-drop"
+             onclick="document.getElementById('staff-file').click()"
+             ondragover="event.preventDefault();this.classList.add('over')"
+             ondragleave="this.classList.remove('over')"
+             ondrop="event.preventDefault();this.classList.remove('over');onStaffFile(event.dataTransfer.files[0])">
+          <div style="font-weight:700;margin-bottom:.25rem">${esc(t('staff.choose'))}</div>
+          <div style="font-size:.78rem;color:var(--muted)">${esc(t('staff.accepts'))}</div>
+        </div>
+        <input type="file" id="staff-file" accept=".csv,.tsv,.txt,.xlsx" style="display:none"
+               onchange="onStaffFile(this.files[0])">`}
+    </div>
+  </div>
+
+  <div class="card" style="max-width:1040px">
+    <div class="card-hd">
+      <div><div class="card-title">${esc(t('staff.register'))}</div>
+        <div class="card-sub">${staged.length}</div></div>
+      ${staged.length?`<div style="display:flex;gap:.6rem">
+        <button class="btn btn-or btn-sm" onclick="downloadDatalon()">${esc(t('staff.download'))}</button>
+        <button class="btn btn-gh btn-sm" onclick="sendDatalon()">${esc(t('staff.send'))}</button>
+        <button class="btn btn-gh btn-sm" onclick="clearStaff()">${esc(t('staff.clear'))}</button>
+      </div>`:''}
+    </div>
+    ${staged.length===0
+      ?`<div class="card-bd"><div style="color:var(--muted);font-size:.86rem">${esc(t('staff.register.empty'))}</div></div>`
+      :`<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>${esc(t('lbl.name'))}</th>
+          <th>${esc(currentMarket().entity.personIdLabel)}</th>
+          <th>${esc(t('lbl.email'))}</th><th>${esc(t('staff.f.startDate'))}</th>
+          <th>${esc(t('staff.f.taxCard'))}</th><th>${esc(t('lbl.status'))}</th></tr></thead>
+        <tbody>${staged.map(r=>`<tr>
+          <td style="font-weight:700">${esc([r.firstName,r.lastName].filter(Boolean).join(' '))}</td>
+          <td style="font-size:.78rem;color:var(--muted)">${esc(r.personalId||'—')}</td>
+          <td style="font-size:.8rem">${esc(r.email||'—')}</td>
+          <td>${esc(r.startDate||'—')}</td>
+          <td>${esc(r.taxCard||'—')}</td>
+          <td><span class="badge b-am">${esc(t('staff.st.pending'))}</span></td></tr>`).join('')}
+        </tbody></table></div>`}
+  </div>`;
+}
+
+/* Same standing-warning pattern as rateWarning() and the Jeeves panel: the
+   placeholders are visible to whoever is about to rely on them. */
+function DATALON_WARNING(){
+  if(IBStaff.DATALON_CONFIG.verified) return '';
+  return `<div class="alert alert-am" style="margin-bottom:1.2rem">
+    <span>${esc(t('staff.unverified'))}</span></div>`;
+}
+
+window.downloadStaffTemplate=function(){
+  download('datalon-klientliste.csv',IBStaff.templateCSV(IB.language()),'text/csv');
+}
+
+window.onStaffFile=async function(file){
+  if(!file) return;
+  STAFF_MSG='';
+  try{
+    const table=await IBXlsx.readTable(file);
+    if(table.rows.length>IBStaff.LIMITS.maxRows){
+      STAFF_MSG=t('staff.tooManyRows'); STAFF_STATE=null; go('a-staff'); return;
+    }
+    const m=IBStaff.mapColumns(table.headers);
+    STAFF_STATE={fileName:file.name,table,mapping:m.mapping,
+                 missing:m.missing,unknown:m.unknown,
+                 validated:IBStaff.validate(table,m.mapping,{existing:IB.getStaff()})};
+  }catch(e){
+    STAFF_STATE=null;
+    STAFF_MSG=t('staff.badFile');
+  }
+  go('a-staff');
+}
+
+window.commitStaff=function(){
+  if(!STAFF_STATE) return;
+  const added=IBStaff.commit(STAFF_STATE.validated,{now:today()});
+  IB.saveStaff(IB.getStaff().concat(added));
+  STAFF_STATE=null; STAFF_MSG='';
+  go('a-staff');
+}
+
+window.cancelStaff=function(){ STAFF_STATE=null; STAFF_MSG=''; go('a-staff'); }
+
+window.clearStaff=function(){ IB.saveStaff([]); STAFF_MSG=''; go('a-staff'); }
+
+window.downloadDatalon=function(){
+  const csv=IBStaff.toDatalonCSV(IB.getStaff(),{market:IB.marketCode(),now:today()});
+  if(!csv) return;
+  download('datalon-'+IB.marketCode().toLowerCase()+'-'+today()+'.csv',csv,'text/csv');
+}
+
+/* Assembles and checks the payload, then holds it. There is no agreed
+   endpoint, and inventing one would be worse than not having it. */
+window.sendDatalon=function(){
+  const r=IBStaff.sendToDatalon(IB.getStaff(),{market:IB.marketCode(),now:today()});
+  STAFF_MSG=r.sent?'':t('staff.sendRefused');
+  go('a-staff');
 }
 
 function aServices(){

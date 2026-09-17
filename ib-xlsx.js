@@ -350,9 +350,19 @@
      passing `buf.buffer` hands over unrelated memory — megabytes of whatever
      else the process read. A Uint8Array carries its own offset and length and
      cannot be misread that way. */
+  /* `Blob.prototype.bytes()` now exists in browsers and is a METHOD, so a
+     truthy `file.bytes` stopped meaning "carries its own data". Read as a
+     boolean it made every browser File look like a {bytes} object, and the
+     function itself was handed to TextDecoder. Test for a typed array. */
+  function ownBytes(file) {
+    return ArrayBuffer.isView(file.bytes) ? file.bytes : null;
+  }
+
   async function toBytes(file) {
-    if (file.bytes) return file.bytes;
-    if (file.arrayBuffer) return new Uint8Array(await file.arrayBuffer());
+    var own = ownBytes(file);
+    if (own) return own;
+    if (typeof file.arrayBuffer === 'function') return new Uint8Array(await file.arrayBuffer());
+    if (typeof file.bytes === 'function') return new Uint8Array(await file.bytes());
     if (file.buffer) return new Uint8Array(file.buffer);
     throw new Error('NO_FILE_DATA');
   }
@@ -364,8 +374,9 @@
 
     let sheetName = '', rows;
     if (isCsv) {
-      const text = (file.text && !file.bytes) ? await file.text()
-                                              : DEC.decode(await toBytes(file));
+      const text = (typeof file.text === 'function' && !ownBytes(file))
+        ? await file.text()
+        : DEC.decode(await toBytes(file));
       rows = parseCSV(text, o.delimiter);
       sheetName = 'CSV';
     } else {

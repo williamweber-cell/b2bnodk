@@ -107,6 +107,36 @@ const csv = (name, text) =>
 
     const grouped = await csv('f.csv', 'x\n1 234,50\n');
     eq('space-grouped Nordic number', grouped.rows[0].cells[0], 1234.5);
+
+    /* Regression. Browsers grew Blob.prototype.bytes(), a METHOD, after this
+       reader was written. `if (file.bytes)` was reading it as "carries its
+       own data", so every CSV picked from a file dialog handed the function
+       to TextDecoder and threw "parameter 1 is not of type 'ArrayBuffer'".
+       These shapes are what a modern File and a plain {bytes} look like;
+       all of them must read. */
+    const rtext = ['a;b', '1;2', ''].join(String.fromCharCode(13, 10));
+    const raw = new TextEncoder().encode(rtext);
+
+    const modernFile = {
+      name: 'modern.csv',
+      text: async () => rtext,
+      bytes: async () => raw,                       // the method, not data
+      arrayBuffer: async () => raw.buffer.slice(0)
+    };
+    eq('a File whose bytes is a method still reads',
+       (await X.readTable(modernFile)).headers, ['a', 'b']);
+
+    const noText = {
+      name: 'notext.csv',
+      bytes: async () => raw,
+      arrayBuffer: async () => raw.buffer.slice(0)
+    };
+    eq('and so does one without .text()',
+       (await X.readTable(noText)).headers, ['a', 'b']);
+
+    const plain = { name: 'plain.csv', bytes: raw };   // data, not a method
+    eq('a {bytes: Uint8Array} object still reads',
+       (await X.readTable(plain)).headers, ['a', 'b']);
   }
 
   /* ═══════════════════ 3. ERROR PATHS ═══════════════════ */
