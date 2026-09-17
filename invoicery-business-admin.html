@@ -409,15 +409,34 @@ const t=IB.t;
 
 function currentMarket(){return IB.market()}
 
+const LANG_NAMES = { da: 'Dansk', nb: 'Norsk', en: 'English' };
+const LANG_SHORT = { da: 'DA', nb: 'NO', en: 'EN' };
+
 function marketSwitcherHTML(){
   const cur=currentMarket();
-  return `<div class="mkt-switch">
-    ${IBMarkets.list().map(m=>`<button class="mkt-btn${m.code===cur.code?' active':''}"
-      onclick="switchMarket('${m.code}')" title="${esc(m.entity.legalName)}">
-      <span class="mkt-flag">${m.flag}</span><span class="mkt-code">${m.code}</span>
+  return `<div class="portal-switch" role="group" aria-label="${esc(t('market.switch'))}">
+    <span class="portal-switch-lbl">${esc(t('market.switch'))}</span>
+    ${IBMarkets.list().map(m=>`<button class="portal-btn${m.code===cur.code?' active':''}"
+      onclick="switchMarket('${m.code}')" aria-pressed="${m.code===cur.code}"
+      title="${esc(m.entity.legalName)}">
+      <span class="portal-flag">${IBMarkets.flagHTML(m.code)}</span><span class="portal-name">${esc(m.name)}</span>
     </button>`).join('')}
+  </div>
+  <div class="lang-switch" role="group" aria-label="${esc(t('lang.switch'))}">
+    <span class="lang-switch-lbl">${esc(t('lang.switch'))}</span>
+    ${IB.languages().map(code=>`<button class="lang-btn${code===IB.language()?' active':''}"
+      onclick="switchLanguage('${code}')" aria-pressed="${code===IB.language()}"
+      title="${esc(LANG_NAMES[code]||code)}">${esc(LANG_SHORT[code]||code.toUpperCase())}</button>`).join('')}
   </div>`;
 }
+
+window.switchLanguage=function(code){
+  if(code===IB.language()) return;
+  IB.setLanguage(code);
+  applyMarketChrome();
+  const active=document.querySelector('[data-v].active');
+  go(active?active.dataset.v:'a-dash');
+};
 
 window.switchMarket=function(code){
   if(code===IB.marketCode()) return;
@@ -427,13 +446,17 @@ window.switchMarket=function(code){
 
 function applyMarketChrome(){
   const m=currentMarket();
-  document.documentElement.lang=m.lang;
+  /* Language is its own setting now; it is not the market's. */
+  document.documentElement.lang=IB.language();
   document.title='Invoicery Business — Admin ('+m.code+')';
   IBi18n.applyI18n(document);
   const host=document.getElementById('market-switch');
   if(host) host.innerHTML=marketSwitcherHTML();
   const sbm=document.getElementById('sb-market');
-  if(sbm) sbm.textContent=m.flag+' '+m.name+' · Superadmin';
+  if(sbm) sbm.innerHTML=IBMarkets.flagHTML(m.code)+' '+esc(m.name)+' · Superadmin';
+  /* Painted once at start-up otherwise, and left in the old language. */
+  const dt=document.getElementById('tb-date');
+  if(dt) dt.textContent=fmtDateLong();
   const admin=getUsers().find(u=>u.role==='admin');
   if(admin){
     document.getElementById('sb-nm').textContent=admin.name;
@@ -495,7 +518,9 @@ function updBadges(){
   if(bl) bl.textContent=approved;
   const alert=document.getElementById('tb-alert');
   const txt=document.getElementById('alert-txt');
-  if(txt) txt.textContent=pending+' '+t('a.pendingSuffix');
+  /* "1 assignments pending" — the badge counts down to one often enough
+     that the plural was visible most days. */
+  if(txt) txt.textContent=pending+' '+t(pending===1?'a.pendingSuffix.one':'a.pendingSuffix');
   if(alert) alert.style.display=pending?'':'none';
 }
 
@@ -907,7 +932,7 @@ function aSettings(){
       <div class="card-bd">
         <div class="ig"><label class="lbl">${esc(t('a.settings.market'))}</label>
           <div style="padding:.6rem;background:var(--bg);border-radius:6px;font-weight:700">
-            ${m.flag} ${esc(m.name)} — ${esc(m.currency)} · ${esc(m.locale)}</div></div>
+            ${IBMarkets.flagHTML(m.code)} ${esc(m.name)} — ${esc(m.currency)} · ${esc(m.locale)}</div></div>
         <div class="ig"><label class="lbl">${esc(t('a.settings.platformName'))}</label>
           <input class="inp" value="Invoicery Business"></div>
         <div class="ig"><label class="lbl">${esc(t('a.settings.serviceFee'))}</label>

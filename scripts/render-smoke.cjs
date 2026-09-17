@@ -203,6 +203,36 @@ for (const code of ['DK', 'NO']) {
       failures++;
       console.log(`  ${red('FAIL')} wrong market loaded: ${m.code}`);
     }
+
+    /* Language is a separate decision from business. An English-speaking
+       administrator in the Danish books must stay in English after moving to
+       the Norwegian ones — the old code derived language from the market, so
+       switching business silently threw the language choice away. */
+    console.log(dim('  language is independent of business'));
+    const before = app.IB.language();
+    app.IB.setLanguage('en');
+    const chosen = app.IB.language();
+    app.IB.setMarket(code === 'DK' ? 'NO' : 'DK');
+    const after = app.IB.language();
+    app.IB.setMarket(code);
+    app.IB.setLanguage(before);
+
+    if (chosen === 'en' && after === 'en') {
+      passes++;
+      console.log(`  ${green('PASS')} English survives a business switch`);
+    } else {
+      failures++;
+      console.log(`  ${red('FAIL')} language reset to ${after} on business switch`);
+    }
+
+    const langs = Object.keys(app.IBi18n.STRINGS);
+    if (langs.length === 3 && langs.includes('en')) {
+      passes++;
+      console.log(`  ${green('PASS')} three languages offered ${dim(langs.join(', '))}`);
+    } else {
+      failures++;
+      console.log(`  ${red('FAIL')} languages offered: ${langs.join(', ')}`);
+    }
   }
 }
 

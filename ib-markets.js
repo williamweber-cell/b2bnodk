@@ -76,6 +76,7 @@
       currency: 'DKK',
       currencySymbol: 'kr.',
       flag: '🇩🇰',
+      flagSVG: '<svg viewBox="0 0 37 28" aria-hidden="true" focusable="false"><rect width="37" height="28" fill="#C8102E"/><rect x="12" width="4" height="28" fill="#fff"/><rect y="12" width="37" height="4" fill="#fff"/></svg>',
       model: 'dk',
       verified: false,
 
@@ -130,6 +131,7 @@
       currency: 'NOK',
       currencySymbol: 'kr',
       flag: '🇳🇴',
+      flagSVG: '<svg viewBox="0 0 22 16" aria-hidden="true" focusable="false"><rect width="22" height="16" fill="#BA0C2F"/><rect x="6" width="4" height="16" fill="#fff"/><rect y="6" width="22" height="4" fill="#fff"/><rect x="7" width="2" height="16" fill="#00205B"/><rect y="7" width="22" height="2" fill="#00205B"/></svg>',
       model: 'no',
       verified: false,
 
@@ -346,12 +348,22 @@
     return sum;
   }
 
+  /* Windows has no flag-emoji font: 🇩🇰 falls back to the letters "DK" in a pair
+     of boxes, which is the opposite of the instant recognition a flag is for.
+     Every market therefore ships a hand-drawn SVG. These are constants in
+     this file — never user input — so they are injected as HTML. */
+  function flagHTML(code) {
+    var m = MARKETS[code];
+    return m && m.flagSVG ? '<span class="flag">' + m.flagSVG + '</span>' : '';
+  }
+
   var API = {
     MARKETS: MARKETS,
     DEFAULT_MARKET: DEFAULT_MARKET,
     MARKET_KEY: MARKET_KEY,
     list: list,
     get: get,
+    flagHTML: flagHTML,
     current: current,
     setCurrent: setCurrent,
     calcPayroll: calcPayroll,

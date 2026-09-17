@@ -14,7 +14,7 @@ dropped; no Swedish copy or SE rate should exist anywhere.
 |---|---|
 | `ib-design.css` | **Design system.** Colour, type, spacing, elevation, grid. Authoritative for all styling. |
 | `ib-markets.js` | **Market registry.** Legal entity, currency, locale, statutory rates, and the per-market payroll models. Authoritative for all money. |
-| `ib-i18n.js` | **Copy.** Danish and Norwegian bokmål, keyed. Authoritative for all user-visible text. |
+| `ib-i18n.js` | **Copy.** English, Danish and Norwegian bokmål, keyed. Authoritative for all user-visible text. |
 | `ib-core.js` | Storage, seed, market-aware formatting, escaping, status/type constants. |
 | `ib-xlsx.js` | Zero-dependency .xlsx and .csv reader. |
 | `ib-import.js` | Payroll-basis import: column mapping, validation, commit, Jeeves export. |
@@ -235,17 +235,57 @@ template cannot currently be imported. Re-saving as `.xlsx` works.
 | | Denmark | Norway |
 |---|---|---|
 | Entity | Invoicery Business A/S | Invoicery Business AS |
-| Language | Danish (`da`, `da-DK`) | Bokmål (`nb`, `nb-NO`) |
-| Currency | DKK, `33.000 kr.` | NOK, `49 800 kr` |
+| Default language | Danish (`da`) | Bokmål (`nb`) |
+| Money locale | `da-DK`, DKK, `33.000 kr.` | `nb-NO`, NOK, `49 800 kr` |
 | Assignment | opgave, `OPG-2026-001` | oppdrag, `OPP-2026-001` |
 | Company reg | CVR-nummer | Organisasjonsnummer |
 | Person id | CPR-nummer | Fødselsnummer |
 | Storage keys | `IB_DK_*` | `IB_NO_*` |
 
-Switching market reloads the app and swaps language, currency, rates, legal
-entity **and dataset**. The two markets are separate legal entities with
-separate books, so they share no data. Switching also ends the session rather
-than carrying a login across books.
+Switching business swaps currency, rates, legal entity **and dataset**. The two
+markets are separate legal entities with separate books, so they share no data.
+A logged-in user switching business has their session ended rather than carried
+across the books; an anonymous visitor on the marketing page is redrawn in
+place, because there is no session to end and a reload would only throw their
+scroll position away.
+
+### Business and language are separate choices
+
+They used to be one: the market decided the language. They are now independent,
+because a Danish company may want the interface in English and a Norwegian
+administrator may be reading the Danish books.
+
+| | Business (portal) | Language |
+|---|---|---|
+| Stored in | `IB_MARKET` | `IB_LANG` |
+| Values | `DK`, `NO` | `en`, `da`, `nb` |
+| Read with | `IB.marketCode()` | `IB.language()` |
+| Set with | `IB.setMarket(code)` | `IB.setLanguage(code)` |
+| Decides | entity, currency, rates, payroll model, dataset | interface copy, date format |
+
+`IB.language()` falls back to the market's default when nothing is stored, so a
+first-time Danish visitor still lands in Danish. Once chosen, the language
+survives a business switch — `scripts/render-smoke.cjs` asserts this.
+
+**Drawing the two controls.** A flag on its own reads as "language" to most
+people, which is the confusion the whole design exists to prevent. So the
+business control always carries the country *name* beside the flag and sits
+under a "Business" label; the language control is letters only, never a flag.
+Both live in `.l-topbar`, a strip above the nav, so the nav stays navigation.
+
+**Which locale formats what.** Money follows the *market* — an amount belongs
+to the entity's books, so a DKK figure is grouped the Danish way whoever is
+reading. Dates follow the *language* (`IB.uiLocale()`), because a date is
+prose; `en` maps to `en-GB`, not `en-US`, since the product is day-first
+throughout. Stored data such as an assignment's `period` (`"Mars 2026"`) is
+data, not UI: it stays as entered.
+
+**Flags are drawn, not typed.** Windows ships no flag-emoji font, so
+🇩🇰 renders as the letters "DK" in two boxes. Each market therefore carries a
+`flagSVG`, served through `IBMarkets.flagHTML(code)`. Those SVGs are constants
+in `ib-markets.js` — never user input — which is why they are injected as HTML.
+Their hex values are flag specifications, not theme colours: they are the one
+place in the codebase that must *not* be pulled into the design system.
 
 > **Rates are unverified.** Every rate in `ib-markets.js` is marked
 > `verified: false` and the admin UI shows a standing warning. They are
@@ -264,8 +304,11 @@ market by construction. `scripts/payroll-check.cjs` enforces this.
 
 **2. Never hardcode user-visible text.**
 All copy goes through `t('key')` (templates) or `data-i18n="key"` (static
-markup). Every key must exist in **both** languages — a missing key renders as
-`⟦key⟧` rather than silently falling back, and the smoke test fails on it.
+markup). Every key must exist in **all three** languages — a missing key
+renders as `⟦key⟧` rather than silently falling back, and the smoke test
+fails on it. `scripts/payroll-check.cjs` reads the language list off
+`IBi18n.STRINGS` rather than a hardcoded pair, so a fourth language is covered
+the moment it is added.
 
 **3. Never interpolate user data into HTML without `IB.esc()`.**
 Every view builds markup with template strings and assigns via `innerHTML`.
@@ -273,7 +316,7 @@ Anything a user typed or that came out of storage — `description`, names,
 emails, `period`, `adminNote` — goes through `esc()`, including inside
 `onclick="fn('${...}')"` and `data-*` attributes.
 
-**4. The schema is English; the UI is Danish and Norwegian.**
+**4. The schema is English; the UI is Danish, Norwegian or English.**
 Field names are `consultantName`, `companyId`, `hourlyRate`, `amount`,
 `createdDate`. Status values are `draft` / `pending` / `approved` / `paid` /
 `rejected`. A two-market data model must not be written in one market's

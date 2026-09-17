@@ -64,8 +64,36 @@
     syncLang();
     return true;
   }
+  /* ═══════════════════ LANGUAGE ═══════════════════
+     Language is NOT the market. A Danish company may want the interface in
+     English; a Norwegian administrator may be reading Danish data. The
+     market decides the legal entity, currency, statutory rates and dataset;
+     the language decides only what the interface says.
+
+     The market supplies the DEFAULT on a first visit. After that the choice
+     is the user's and survives a market switch. */
+  var LANG_KEY = 'IB_LANG';
+
+  function language() {
+    var stored;
+    try { stored = global.localStorage.getItem(LANG_KEY); } catch (e) { stored = null; }
+    if (stored && i18n && i18n.STRINGS[stored]) return stored;
+    return market().lang;
+  }
+
+  function setLanguage(code) {
+    if (!i18n || !i18n.STRINGS[code]) return false;
+    try { global.localStorage.setItem(LANG_KEY, code); } catch (e) {}
+    i18n.setLang(code);
+    return true;
+  }
+
+  function languages() {
+    return i18n ? Object.keys(i18n.STRINGS) : [];
+  }
+
   function syncLang() {
-    if (i18n) i18n.setLang(market().lang);
+    if (i18n) i18n.setLang(language());
   }
   function t(key) { return i18n ? i18n.t(key) : key; }
 
@@ -244,6 +272,9 @@
   }
 
   /* Wipe every IB_* key for one market (or all) and reseed. */
+  /* Note: the language preference lives outside the per-market keys on
+     purpose, so resetting demo data does not silently change the UI
+     language back to the market default. */
   function resetDemo(code) {
     var codes = code ? [code] : Object.keys(SEED);
     codes.forEach(function (c) {
@@ -311,15 +342,27 @@
       maximumFractionDigits: decimals === undefined ? 2 : decimals
     }) + ' %';
   }
+  /* Dates follow the READING LANGUAGE, not the market. Money does the
+     opposite: an amount belongs to the entity's books, so a DKK figure is
+     grouped the Danish way whoever is looking at it. A date is prose —
+     "onsdag 16. september 2026" on an otherwise English screen is simply a
+     half-translated page.
+
+     English maps to en-GB rather than en-US: the whole product is Nordic and
+     day-first, and 09/16 vs 16/09 is the one date bug nobody catches until
+     after the twelfth of the month. */
+  var UI_LOCALE = { en: 'en-GB', da: 'da-DK', nb: 'nb-NO' };
+  function uiLocale() { return UI_LOCALE[language()] || market().locale; }
+
   function fmtDate(d) {
     if (!d) return '';
     var dt = (d instanceof Date) ? d : new Date(d);
     if (isNaN(dt.getTime())) return String(d);
-    return dt.toLocaleDateString(market().locale);
+    return dt.toLocaleDateString(uiLocale());
   }
   function fmtDateLong(d) {
     var dt = d ? new Date(d) : new Date();
-    return dt.toLocaleDateString(market().locale,
+    return dt.toLocaleDateString(uiLocale(),
       { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   }
   function today() { return new Date().toISOString().slice(0, 10); }
@@ -346,6 +389,8 @@
 
     market: market, marketCode: marketCode, setMarket: setMarket,
     syncLang: syncLang, t: t,
+    language: language, setLanguage: setLanguage, languages: languages,
+    LANG_KEY: LANG_KEY,
 
     key: key, keys: keys, DB: DB, DBs: DBs,
     getUsers: getUsers, getAssignments: getAssignments,
@@ -360,7 +405,7 @@
     calcPayroll: calcPayroll, calcPayrollBatch: calcPayrollBatch,
 
     fmt: fmt, fmtN: fmtN, fmtPct: fmtPct,
-    fmtDate: fmtDate, fmtDateLong: fmtDateLong,
+    fmtDate: fmtDate, fmtDateLong: fmtDateLong, uiLocale: uiLocale,
     today: today, round2: round2,
     esc: esc
   };

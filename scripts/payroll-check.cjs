@@ -9,7 +9,7 @@
                     both models. The employer side must reconcile to the
                     salary base and the employee side to net pay.
      3. PARITY      No rate literal and no local money math in a view.
-     4. I18N        Both languages complete; every key referenced by the
+     4. I18N        Every language complete; every key referenced by the
                     markup or the app code exists.
      5. IDENTIFIERS No Cyrillic or Greek homoglyphs in source.
 
@@ -206,9 +206,15 @@ console.log(bold('\nPARITY — views must not compute money'));
 }
 
 /* ═══════════════════ 4. I18N ═══════════════════ */
-console.log(bold('\nI18N — both languages complete'));
+console.log(bold('\nI18N — every language complete'));
 {
-  ['da', 'nb'].forEach(lang => {
+  /* Driven off the dictionary rather than a hardcoded pair: English was
+     added later, and a hardcoded list would have skipped it in silence. */
+  const LANGS = Object.keys(I.STRINGS);
+  if (LANGS.length === 3) ok('three languages shipped', LANGS.join(', '));
+  else fail('language count', '3', String(LANGS.length));
+
+  LANGS.forEach(lang => {
     const missing = I.missing(lang);
     if (!missing.length) ok(`${lang} complete`, `${Object.keys(I.STRINGS[lang]).length} keys`);
     else fail(`${lang} is missing ${missing.length} keys`, 'complete', missing.slice(0, 8).join(', '));

@@ -534,6 +534,181 @@ textarea.inp { min-height: 96px; resize: vertical; }
 /* field grid gap on the system scale */
 .fg { gap: var(--sp-16); }
 
+
+/* ═══════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER — TWO STRIPS
+
+   The upper strip holds the two site-wide decisions (which business, which
+   language); the nav below holds navigation. They shared one row before,
+   which put nine controls on the right-hand side and read as clutter.
+   ═══════════════════════════════════════════════════════════════════════ */
+:root{
+  --topbar-h: 44px;
+  --nav-h:    68px;
+  --header-h: calc(var(--topbar-h) + var(--nav-h));
+}
+
+.l-header{position:fixed;top:0;left:0;right:0;z-index:1000}
+.l-header .l-nav{position:static}
+.l-topbar{
+  height:var(--topbar-h);display:flex;align-items:center;
+  justify-content:space-between;gap:var(--sp-16);
+  padding-inline:var(--pad-x);
+  background:var(--primary-80);
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BUSINESS & LANGUAGE CONTROLS
+
+   Two separate decisions, deliberately drawn differently so they cannot be
+   mistaken for one another:
+
+     business  flag + country name, under a "Business" label
+     language  a plain two-letter code, no flag
+
+   A flag alone reads as "language" to most people, which is the confusion
+   this replaces.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── business selector ── */
+.portal-switch{
+  display:inline-flex;align-items:center;gap:2px;min-width:0;
+}
+.portal-switch-lbl{
+  font-size:var(--overline);line-height:1;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);padding:0 var(--sp-8) 0 var(--sp-4);white-space:nowrap;
+}
+.portal-btn{
+  position:relative;
+  display:inline-flex;align-items:center;gap:var(--sp-8);
+  background:none;border:none;cursor:pointer;font-family:var(--font);
+  padding:var(--sp-8) var(--sp-12);border-radius:var(--radius-sm);
+  font-size:var(--body-3);font-weight:var(--fw-semibold);
+  color:rgba(255,255,255,.72);white-space:nowrap;
+  transition:background var(--dur-fast) ease,color var(--dur-fast) ease,
+             transform var(--dur-press) var(--ease-out);
+}
+.portal-btn:active{transform:scale(.97)}
+.portal-btn.active{background:var(--white);color:var(--primary-80)}
+/* The selected business also gets a rule beneath it, so the choice registers
+   in peripheral vision rather than having to be read. */
+.portal-btn::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;
+  height:2px;background:var(--orange-60);border-radius:2px 2px 0 0;
+  transform:scaleX(0);transform-origin:center;
+  transition:transform var(--dur-base) var(--ease-out);
+}
+.portal-btn.active::after{transform:scaleX(1)}
+
+/* In the strip the business control is a tab row, not a pill row. The white
+   pill plus an underline said "selected" twice; the underline alone is the
+   quieter half and reads at a glance, which is the whole job here. */
+.l-topbar .portal-switch{align-self:stretch}
+.l-topbar .portal-btn{
+  height:100%;border-radius:0;padding-inline:var(--sp-12);
+  color:rgba(255,255,255,.62);
+}
+.l-topbar .portal-btn.active{background:none;color:var(--white)}
+@media (hover:hover) and (pointer:fine){
+  .l-topbar .portal-btn:hover:not(.active){background:rgba(255,255,255,.06);color:#fff}
+}
+/* A drawn flag needs a hairline, or the white arm of the Dannebrog bleeds
+   into a light background and the cross loses its shape. */
+.flag{
+  display:inline-block;width:1.15em;height:calc(1.15em * 0.757);
+  border-radius:2px;overflow:hidden;vertical-align:-.12em;
+  box-shadow:0 0 0 1px rgba(0,0,0,.18);flex-shrink:0;
+}
+.flag svg{display:block;width:100%;height:100%}
+.portal-flag{display:inline-flex;align-items:center;font-size:1.05rem;line-height:1}
+@media (hover:hover) and (pointer:fine){
+  .portal-btn:hover:not(.active){color:#fff;background:rgba(255,255,255,.12)}
+}
+
+/* ── language selector ── */
+.lang-switch{display:inline-flex;gap:2px;align-items:center;flex-shrink:0}
+.lang-switch-lbl{
+  font-size:var(--overline);line-height:1;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);padding-right:var(--sp-8);white-space:nowrap;
+}
+.lang-btn{
+  background:none;border:none;cursor:pointer;font-family:var(--font);
+  padding:var(--sp-4) var(--sp-8);border-radius:var(--radius-sm);
+  font-size:var(--caption);font-weight:var(--fw-semibold);letter-spacing:.04em;
+  color:rgba(255,255,255,.55);
+  transition:background var(--dur-fast) ease,color var(--dur-fast) ease;
+}
+.lang-btn.active{color:#fff;background:rgba(255,255,255,.16)}
+@media (hover:hover) and (pointer:fine){
+  .lang-btn:hover:not(.active){color:rgba(255,255,255,.85)}
+}
+
+/* On the light admin sidebar the same controls need dark-on-light. */
+.sb .portal-switch{background:rgba(255,255,255,.07);
+                   border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);
+                   padding:var(--sp-4);
+                   display:flex;flex-direction:column;align-items:stretch;gap:2px}
+.sb .portal-btn::after{display:none}
+.sb .portal-switch-lbl{padding:var(--sp-4) var(--sp-8) 2px}
+.sb .portal-btn{justify-content:flex-start;width:100%}
+.sb .lang-switch{padding:var(--sp-8) 0 0;justify-content:flex-start}
+/* In the portal shell the language group sits in the footer above the user
+   block, where the business switch deliberately is not: the account decides
+   the entity, the reader decides the language. */
+.sb-lang{margin-bottom:var(--sp-12)}
+.sb-lang .lang-switch{padding:0;flex-wrap:wrap}
+
+/* ── portal choice in the login modal ── */
+.portal-pick{margin-bottom:var(--sp-24)}
+.portal-pick-lbl{
+  font-size:var(--caption);line-height:var(--caption-lh);
+  font-weight:var(--fw-semibold);color:var(--text);
+  margin-bottom:2px;
+}
+.portal-pick-hint{
+  font-size:var(--caption);line-height:var(--caption-lh);
+  color:var(--text-muted);margin-bottom:var(--sp-8);
+}
+.portal-pick-grid{display:grid;gap:var(--sp-8)}
+.portal-card{
+  display:flex;align-items:center;gap:var(--sp-12);width:100%;text-align:left;
+  padding:var(--sp-12);cursor:pointer;font-family:var(--font);
+  background:var(--surface);border:1px solid var(--gray-60);
+  border-radius:var(--radius-sm);
+  transition:border-color var(--dur-fast) ease,background var(--dur-fast) ease,
+             box-shadow var(--dur-fast) ease,transform var(--dur-press) var(--ease-out);
+}
+.portal-card:active{transform:scale(.99)}
+.portal-card.active{
+  border-color:var(--primary-60);background:var(--primary-10);
+  box-shadow:inset 0 0 0 1px var(--primary-60);
+}
+@media (hover:hover) and (pointer:fine){
+  .portal-card:hover:not(.active){border-color:var(--primary-40);background:var(--primary-10)}
+}
+.portal-card-flag{display:inline-flex;align-items:center;font-size:1.6rem;line-height:1;flex-shrink:0}
+.portal-card-body{display:flex;flex-direction:column;min-width:0;flex:1}
+.portal-card-name{font-size:var(--body-2);font-weight:var(--fw-semibold);color:var(--text)}
+.portal-card-entity{font-size:var(--caption);color:var(--text-muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.portal-card-meta{font-size:var(--overline);color:var(--text-subtle);letter-spacing:.04em}
+.portal-card-tick{
+  flex-shrink:0;color:var(--primary-60);font-weight:var(--fw-bold);
+  opacity:0;transition:opacity var(--dur-fast) ease;
+}
+.portal-card.active .portal-card-tick{opacity:1}
+
+/* Below 760px the strip drops its labels but never the country names — a
+   bare flag is exactly the "this must be the language picker" misreading
+   the whole control exists to prevent. */
+@media (max-width:760px){
+  .portal-switch-lbl,.lang-switch-lbl{display:none}
+  .l-topbar{padding-inline:var(--sp-16)}
+  .portal-btn{padding-inline:var(--sp-8)}
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    LEGACY ALIASES
 

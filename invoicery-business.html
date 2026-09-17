@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="ib-design.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 1rem)}
 body{font-family:var(--font);color:var(--text);line-height:1.5;min-height:100vh}
 .hidden{display:none!important}
 
@@ -417,6 +417,15 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 }
 .l-modal-ov.open .l-modal-box{transform:none}
 
+/* The portal picker pushed the box past the viewport on a 688px-tall window
+   and it was clipped at both ends — the overlay centres its child, so there
+   was no scroll to reach the cut-off part. The brand strip stays put and the
+   body scrolls under it. */
+.l-modal-ov{overflow-y:auto}
+.l-modal-box{max-height:calc(100dvh - 2.5rem);display:flex;flex-direction:column}
+.l-modal-top{flex-shrink:0}
+.l-modal-body{overflow-y:auto;overscroll-behavior:contain}
+
 /* ── faq accordion ───────────────────────────────────────────────────────
    Three approaches failed before this one, so the reasoning is worth keeping:
 
@@ -508,7 +517,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
    1950px of navy. Cap it, and let the grid breathe instead. */
 .l-hero{
   min-height:min(100svh,880px);
-  padding-top:calc(68px + clamp(2rem,5vh,4.5rem));
+  padding-top:calc(var(--header-h) + clamp(2rem,5vh,4.5rem));
   padding-bottom:clamp(2rem,5vh,4.5rem);
   gap:clamp(2rem,5vw,4.5rem);
   align-items:center;
@@ -610,6 +619,15 @@ tr.row-warn{background:rgba(217,119,6,.045)}
      LANDING
 ══════════════════════════════════════ -->
 <div id="landing">
+  <!-- The header is two strips. The upper one carries the two decisions that
+       apply to the whole site — which business you are looking at and what
+       language you read it in — so the nav below can go back to being just
+       navigation. Nine items in one row was the reason it read as cluttered. -->
+  <header class="l-header" id="l-header">
+  <div class="l-topbar">
+    <span id="market-switch"></span>
+    <span id="lang-switch"></span>
+  </div>
   <nav class="l-nav" id="l-nav">
     <a class="l-logo" href="#" onclick="return false">
       <div class="l-logo-mark">IB</div>
@@ -626,11 +644,11 @@ tr.row-warn{background:rgba(217,119,6,.045)}
       <li><a href="#kontakt" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
     <div class="l-nav-right">
-      <span id="market-switch"></span>
       <button class="l-btn-login" onclick="openLogin()" data-i18n="nav.login">Log ind</button>
       <button class="l-btn-kom" onclick="openLogin()" data-i18n="nav.cta">Kom i gang</button>
     </div>
   </nav>
+  </header>
 
   <!-- HERO -->
   <section class="l-hero">
@@ -909,8 +927,9 @@ tr.row-warn{background:rgba(217,119,6,.045)}
       </div>
     </div>
     <div class="l-modal-body">
+        <div id="login-portal"></div>
       <div class="l-modal-title" data-i18n="login.welcome">Velkommen tilbage</div>
-      <div class="l-modal-sub" data-i18n="login.sub">Log ind på din konto</div>
+      <div class="l-modal-sub"><span id="login-entity"></span> · <span data-i18n="login.sub">Log ind på din konto</span></div>
       <div class="l-login-err" id="l-err" data-i18n="login.error">Forkert e-mail eller adgangskode.</div>
       <div class="l-inp-g">
         <label class="l-inp-lbl" data-i18n="login.email">E-mail</label>
@@ -976,6 +995,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
     </ul>
   </div>
   <div class="sb-bot">
+    <div id="sb-lang" class="sb-lang"></div>
     <div class="sb-user"><div class="sb-av" id="sb-av">?</div><div><div class="sb-name" id="sb-nm">—</div><div class="sb-role" id="sb-rl">—</div></div></div>
     <button class="btn btn-gh btn-sm btn-fw" onclick="logout()" data-i18n="shell.logout">Log ud</button>
   </div>
@@ -1010,27 +1030,102 @@ const {getUsers,getAssignments,saveAssignments,saveUsers,getSession,saveSession,
 const t=IB.t;
 
 /* ═══════════════════ MARKET ═══════════════════ */
+/* ═══════════════════ BUSINESS & LANGUAGE ═══════════════════
+   These are two different choices and the UI must not imply otherwise.
+
+     BUSINESS (portal)  which legal entity you are working in — Invoicery
+                        Business A/S in Denmark or AS in Norway. Decides the
+                        currency, the statutory rates, the payroll model and
+                        the dataset. Switching it is a real move between two
+                        separate sets of books, so it ends the session.
+
+     LANGUAGE           what the interface says. Danish, Norwegian or
+                        English, independent of the business.
+
+   A flag on its own reads as "language", which is exactly the confusion to
+   avoid, so the business control always carries the country name and the
+   language control always carries the language name. */
+
+const LANG_NAMES = { da: 'Dansk', nb: 'Norsk', en: 'English' };
+const LANG_SHORT = { da: 'DA', nb: 'NO', en: 'EN' };
+
 function currentMarket(){return IB.market()}
 
-function marketSwitcherHTML(compact){
+/* Business selector for the top bar: flag + country, labelled as a business. */
+function marketSwitcherHTML(){
   const cur=currentMarket();
-  return `<div class="mkt-switch${compact?' mkt-compact':''}">
-    ${IBMarkets.list().map(m=>`<button class="mkt-btn${m.code===cur.code?' active':''}"
-      onclick="switchMarket('${m.code}')" title="${esc(m.entity.legalName)}">
-      <span class="mkt-flag">${m.flag}</span><span class="mkt-code">${m.code}</span>
+  return `<div class="portal-switch" role="group" aria-label="${esc(t('market.switch'))}">
+    <span class="portal-switch-lbl">${esc(t('market.switch'))}</span>
+    ${IBMarkets.list().map(m=>`<button class="portal-btn${m.code===cur.code?' active':''}"
+      onclick="switchMarket('${m.code}')"
+      aria-pressed="${m.code===cur.code}"
+      title="${esc(m.entity.legalName)}">
+      <span class="portal-flag">${IBMarkets.flagHTML(m.code)}</span><span class="portal-name">${esc(m.name)}</span>
     </button>`).join('')}
   </div>`;
 }
 
+function langSwitcherHTML(){
+  const cur=IB.language();
+  return `<div class="lang-switch" role="group" aria-label="${esc(t('lang.switch'))}">
+    <span class="lang-switch-lbl">${esc(t('lang.switch'))}</span>
+    ${IB.languages().map(code=>`<button class="lang-btn${code===cur?' active':''}"
+      onclick="switchLanguage('${code}')" aria-pressed="${code===cur}"
+      title="${esc(LANG_NAMES[code]||code)}">${esc(LANG_SHORT[code]||code.toUpperCase())}</button>`).join('')}
+  </div>`;
+}
+
+window.switchLanguage=function(code){
+  if(code===IB.language()) return;
+  IB.setLanguage(code);
+  applyMarketChrome();
+  if(ME) go(document.querySelector('[data-v].active')?.dataset.v || (ME.role==='consultant'?'c-dash':'b-dash'));
+};
+
 window.switchMarket=function(code){
   if(code===IB.marketCode()) return;
-  // Markets are separate legal entities with separate data. Switching ends
-  // the session rather than carrying a login across books.
   IB.setMarket(code);
-  clearSession();
-  ME=null;
-  location.reload();
+  /* Two separate legal entities with separate books. Carrying a login across
+     them would be wrong, so a session ends here. A visitor who is only
+     reading the marketing page has nothing to end — reloading on them just
+     throws the page away and scrolls them back to the top. */
+  if(ME){ clearSession(); ME=null; location.reload(); return; }
+  applyMarketChrome();
 }
+
+/* ═══════════════════ PORTAL CHOICE AT LOGIN ═══════════════════
+   Which business you are logging into is the first decision, not a setting
+   buried in the nav — the credentials only exist in one of them. */
+function portalChoiceHTML(){
+  const cur=currentMarket();
+  return `
+  <div class="portal-pick">
+    <div class="portal-pick-lbl">${esc(t('login.choosePortal'))}</div>
+    <div class="portal-pick-hint">${esc(t('login.portalHint'))}</div>
+    <div class="portal-pick-grid">
+      ${IBMarkets.list().map(m=>`
+        <button class="portal-card${m.code===cur.code?' active':''}"
+                onclick="pickPortal('${m.code}')" aria-pressed="${m.code===cur.code}">
+          <span class="portal-card-flag">${IBMarkets.flagHTML(m.code)}</span>
+          <span class="portal-card-body">
+            <span class="portal-card-name">${esc(m.name)}</span>
+            <span class="portal-card-entity">${esc(m.entity.legalName)}</span>
+            <span class="portal-card-meta">${esc(m.currency)} · ${esc(m.locale)}</span>
+          </span>
+          <span class="portal-card-tick" aria-hidden="true">✓</span>
+        </button>`).join('')}
+    </div>
+  </div>`;
+}
+
+window.pickPortal=function(code){
+  if(code===IB.marketCode()) return;
+  IB.setMarket(code);
+  /* Redraw in place rather than reload: the visitor is mid-login, and the
+     strip above, the demo accounts, the entity line and the footer all name
+     the business that was just chosen. */
+  applyMarketChrome();
+};
 
 /* Demo credentials differ per market, so the login box is filled at runtime
    from that market's seeded users rather than hardcoded in the markup. */
@@ -1083,13 +1178,28 @@ function renderFooter(){
 
 function applyMarketChrome(){
   const m=currentMarket();
-  document.documentElement.lang=m.lang;
+  document.documentElement.lang=IB.language();
   document.title=t('meta.title');
   IBi18n.applyI18n(document);
   const host=document.getElementById('market-switch');
   if(host) host.innerHTML=marketSwitcherHTML();
+  const lang=document.getElementById('lang-switch');
+  if(lang) lang.innerHTML=langSwitcherHTML();
+  const portal=document.getElementById('login-portal');
+  if(portal) portal.innerHTML=portalChoiceHTML();
+  const ent=document.getElementById('login-entity');
+  if(ent) ent.textContent=currentMarket().entity.legalName;
   const sbm=document.getElementById('sb-market');
-  if(sbm) sbm.textContent=m.flag+' '+m.name;
+  if(sbm) sbm.innerHTML=IBMarkets.flagHTML(m.code)+' '+esc(m.name);
+  const sbl=document.getElementById('sb-lang');
+  if(sbl) sbl.innerHTML=langSwitcherHTML();
+  /* The header date and the role label were painted once at login, so they
+     were the two things left in the old language after a switch. They belong
+     with the rest of the chrome. */
+  const dt=document.getElementById('tb-date');
+  if(dt) dt.textContent=fmtDateLong();
+  const rl=document.getElementById('sb-rl');
+  if(rl&&ME) rl.textContent=t(ME.role==='consultant'?'shell.consultant':'shell.company');
   renderDemoAccounts();
   renderMockup();
   renderFooter();
@@ -1131,11 +1241,9 @@ function launchPlatform(){
   document.body.style.background='var(--bg)';
   document.getElementById('sb-av').textContent=ME.name.split(' ').map(n=>n[0]).join('').slice(0,2);
   document.getElementById('sb-nm').textContent=ME.name;
-  document.getElementById('tb-date').textContent=fmtDateLong();
   const isConsultant=ME.role==='consultant';
   document.getElementById('nav-consultant').classList.toggle('hidden',!isConsultant);
   document.getElementById('nav-company').classList.toggle('hidden',isConsultant);
-  document.getElementById('sb-rl').textContent=t(isConsultant?'shell.consultant':'shell.company');
   applyMarketChrome();
   go(isConsultant?'c-dash':'b-dash');
   updBadges();
