@@ -50,32 +50,42 @@ body{font-family:var(--font);color:var(--text);line-height:1.5;min-height:100vh}
 .l-stats{display:flex;gap:2.5rem}
 .l-stat-n{font-size:1.7rem;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1}
 .l-stat-l{font-size:.72rem;color:rgba(255,255,255,.48);margin-top:.18rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-/* HERO VISUAL */
+/* HERO EMBLEM */
 .l-hero-visual{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;padding:5rem 0}
-.l-mockup{background:#fff;border-radius:14px;box-shadow:0 28px 64px rgba(0,0,0,.38);width:340px;overflow:hidden;border:1px solid var(--border)}
-.l-mock-hd{background:var(--navy);padding:.75rem 1.1rem;display:flex;align-items:center;gap:.5rem}
-.l-mock-logo{font-size:.72rem;font-weight:800;color:#fff}
-.l-mock-badge{background:var(--orange);color:#fff;font-size:.58rem;font-weight:700;padding:.12rem .5rem;border-radius:3px;margin-left:auto}
-.l-mock-body{padding:1rem}
-.l-mock-ttl{font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:.7rem}
-.l-mock-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem .7rem;border-radius:5px;margin-bottom:.35rem;font-size:.65rem}
-.l-mock-row-new{background:var(--abg);border:1px solid var(--orange-30)}
-.l-mock-row-ok{background:var(--gbg);border:1px solid var(--green-30)}
-.l-mock-row-pend{background:var(--bluebg);border:1px solid var(--primary-30)}
-.l-mock-lbl{font-weight:600;color:var(--text)}
-.l-mock-amt{font-weight:800;color:var(--navy)}
-.l-mock-stat{font-size:.58rem;padding:.1rem .4rem;border-radius:3px;font-weight:700}
-.l-mock-stat-ok{background:var(--gbg);color:var(--gtxt)}
-.l-mock-stat-pend{background:var(--abg);color:var(--atxt)}
-.l-mock-stat-blue{background:var(--bluebg);color:var(--bluetxt)}
-.l-mock-total{margin-top:.65rem;padding:.65rem .7rem;background:var(--bg);border-radius:6px;display:flex;justify-content:space-between;align-items:center}
-.l-mock-total-lbl{font-size:.62rem;color:var(--mid);font-weight:600}
-.l-mock-total-amt{font-size:1rem;font-weight:800;color:var(--navy)}
-.l-pill{position:absolute;background:#fff;border-radius:50px;padding:.38rem .85rem;font-size:.73rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:.38rem;box-shadow:0 4px 14px rgba(0,0,0,.1);white-space:nowrap;animation:lf 3.8s ease-in-out infinite}
-.l-pill-1{top:80px;right:-20px;animation-delay:0s}
-.l-pill-2{bottom:80px;left:-25px;animation-delay:1.9s}
-.l-pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.l-pdot-g{background:var(--green-60)} .l-pdot-o{background:var(--orange)}
+/* The hero carried a fake screenshot of the product — invented companies,
+   invented amounts, a status column, all of it needing translation into
+   three languages and none of it signed off by anyone. This is an emblem
+   instead: the shield is the employer responsibility we actually carry,
+   the two flags are the two markets, and there is nothing to verify. */
+.l-emblem{position:relative;width:min(100%,400px);aspect-ratio:1/1}
+.l-emblem-svg{position:absolute;inset:0;z-index:2;width:100%;height:100%;display:block;overflow:visible}
+
+/* Soft colour behind the mark so it sits inside the gradient rather than on
+   top of it. Blurred and low-opacity — these read as light, not as shapes. */
+.l-orb{position:absolute;border-radius:50%;filter:blur(46px);pointer-events:none;z-index:1}
+.l-orb-1{width:58%;height:58%;top:2%;left:4%;background:var(--sky-60);opacity:.5;animation:orb 13s ease-in-out infinite}
+.l-orb-2{width:46%;height:46%;bottom:6%;right:2%;background:var(--orange-60);opacity:.34;animation:orb 17s ease-in-out infinite reverse}
+.l-orb-3{width:40%;height:40%;bottom:24%;left:20%;background:var(--teal-60);opacity:.3;animation:orb 21s ease-in-out infinite}
+@keyframes orb{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(6%,-5%,0) scale(1.09)}}
+
+.l-ring{fill:none;stroke:rgba(255,255,255,.10);stroke-width:1}
+.l-ring-dash{fill:none;stroke:var(--sky-60);stroke-width:1.5;stroke-dasharray:3 13;stroke-linecap:round;opacity:.55;transform-origin:50% 50%;animation:spin 48s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.l-shield-body{fill:rgba(255,255,255,.07);stroke:var(--sky-60);stroke-width:2.5;stroke-linejoin:round}
+.l-shield-check{fill:none;stroke:var(--green-60);stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.l-shield{transform-origin:50% 50%;animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* The two markets ride the outer ring. Flags are drawn SVG from
+   ib-markets.js, never emoji — Windows ships no flag-emoji font. The node
+   is centred on its coordinate by a fixed margin rather than a transform,
+   because transform is what the float animation is already using. */
+.l-node{position:absolute;z-index:3;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:var(--white);box-shadow:0 6px 20px rgba(0,0,0,.34);display:flex;align-items:center;justify-content:center;animation:lf 3.8s ease-in-out infinite}
+.l-node .flag{display:flex}
+.l-node svg{width:24px;height:auto;border-radius:2px;display:block}
+.l-node-dk{top:19%;left:81%}
+.l-node-no{top:81%;left:19%;animation-delay:1.9s}
 @keyframes lf{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 /* TRUST BAR */
 .l-trust{background:var(--darker);border-top:1px solid rgba(255,255,255,.06);padding:1rem 5vw;display:flex;gap:2.5rem;flex-wrap:wrap;justify-content:center}
@@ -490,7 +500,7 @@ tr.row-warn{background:rgba(217,119,6,.045)}
     transition-duration:.01ms!important;
     scroll-behavior:auto!important;
   }
-  .l-pill{animation:none}
+  .l-orb,.l-ring-dash,.l-shield,.l-node{animation:none}
   .l-svc:hover,.l-step:hover{transform:none}
   .l-btn-hero:hover{transform:none}
   .pg,.l-badge,.l-hero h1,.l-hero-sub,.l-checks,.l-actions,.l-stats,
@@ -527,8 +537,8 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 .l-hero h1{font-size:clamp(2.1rem,3.4vw,3.35rem);letter-spacing:-.03em}
 .l-hero-sub{max-width:52ch;font-size:1.02rem}
 
-/* The mock card was a fixed 340px adrift in a huge column. */
-.l-mockup{width:400px;max-width:100%}
+/* The emblem was a fixed size adrift in a huge column. */
+.l-emblem{width:min(100%,400px)}
 .l-hero-visual{justify-content:flex-end}
 
 /* Copy measure: a max-width in px is meaningless once the container moved.
@@ -573,13 +583,10 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 .l-title{text-wrap:balance}
 .l-sub,.l-hero-sub{text-wrap:pretty}
 
-/* Cap the visual to the card plus a 20px overhang on each side, so the
-   pills can hang off the card's corners without any chance of pushing the
-   page sideways. .l-hero clips as a belt-and-braces guard. */
+/* Cap the visual so the orbs' blur and the flag nodes, which sit outside
+   the rings, cannot push the page sideways. .l-hero clips as a
+   belt-and-braces guard. */
 .l-hero-visual{position:relative;width:min(100%,440px);justify-self:end}
-.l-pill{box-shadow:0 8px 24px -6px rgba(0,0,0,.35)}
-.l-pill-1{top:64px;right:-26px;left:auto}
-.l-pill-2{bottom:52px;left:-26px;right:auto}
 .l-hero{overflow:hidden}
 
 /* Text column needs the extra room; "personaladministrasjon" is 21
@@ -596,8 +603,8 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 .l-trust{padding-block:1.1rem}
 .l-ti{font-size:.82rem}
 
-/* The mock card is the hero's focal point — let it carry more weight. */
-.l-mockup{box-shadow:0 32px 80px -12px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06)}
+/* The emblem is the hero's focal point — let the mark carry more weight. */
+.l-shield-body{filter:drop-shadow(0 18px 38px rgba(0,0,0,.42))}
 
 /* Hero gradient was flat navy; a soft radial adds depth behind the card. */
 .l-hero::after{
@@ -609,7 +616,6 @@ tr.row-warn{background:rgba(217,119,6,.045)}
 @media(max-width:900px){
   .l-services-grid,.l-cases-grid,.l-steps{grid-template-columns:1fr}
   .l-hero{grid-template-columns:1fr}
-  .l-pill-1,.l-pill-2{display:none}
 }
 </style>
 </head>
@@ -673,23 +679,27 @@ tr.row-warn{background:rgba(217,119,6,.045)}
       </div>
     </div>
     <div class="l-hero-visual">
-    <div class="l-mockup">
-      <div class="l-mock-hd">
-        <div class="l-mock-logo">Invoicery Business</div>
-        <div class="l-mock-badge">LIVE</div>
-      </div>
-      <div class="l-mock-body">
-        <div class="l-mock-ttl" data-i18n="mock.title">Aktive opgaver — april 2026</div>
-        <div id="mock-rows"></div>
-        <div class="l-mock-total">
-          <div class="l-mock-total-lbl" data-i18n="mock.total">I alt denne periode</div>
-          <div class="l-mock-total-amt" id="mock-total">&mdash;</div>
-        </div>
+      <!-- Decorative throughout: the copy beside it already says everything
+           this conveys, so it is hidden from assistive technology rather
+           than described twice. -->
+      <div class="l-emblem" aria-hidden="true">
+        <span class="l-orb l-orb-1"></span>
+        <span class="l-orb l-orb-2"></span>
+        <span class="l-orb l-orb-3"></span>
+        <svg class="l-emblem-svg" viewBox="0 0 400 400" focusable="false">
+          <circle class="l-ring" cx="200" cy="200" r="104"/>
+          <circle class="l-ring" cx="200" cy="200" r="140"/>
+          <circle class="l-ring" cx="200" cy="200" r="176"/>
+          <circle class="l-ring-dash" cx="200" cy="200" r="176"/>
+          <g class="l-shield">
+            <path class="l-shield-body" d="M200 112 L266 142 V214 C266 258 236 288 200 304 C164 288 134 258 134 214 V142 Z"/>
+            <path class="l-shield-check" d="M172 205 l22 23 l40 -47"/>
+          </g>
+        </svg>
+        <span class="l-node l-node-dk" id="emblem-dk"></span>
+        <span class="l-node l-node-no" id="emblem-no"></span>
       </div>
     </div>
-    <div class="l-pill l-pill-1"><span class="l-pdot l-pdot-g"></span><span data-i18n="hero.pill.1">Opgave godkendt</span></div>
-    <div class="l-pill l-pill-2"><span class="l-pdot l-pdot-o"></span><span data-i18n="hero.pill.2">Løn udbetalt</span></div>
-  </div>
   </section>
 
   <!-- TRUST BAR -->
@@ -1144,27 +1154,18 @@ function renderDemoAccounts(){
     ${DEMO_ICON[u.role]||''} ${esc(t('login.demo.'+u.role))} <em>${esc(u.email)}</em></button>`).join('');
 }
 
-/* The hero mock card and the footer legal line were hardcoded with Swedish
-   companies, SEK amounts and a Stockholm address. Both now render from the
-   active market so they are correct in DK and NO. */
-function renderMockup(){
-  const host=document.getElementById('mock-rows');
-  if(!host) return;
-  const tone=['ok','pend','new'];
-  const rows=getAssignments().slice(0,3);
-  host.innerHTML=rows.map((a,i)=>{
-    const statusKey=a.status===STATUS.APPROVED?'mock.approved'
-      :a.status===STATUS.PENDING?'mock.pending':'mock.new';
-    const statTone=['ok','pend','blue'][i];
-    return `<div class="l-mock-row l-mock-row-${tone[i]}">
-      <div><div class="l-mock-lbl">${esc(a.companyName)}</div>
-        <div style="font-size:.58rem;color:var(--mid)">${esc(a.type)} · ${a.hours}h</div></div>
-      <div style="text-align:right"><div class="l-mock-amt">${fmtN(a.amount)}</div>
-        <span class="l-mock-stat l-mock-stat-${statTone}">${esc(t(statusKey))}</span></div>
-    </div>`;
-  }).join('');
-  const total=document.getElementById('mock-total');
-  if(total) total.textContent=fmtN(rows.reduce((x,a)=>x+a.amount,0));
+/* The footer legal line was hardcoded with a Swedish entity and a Stockholm
+   address; it now renders from the active market.
+
+   Where the hero mock card used to be rendered from seed data, the emblem
+   needs only the two flags. They are SVG constants from ib-markets.js —
+   never user input — which is why they are injected as HTML. Both markets
+   are always shown, so this does not change when the market does. */
+function renderEmblem(){
+  const dk=document.getElementById('emblem-dk');
+  const no=document.getElementById('emblem-no');
+  if(dk) dk.innerHTML=IBMarkets.flagHTML('DK');
+  if(no) no.innerHTML=IBMarkets.flagHTML('NO');
 }
 
 function renderFooter(){
@@ -1201,7 +1202,7 @@ function applyMarketChrome(){
   const rl=document.getElementById('sb-rl');
   if(rl&&ME) rl.textContent=t(ME.role==='consultant'?'shell.consultant':'shell.company');
   renderDemoAccounts();
-  renderMockup();
+  renderEmblem();
   renderFooter();
 }
 
